@@ -1,0 +1,145 @@
+#!python
+
+import sys
+import argparse
+import logging
+import json
+import errno
+
+import requests
+import requests_cache
+
+from hypercane.input_types import get_collection_model
+
+def process_input_types(input_argument):
+
+    if '=' not in input_argument:
+        raise argparse.ArgumentTypeError(
+            "no required argument supplied for input type {}\n"
+            "Examples:\n"
+            "for an Archive-It collection use something like\n"
+            "-i archiveit=3639\n"
+            # "for [EXPERIMENTAL] WARCs use (separate with commas, but no spaces)\n"
+            # "-i warc=myfile.warc.gz,myfile2.warc.gz\n\n"
+            "for a TimeMap use (separate with commas, but not spaces)\n"
+            "-i timemap=http://archive.example.org/timemap/http://example.com"
+            .format(input_argument)
+            )
+
+    input_type, argument = input_argument.split('=') 
+
+    supported_input_types = [
+        'archiveit',
+        'timemap'
+    ]
+
+    if input_type not in supported_input_types:
+        raise argparse.ArgumentTypeError(
+            "{} is not a supported input type, supported types are {}".format(
+                input_type, list(supported_input_types.keys())
+                )
+            )
+
+    if ',' in argument:
+        arguments = argument.split(',')
+    else:
+        arguments = [ argument ]
+
+    return input_type, arguments
+
+def create_logger(appname, loglevel, logfile):
+
+    applogger = logging.getLogger('hypercane')
+
+    # applogger.info("setting loglevel to {}".format(logging.getLevelName(loglevel)))
+
+    if logfile == sys.stdout:   
+        logging.basicConfig( 
+            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            level=loglevel)
+    else:
+        applogger.info("Logging will now use output of {}".format(logfile))
+        logging.basicConfig( 
+            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            level=loglevel,
+            filename=logfile)
+
+    applogger.info("using logging level of {}".format(logging.getLevelName(applogger.getEffectiveLevel())))
+
+    return applogger
+
+def process_arguments(args):
+
+    parser = argparse.ArgumentParser(prog="{}".format(args[0]),
+        description="Accepts a formatted JSON file and generates an HTML story"
+            " based on additional arguments.",
+            formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-i', '--input', dest='input_string',
+        required=True, help="The source of the input data. The following options are avalailable:\n"
+        # "* warc=[warc-filenames separated by commas with no spaces] - EXPERIMENTAL\n"
+        "* archiveit=[collection identifier or collection URI]\n"
+        "* timemap=[URI of TimeMap]",
+        type=process_input_types)
+
+    parser.add_argument('-a', '--algorithm', dest='algorithm',
+        help="The algorithm to use on the input mementos. Choices are:\n"
+            "* dsa1 - the original DSA algorithm by Yasmin AlNoamany\n"
+            "* first20 - the first mementos of the first 20 seeds\n"
+            "* first20thumbcheck - the first mementos of the first 20 seeds with a quality check using thumbnails\n"
+            "* random - randomly selected URI-Ms"
+        )
+
+    parser.add_argument('-d', '--working_directory', dest="working_directory",
+        help="The directory used to save data for this run."
+    )
+
+    parser.add_argument('-o', '--output', dest='output_file',
+        required=True, help="The file containing the selected mementos and metadata.")
+
+    parser.add_argument('-l', '--logfile', dest='log_file',
+        default=sys.stdout,
+        help="The file containing the logs from running this application.")
+
+    parser.add_argument('-v', '--verbose', dest='verbosity',
+        action='store_true',
+        help="This will raise the logging level to debug for more verbose output.")
+
+    parser.add_argument('-cf', '--cachefile', dest='cache_file',
+        default='/tmp/raintale_cache',
+        help="The cache file used by raintale for caching downloads."
+    )
+
+    parser.add_argument('-me', '--mementoembed_endpoint_api', dest='mementoembed_endpoint_api',
+        help="Algorithms that check a thumbnail require a MementoEmbed instance.\n"
+            "Specify the endpoint for this instance (e.g., http://localhost:5550/."
+    )
+
+    args = parser.parse_args(args=args[1:])
+
+    return args
+
+def main(args):
+
+    appname = args[0]
+
+    args = process_arguments(args)
+
+    if args.verbosity:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
+    
+    applogger = create_logger('hypercane', loglevel, args.log_file)
+
+    applogger.info("Starting execution of {}".format('hypercane'))
+
+    cs = requests_cache.CachedSession(cache_name=args.cache_file)
+
+    get_collection_model(args.input_string[0], args.input_string[1], args.working_directory, cs)
+
+    applogger.info("Finished {}, output is in {}".format(appname, args.output_file))
+
+if __name__ == '__main__':
+
+    main(sys.argv)
