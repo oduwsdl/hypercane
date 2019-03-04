@@ -86,9 +86,9 @@ def process_arguments(args):
     parser.add_argument('-a', '--algorithm', dest='algorithm',
         help="The algorithm to use on the input mementos. Choices are:\n"
             # "* dsa1 - the original DSA algorithm by Yasmin AlNoamany\n"
-            "* first20 - the first mementos of the first 20 seeds\n"
+            "* firstn - the first mementos of the first n seeds (default: n = 20)\n"
             # "* first20thumbcheck - the first mementos of the first 20 seeds with a quality check using thumbnails\n"
-            "* random20 - 20 randomly selected URI-Ms from the input"
+            "* randomn - 20 randomly selected URI-Ms from the input (default: n = 20)"
         )
 
     parser.add_argument('-d', '--working_directory', dest="working_directory",
@@ -162,7 +162,7 @@ def main(args):
         cs, download_anyway=download_anyway
         )
     
-    alg = get_algorithm(args.algorithm, cm)
+    alg = get_algorithm(args.algorithm, cm, args.memento_count)
     alg.execute()
 
     with open(args.output_file, 'w') as f:
