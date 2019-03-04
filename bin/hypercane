@@ -10,6 +10,7 @@ import requests
 import requests_cache
 
 from hypercane.input_types import get_collection_model
+from hypercane.algorithm_types import get_algorithm, full_download_required
 
 def process_input_types(input_argument):
 
@@ -78,20 +79,34 @@ def process_arguments(args):
     parser.add_argument('-i', '--input', dest='input_string',
         required=True, help="The source of the input data. The following options are avalailable:\n"
         # "* warc=[warc-filenames separated by commas with no spaces] - EXPERIMENTAL\n"
-        "* archiveit=[collection identifier or collection URI]\n"
-        "* timemap=[URI of TimeMap]",
+        "* archiveit=[collection identifier or collection URI]\n",
+        # "* timemap=[URI of TimeMap]",
         type=process_input_types)
 
     parser.add_argument('-a', '--algorithm', dest='algorithm',
         help="The algorithm to use on the input mementos. Choices are:\n"
-            "* dsa1 - the original DSA algorithm by Yasmin AlNoamany\n"
+            # "* dsa1 - the original DSA algorithm by Yasmin AlNoamany\n"
             "* first20 - the first mementos of the first 20 seeds\n"
-            "* first20thumbcheck - the first mementos of the first 20 seeds with a quality check using thumbnails\n"
-            "* random - randomly selected URI-Ms"
+            # "* first20thumbcheck - the first mementos of the first 20 seeds with a quality check using thumbnails\n"
+            "* random20 - 20 randomly selected URI-Ms from the input"
         )
 
     parser.add_argument('-d', '--working_directory', dest="working_directory",
-        help="The directory used to save data for this run."
+        help="The directory used to save data for this run. "
+        "If it already contains data from a prior run, that will also be used.",
+        default='/tmp/hypercane-working'
+    )
+
+    parser.add_argument('-n', '--mementocount', dest="memento_count",
+        help="If possible, override the default number of mementos returned "
+        "by an algorithm with this value.",
+        default=None
+    )
+
+    parser.add_argument('--download-all', dest='download_all',
+        action='store_true',
+        help="This flag forces the download of all of the collection's "
+        "memento content, even if the algorithm does not require it for operation."
     )
 
     parser.add_argument('-o', '--output', dest='output_file',
@@ -136,7 +151,25 @@ def main(args):
 
     cs = requests_cache.CachedSession(cache_name=args.cache_file)
 
-    get_collection_model(args.input_string[0], args.input_string[1], args.working_directory, cs)
+    try:
+        download_anyway = args.download_all or full_download_required[args.algorithm]
+    except KeyError:
+        applogger.critical("Algorithm name {} does not map to a supported algorithm, exiting...".format(args.algorithm))
+        sys.exit(errno.EINVAL)
+
+    cm = get_collection_model(
+        args.input_string[0], args.input_string[1], args.working_directory, 
+        cs, download_anyway=download_anyway
+        )
+    
+    alg = get_algorithm(args.algorithm, cm)
+    alg.execute()
+
+    with open(args.output_file, 'w') as f:
+        json.dump(alg.get_output_data(), f, indent=4)
+
+    if download_anyway is True:
+        applogger.info("Downloaded content is now in {}".format(args.working_directory))
 
     applogger.info("Finished {}, output is in {}".format(appname, args.output_file))
 

@@ -1,3 +1,4 @@
+import logging
 
 from requests_futures.sessions import FuturesSession
 
@@ -8,10 +9,14 @@ from memstock.timemapstock import TimeMapStock
 from otmt.collectionmodel import CollectionModelMementoErrorException
 from otmt.collectionmodel import CollectionModelBoilerPlateRemovalFailureException
 
+module_logger = logging.getLogger('hypercane.collectionmodel')
+
 class DSACollectionModel:
 
     def __init__(self, collection_id, working_directory, warcdir=None, wetdir=None, tmdir=None, session=None):
         
+        module_logger.debug("setting up DSACollectionModel with working directory {}".format(working_directory))
+
         if warcdir is None:
             self.warcdir = "{}/warcs".format(working_directory)
         else:
@@ -39,8 +44,11 @@ class DSACollectionModel:
         self.tmstock = TimeMapStock(self.tmdir, cid=self.collection_id, session=self.session)
         self.metadata = {}
 
+        self.seedlist = []
+        self.seed_urits = {}
+
     def add(self, urim):
-        self.memstock.add(urim)
+        self.memstock.addByURIM(urim)
 
     def get(self, urim):
         return self.memstock.getByURIM(urim)
@@ -53,12 +61,35 @@ class DSACollectionModel:
         self.tmstock.add(urit)
         
         urims = self.tmstock.getURIMs(urit)
+
+        module_logger.debug("adding {} URI-Ms from TimeMaps".format(len(urims)))
         
         for urim in urims:
+            module_logger.debug("adding URI-M {} to collection".format(urim))
             self.add(urim)
 
     def getMementoURIList(self):
-        pass
+        return self.memstock.getAllURIMs()
+
+    def collect_all_results(self):
+        module_logger.info("collecting all results for collection...")
+        self.tmstock.collect_all_results()
+        self.memstock.collect_all_results()
+        self.wetstock.collect_all_results()
+
+    def getMementoURIListFromTimeMaps(self):
+
+        module_logger.debug("acquiring URI-M list from TimeMaps...")
+        
+        allurims = []
+
+        urits = self.tmstock.getURITs()
+
+        for urit in urits:
+            urims = self.tmstock.getURIMs(urit)
+            allurims += urims
+
+        return allurims
 
     ### the following functions are needed by OTMT ### 
 
