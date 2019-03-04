@@ -6,15 +6,20 @@ import requests
 
 module_logger = logging.getLogger('hypercane.algorithms.first20seedmementos')
 
-class First20SeedMementos:
+class FirstNSeedMementos:
 
-    def __init__(self, collection_model):
+    def __init__(self, collection_model, memento_count=None):
 
         self.collection_model = collection_model
         self.urilist = []
         self.executed = False
 
-    def pick_first20(self):
+        self.memento_count = int(memento_count)
+
+        if memento_count is None:
+            self.memento_count = 20
+
+    def pick_firstn(self):
 
         urims = []
 
@@ -24,7 +29,7 @@ class First20SeedMementos:
 
         i = 0
 
-        while len(urims) < 20:
+        while len(urims) < self.memento_count:
 
             try:
                 urir = sortedseeds[i]
@@ -48,7 +53,7 @@ class First20SeedMementos:
     def execute(self):
         module_logger.info("executing Algorithm: First 20 Seed Mementos")
 
-        self.urilist = self.pick_first20()
+        self.urilist = self.pick_firstn()
 
         self.executed = True
 

@@ -7,15 +7,20 @@ from PIL import ImageFile, Image
 
 module_logger = logging.getLogger('hypercane.algorithms.random')
 
-class Random20Algorithm:
+class RandomNAlgorithm:
     
-    def __init__(self, collection_model):
+    def __init__(self, collection_model, memento_count=None):
 
         self.collection_model = collection_model
         self.urilist = []
         self.executed = False
 
-    def pick_random_20(self):
+        self.memento_count = int(memento_count)
+
+        if memento_count is None:
+            self.memento_count = 20
+
+    def pick_randomn(self):
 
         urimlist = self.collection_model.getMementoURIListFromTimeMaps()
 
@@ -23,7 +28,7 @@ class Random20Algorithm:
             len(urimlist)
         ))
 
-        maxcount = 20 if len(urimlist) > 20 else len(urimlist)
+        maxcount = self.memento_count if len(urimlist) > self.memento_count else len(urimlist)
 
         random_choices = []
 
@@ -41,7 +46,7 @@ class Random20Algorithm:
     def execute(self):
         module_logger.info("executing Random 20 Algorithm...")
 
-        self.urilist = self.pick_random_20()
+        self.urilist = self.pick_randomn()
 
         self.executed = True
 
