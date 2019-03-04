@@ -7,6 +7,7 @@ name = "pypi"
 aiu = "*"
 otmt = "*"
 pywb = "*"
+pillow = "*"
 
 [dev-packages]
 pylint = "*"
