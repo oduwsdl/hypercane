@@ -11,6 +11,7 @@ import requests_cache
 
 from hypercane.input_types import get_collection_model
 from hypercane.algorithm_types import get_algorithm, full_download_required
+from hypercane.version import __useragent__
 
 def process_input_types(input_argument):
 
@@ -150,6 +151,7 @@ def main(args):
     applogger.info("Starting execution of {}".format('hypercane'))
 
     cs = requests_cache.CachedSession(cache_name=args.cache_file)
+    cs.headers.update({'User-Agent': __useragent__})
 
     try:
         download_anyway = args.download_all or full_download_required[args.algorithm]
@@ -162,7 +164,7 @@ def main(args):
         cs, download_anyway=download_anyway
         )
     
-    alg = get_algorithm(args.algorithm, cm, args.memento_count)
+    alg = get_algorithm(args.algorithm, cm, args.memento_count, cs, args.mementoembed_endpoint_api)
     alg.execute()
 
     with open(args.output_file, 'w') as f:

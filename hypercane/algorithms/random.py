@@ -15,10 +15,10 @@ class RandomNAlgorithm:
         self.urilist = []
         self.executed = False
 
-        self.memento_count = int(memento_count)
-
         if memento_count is None:
             self.memento_count = 20
+        else:
+            self.memento_count = int(memento_count)
 
     def pick_randomn(self):
 
