@@ -1,0 +1,194 @@
+#!python
+
+import sys
+import argparse
+import logging
+import errno
+import random
+
+import requests_cache
+
+from copy import deepcopy
+
+from memstock import stock_uris
+
+from hypercane.version import __useragent__
+
+def process_input_types(input_argument):
+
+    if '=' not in input_argument:
+        raise argparse.ArgumentTypeError(
+            "no required argument supplied for input type {}\n"
+            "Examples:\n"
+            "for an Archive-It collection use something like\n"
+            "-i archiveit=3639\n"
+            "for a list of TimeMap URIs use (separate with commas, but not spaces)\n"
+            "-i timemap=http://archive.example.org/timemap/http://example.com"
+            .format(input_argument)
+            )
+
+    input_type, argument = input_argument.split('=') 
+
+    supported_input_types = [
+        'archiveit',
+        'timemap'
+        # , 'memento'
+    ]
+
+    if input_type not in supported_input_types:
+        raise argparse.ArgumentTypeError(
+            "{} is not a supported input type, supported types are {}".format(
+                input_type, list(supported_input_types)
+                )
+            )
+
+    if ',' in argument:
+        arguments = argument.split(',')
+    else:
+        arguments = [ argument ]
+
+    return input_type, arguments
+
+def create_logger(appname, loglevel, logfile):
+
+    applogger = logging.getLogger('hypercane')
+
+    # applogger.info("setting loglevel to {}".format(logging.getLevelName(loglevel)))
+
+    if logfile == sys.stdout:   
+        logging.basicConfig( 
+            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            level=loglevel)
+    else:
+        applogger.info("Logging will now use output of {}".format(logfile))
+        logging.basicConfig( 
+            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+            level=loglevel,
+            filename=logfile)
+
+    applogger.info("using logging level of {}".format(logging.getLevelName(applogger.getEffectiveLevel())))
+
+    return applogger
+
+def process_arguments(args):
+
+    parser = argparse.ArgumentParser(prog="{}".format(args[0]),
+        description="Accepts a formatted JSON file and generates an HTML story"
+            " based on additional arguments.",
+            formatter_class=argparse.RawTextHelpFormatter)
+
+    parser.add_argument('-i', '--input', dest='input_string',
+        required=True, type=process_input_types,
+        help="The source of the input data. The following options are avalailable:\n"
+        "* archiveit=[collection identifier or collection URI]\n"
+        "* timemap=[comma-separated list of URIs of TimeMaps]",
+    )
+
+    parser.add_argument('-o', '--output', dest='output_file',
+        required=True, help="The file containing the selected mementos and metadata.")
+
+    parser.add_argument('-of', '--output-format', dest='output_format',
+        required=False, default="text",
+        help="The format of the output file. Options are:\n"
+        "* text - will produce a text file containing a URI-M, one per line\n"
+        "* json - will produce a JSON file containing collection metadata and story elements suitable for raintale"
+    )
+
+    parser.add_argument('-l', '--logfile', dest='log_file',
+        default=sys.stdout,
+        help="The file containing the logs from running this application.")
+
+    parser.add_argument('-v', '--verbose', dest='verbosity',
+        action='store_true',
+        help="This will raise the logging level to debug for more verbose output.")
+
+    parser.add_argument('-cf', '--cachefile', dest='cache_file',
+        default='/tmp/raintale_cache',
+        help="The cache file used by raintale for caching downloads."
+    )
+
+    parser.add_argument('--cache-dbhostname', dest='db_hostname',
+        required=False, default="localhost",
+        help="The hostname of the Redis database. If not specified, 'localhost' will be used."
+    )
+
+    parser.add_argument('--cache-dbport', dest='db_port',
+        required=False, default=6379,
+        help="The hostname of the Redis database. If not specified, '6379' will be used."
+    )
+
+    parser.add_argument('--cache-dbnumber', dest='db_number',
+        required=False, default=0,
+        help="The number of the Redis database. If not specified, 0 will be used."
+    )
+
+    parser.add_argument('-n', '--count', dest='memento_count',
+        default=28, type=int,
+        help='The number of memento URIs to return'
+    )
+
+    args = parser.parse_args(args=args[1:])
+
+    return args
+
+def main(args):
+    
+    appname = args[0]
+
+    args = process_arguments(args)
+
+    if args.verbosity:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
+    
+    applogger = create_logger(appname, loglevel, args.log_file)
+
+    applogger.info("Starting execution of {}".format(appname))
+
+    cs = requests_cache.CachedSession(cache_name=args.cache_file)
+    cs.headers.update({'User-Agent': __useragent__})
+
+    input_uris = []
+
+    input_type = args.input_string[0]
+    input_args = args.input_string[1]
+
+    if input_type == 'archiveit':
+        collection_id = input_args[0]
+        input_uris.append( "https://archive-it.org/collections/{}".format(collection_id) )
+    else:
+        input_uris = input_uris + input_args
+
+    urims_stocked, raw_urims_stocked, urits_stocked, archiveit_uris_stocked = stock_uris(input_uris, cs)
+
+    applogger.info("stocked {} mementos, {} raw mementos, {} TimeMaps, and {} Archive-It collections".format(
+        len(urims_stocked), len(raw_urims_stocked), len(urits_stocked), len(archiveit_uris_stocked)
+    ))
+
+    output_uris = []
+
+    urims_to_choose_from = deepcopy(urims_stocked)
+
+    for i in range(0, args.memento_count):
+        urim = random.choice(urims_to_choose_from)
+        urims_to_choose_from.remove(urim)
+        output_uris.append(urim)
+
+        if len(urims_to_choose_from) == 0:
+            break
+
+    if args.output_format == 'text':
+        with open(args.output_file, 'w') as f:
+
+            for urim in output_uris:
+                f.write('{}\n'.format(urim))
+    elif args.output_format == 'json':
+        raise NotImplementedError("JSON output is not yet available")
+
+    applogger.info("Finished {}, output is in {}".format(appname, args.output_file))
+
+if __name__ == '__main__':
+
+    main(sys.argv)
+    
