@@ -4,6 +4,7 @@ import argparse
 import logging
 
 from requests import Session
+from requests_cache import CachedSession
 
 from ..discover import list_seed_uris, generate_archiveit_urits
 from ..version import __useragent__
@@ -35,7 +36,7 @@ def calculate_loglevel(verbose=False, quiet=False):
 
     return logging.INFO
 
-def get_web_session():
+def get_web_session(cachefile=None):
     
     proxies = None
 
@@ -48,8 +49,14 @@ def get_web_session():
             'https': https_proxy
         }
 
-    session = Session()
+    if cachefile is not None:
+        # TODO: a cachefile with Redis credentials
+        session = CachedSession(cache_name=cachefile, extension='')
+    else:
+        session = Session()
+
     session.proxies = proxies
+    session.headers.update({'User-Agent': __useragent__})
 
     return session
 
@@ -93,6 +100,11 @@ def add_default_args(parser):
         action='store_true',
         help="This will lower the logging level to only show warnings or errors")
 
+    parser.add_argument('-cf', '--cachefile', dest='cachefile',
+        default='/tmp/hypercane-cache.sqlite',
+        help="A SQLite file for use as a cache."
+    )
+
     parser.add_argument('--version', action='version', 
         version="{}".format(__useragent__))
 
@@ -125,7 +137,7 @@ def discover_seeds(args):
         args.logfile
     )
 
-    session = get_web_session()
+    session = get_web_session(cachefile=args.cachefile)
 
     logger.info("Starting seed discovery run.")
 
@@ -170,7 +182,7 @@ def discover_timemaps(args):
         args.logfile
     )
 
-    session = get_web_session()
+    session = get_web_session(cachefile=args.cachefile)
 
     logger.info("Starting timemap discovery run.")
 
@@ -189,10 +201,52 @@ def discover_timemaps(args):
             output.write("{}\n".format(urit))
 
     logger.info("Done with timemap discovery run.")
+
+def process_discover_seed_mementos_args(args):
     
+    parser = argparse.ArgumentParser(
+        description="Discover the seed mementos in a web archive collection. Only Archive-It is supported at this time.",
+        prog="hc discover timemaps"
+        )
+
+    parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
+
+    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    return args    
 
 def discover_seed_mementos(args):
-    pass
+    
+    args = process_discover_seed_mementos_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session()
+
+    logger.info("Starting seed memento discovery run.")
+
+    collection_type = args.input_type[0]
+    collection_id = args.input_type[1]
+
+    logger.info("Collection type: {}".format(collection_type))
+    logger.info("Collection identifier: {}".format(collection_id))
+
+    seeds = list_seed_uris(collection_id, session)
+    urits = generate_archiveit_urits(collection_id, seeds)
+
+    with open(args.output_filename, 'w') as output:
+        for urit in urits:
+            output.write("{}\n".format(urit))
+
+    logger.info("Done with timemap discovery run.")    
 
 def discover_original_resources(args):
     pass
