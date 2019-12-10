@@ -100,7 +100,10 @@ def add_default_args(parser):
 
 def process_discover_seeds_args(args):
     
-    parser = argparse.ArgumentParser(description="Discover the seeds in a web archive collection. Only Archive-It is supported at this time.")
+    parser = argparse.ArgumentParser(
+        description="Discover the seeds in a web archive collection. Only Archive-It is supported at this time.",
+        prog="hc discover seeds"
+        )
 
     parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
 
