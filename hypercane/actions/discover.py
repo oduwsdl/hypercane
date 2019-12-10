@@ -6,7 +6,7 @@ import logging
 from requests import Session
 
 from ..discover import list_seed_uris, generate_archiveit_urits
-from ..version import __appversion__, __useragent__
+from ..version import __useragent__
 
 def get_logger(appname, loglevel, logfile):
 
@@ -94,7 +94,7 @@ def add_default_args(parser):
         help="This will lower the logging level to only show warnings or errors")
 
     parser.add_argument('--version', action='version', 
-        version=__appversion__)
+        version="{}".format(__useragent__))
 
     return parser
 
@@ -162,7 +162,7 @@ def process_discover_timemaps_args(args):
 
 def discover_timemaps(args):
 
-    args = process_discover_seeds_args(args)
+    args = process_discover_timemaps_args(args)
 
     logger = get_logger(
         __name__,
@@ -223,7 +223,7 @@ def print_usage():
 
 supported_commands = {
     "seeds": discover_seeds,
-    "timemap": discover_timemaps,
+    "timemaps": discover_timemaps,
     "seed-mementos": discover_seed_mementos,
     "original-resources": discover_original_resources,
     "metadata": discover_collection_metadata
