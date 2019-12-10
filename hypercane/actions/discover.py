@@ -4,8 +4,8 @@ import argparse
 import logging
 
 from requests import Session
-from aiu import ArchiveItCollection
 
+from ..discover import list_seed_uris
 from ..version import __appversion__, __useragent__
 
 def get_logger(appname, loglevel, logfile):
@@ -132,9 +132,7 @@ def discover_seeds(args):
     logger.info("Collection type: {}".format(collection_type))
     logger.info("Collection identifier: {}".format(collection_id))
 
-    aic = ArchiveItCollection(collection_id, session=session)
-
-    seeds = aic.list_seed_uris()
+    seeds = list_seed_uris(collection_id, session)
 
     with open(args.output_filename, 'w') as output:
         for seed in seeds:
