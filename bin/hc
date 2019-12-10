@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from hypercane.actions import discover, ingest, sample
+from hypercane.version import __useragent__
 
 supported_actions = {
     "discover": discover,
@@ -34,20 +35,41 @@ if __name__ == '__main__':
 
         action = sys.argv[1]
 
+        # print("action: {}".format(action))
+
         if action in supported_actions:
             
             commands = supported_actions[action].supported_commands
 
-            command = sys.argv[2]
+            if len(sys.argv) > 2:
 
-            if command in commands:
-                supported_actions[action].supported_commands[command](sys.argv[3:])
+                command = sys.argv[2]
+
+                # print("command: {}".format(command))
+
+                if command in commands:
+                    
+                    supported_actions[action].supported_commands[command](
+                        sys.argv[3:])
+                else:
+                    print("ERROR: command {} is not supported for action {}\n".format(
+                        command, action
+                    ))
+                    supported_actions[action].print_usage()
+
             else:
+                print("ERROR: action {} requires a command\n".format(action))
                 supported_actions[action].print_usage()
 
         else:
-            if action == "-h" or "--help":
+            if action == "-h" or action == "--help":
+                print_overall_usage()
+            elif action == "--version":
+                print(__useragent__)
+            else:
+                print("ERROR: unsupported action {}\n".format(action))
                 print_overall_usage()
     
     else:
+        print("ERROR: no action supplied\n")
         print_overall_usage()
