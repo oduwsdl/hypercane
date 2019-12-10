@@ -1,0 +1,55 @@
+#!python
+
+import argparse
+import sys
+
+from hypercane.actions import discover, ingest, sample
+
+supported_actions = {
+    "discover": discover,
+    "ingest": ingest,
+    "sample": sample
+}
+
+def print_overall_usage():
+
+    print("""hc (Hypercane) is a complex toolchain requiring a supported action and additional arguments
+
+For example:
+    hc discover seeds -i archiveit=8778 -o seed-output-file.txt
+
+    Supported actions:
+    * discover - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
+    * ingest - import a collection into Hypercane for further work
+    * sample - provide a representative sample from a collection
+
+    For each of these actions, you can view additional help by typing --help after the action name, for example:
+    hc discover --help
+""")
+
+
+if __name__ == '__main__':
+
+    print("args: {}".format(sys.argv))
+
+    if len(sys.argv) > 1:
+
+        action = sys.argv[1]
+
+        if action in supported_actions:
+            
+            commands = supported_actions[action].supported_commands
+
+            command = sys.argv[2]
+
+            if command in commands:
+                print("found command {}".format(command))
+                supported_actions[action].supported_commands[command](sys.argv[3:])
+            else:
+                supported_actions[action].print_usage()
+
+        else:
+            print("not so good")
+    
+    else:
+        print_overall_usage()

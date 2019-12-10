@@ -13,9 +13,13 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        'aiu',
         'requests',
         'requests_cache'
     ],
-    scripts=['bin/hypercane'],
+    scripts=[
+        'bin/hypercane',
+        'bin/hc'
+    ],
     test_suite="tests"
 )
