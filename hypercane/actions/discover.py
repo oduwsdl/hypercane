@@ -5,7 +5,7 @@ import logging
 
 from requests import Session
 
-from ..discover import list_seed_uris
+from ..discover import list_seed_uris, generate_archiveit_urits
 from ..version import __appversion__, __useragent__
 
 def get_logger(appname, loglevel, logfile):
@@ -143,16 +143,52 @@ def discover_seeds(args):
 
     logger.info("Done with seed discovery run.")
 
+def process_discover_timemaps_args(args):
+    
+    parser = argparse.ArgumentParser(
+        description="Discover the timemaps in a web archive collection. Only Archive-It is supported at this time.",
+        prog="hc discover timemaps"
+        )
+
+    parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
+
+    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    return args
+
 def discover_timemaps(args):
 
-    # parser = argparse.ArgumentParser(description="Discover the TimeMap URI-Ts in a web archive collection. Only Archive-It is supported at this time.")
+    args = process_discover_seeds_args(args)
 
-    # parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type')
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-    # parser.add_argument('-o', help="the file to which we write output", dest='output_filename')
+    session = get_web_session()
 
-    # parser = add_default_args(parser)
-    pass
+    logger.info("Starting timemap discovery run.")
+
+    collection_type = args.input_type[0]
+    collection_id = args.input_type[1]
+
+    logger.info("Collection type: {}".format(collection_type))
+    logger.info("Collection identifier: {}".format(collection_id))
+
+    seeds = list_seed_uris(collection_id, session)
+
+    urits = generate_archiveit_urits(collection_id, seeds)
+
+    with open(args.output_filename, 'w') as output:
+        for urit in urits:
+            output.write("{}\n".format(urit))
+
+    logger.info("Done with timemap discovery run.")
     
 
 def discover_seed_mementos(args):
