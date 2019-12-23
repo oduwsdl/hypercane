@@ -21,7 +21,7 @@ def fetch_first_urim_of_urits(uritlist, session):
     working_list = deepcopy(uritlist)
     first_urims = []
 
-    module_logger.info("starting download of {} URI-Ts".format(len(uritlist)))
+    module_logger.debug("starting download of {} URI-Ts".format(len(uritlist)))
     for urit in uritlist:
         futures[urit] = futuresesion.get(urit)
 
@@ -39,15 +39,21 @@ def fetch_first_urim_of_urits(uritlist, session):
             except RequestException:
                 pass
 
-            module_logger.info("HTTP status for {} is {}".format(workinguri, r.status_code))
+            module_logger.debug("HTTP status for {} is {}".format(workinguri, r.status_code))
 
             if r.status_code == 200:
-                timemap_content = convert_LinkTimeMap_to_dict(r.text)
-                first_urims.append(
-                    timemap_content["mementos"]["first"]["uri"]
-                )
+                if len(r.text) > 0:
+                    timemap_content = convert_LinkTimeMap_to_dict(r.text)
+                    try:
+                        first_urims.append(
+                            timemap_content["mementos"]["first"]["uri"]
+                        )
+                    except KeyError as e:
+                        module_logger.warning("encountered KeyError while working on URI {}, details: {} [SKIPPING URI]".format(workinguri, e))
+                else:
+                    module_logger.warning("received empty TimeMap for URI-T {} [SKIPPING URI]".format(workinguri))
 
-            module_logger.info("removing {} from download list".format(workinguri))
+            module_logger.debug("removing {} from download list".format(workinguri))
             working_list.remove(workinguri)
             del futures[workinguri]
 
@@ -78,12 +84,12 @@ def extract_redirect_endpoints(urimlist, session):
         except RequestException:
             pass
 
-        module_logger.info("HTTP status for {} is {}".format(workinguri, r.status_code))
+        module_logger.debug("HTTP status for {} is {}".format(workinguri, r.status_code))
 
         if r.status_code == 200:
             endpoint_urims.append(r.url)
 
-        module_logger.info("removing {} from download list".format(workinguri))
+        module_logger.debug("removing {} from download list".format(workinguri))
         working_list.remove(workinguri)
         del futures[workinguri]
 
