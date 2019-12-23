@@ -1,7 +1,8 @@
 import argparse
 import random
 
-from ..discover import list_seed_mementos
+from ..sample.true_random import select_true_random
+
 from . import get_logger, calculate_loglevel, get_web_session, add_default_args, process_collection_input_types
 
 def sample_with_true_random_args(args):
@@ -43,13 +44,17 @@ def sample_with_true_random(args):
 
     logger.info("Collection type: {}".format(collection_type))
     logger.info("Collection identifier: {}".format(collection_id))
+    logger.info("Number of mementos to return: {}".format(args.sample_count))
 
-    urims = list_seed_mementos(collection_id, session)
-    sampled_urims = random.choices(urims, k=args.sample_count)
+    logger.info("Executing select true random algorithm")
+    sampled_urims = select_true_random(collection_id, session, int(args.sample_count))
 
+    logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
     with open(args.output_filename, 'w') as output:
         for urim in sampled_urims:
             output.write("{}\n".format(urim))
+
+    logger.info("Done sampling.")
 
 supported_commands = {
     "true-random": sample_with_true_random
