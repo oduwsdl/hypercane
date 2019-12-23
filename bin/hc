@@ -52,9 +52,10 @@ if __name__ == '__main__':
                     supported_actions[action].supported_commands[command](
                         sys.argv[3:])
                 else:
-                    print("ERROR: command {} is not supported for action {}\n".format(
-                        command, action
-                    ))
+                    if command != '-h' and command != '--help':
+                        print("ERROR: command {} is not supported for action {}\n".format(
+                            command, action
+                        ))
                     supported_actions[action].print_usage()
 
             else:
