@@ -18,7 +18,6 @@ setup(
         'requests_cache'
     ],
     scripts=[
-        'bin/hypercane',
         'bin/hc'
     ],
     test_suite="tests"
