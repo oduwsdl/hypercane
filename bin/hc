@@ -21,7 +21,6 @@ For example:
 
     Supported actions:
     * discover - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
-    * ingest - import a collection into Hypercane for further work
     * sample - provide a representative sample from a collection
 
     For each of these actions, you can view additional help by typing --help after the action name, for example:

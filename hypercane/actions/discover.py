@@ -143,8 +143,51 @@ def discover_seed_mementos(args):
 
     logger.info("Done with seed memento discovery run.")
 
+def process_discover_original_resources_args(args):
+    
+    parser = argparse.ArgumentParser(
+        description="Discover the original resources in a web archive collection. Only Archive-It is supported at this time.",
+        prog="hc discover seeds"
+        )
+
+    parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
+
+    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    return args
+
 def discover_original_resources(args):
-    pass
+
+    args = process_discover_original_resources_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cachefile=args.cachefile)
+
+    logger.info("Starting original resources discovery run.")
+
+    collection_type = args.input_type[0]
+    collection_id = args.input_type[1]
+
+    logger.info("Collection type: {}".format(collection_type))
+    logger.info("Collection identifier: {}".format(collection_id))
+
+    seeds = list_seed_uris(collection_id, session)
+
+    with open(args.output_filename, 'w') as output:
+        for seed in seeds:
+            output.write("{}\n".format(seed))
+
+    logger.info("Done with seed discovery run.")   
+
 
 def process_discover_collection_metadata_args(args):
 
@@ -192,7 +235,7 @@ def discover_collection_metadata(args):
 
 def print_usage():
 
-    print("""hc discover is used discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
+    print("""'hc discover' is used discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
 
     Supported commands:
     * seeds - for discovering seeds in a web archive collection
