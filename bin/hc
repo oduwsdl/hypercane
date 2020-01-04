@@ -3,12 +3,11 @@
 import argparse
 import sys
 
-from hypercane.actions import discover, ingest, sample
+from hypercane.actions import identify, sample
 from hypercane.version import __useragent__
 
 supported_actions = {
-    "discover": discover,
-    "ingest": ingest,
+    "identify": identify,
     "sample": sample
 }
 
@@ -20,7 +19,7 @@ For example:
     hc discover seeds -i archiveit=8778 -o seed-output-file.txt
 
     Supported actions:
-    * discover - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
+    * identify - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
     * sample - provide a representative sample from a collection
 
     For each of these actions, you can view additional help by typing --help after the action name, for example:

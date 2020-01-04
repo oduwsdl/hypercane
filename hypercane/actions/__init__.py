@@ -85,7 +85,8 @@ def add_default_args(parser):
 def process_collection_input_types(input_argument):
 
     supported_input_types = [
-        "archiveit"
+        "archiveit",
+        "timemaps"
     ]
 
     if '=' not in input_argument:

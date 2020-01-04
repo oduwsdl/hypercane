@@ -15,7 +15,8 @@ setup(
     install_requires=[
         'aiu',
         'requests',
-        'requests_cache'
+        'requests_cache',
+        'scrapy'
     ],
     scripts=[
         'bin/hc'
