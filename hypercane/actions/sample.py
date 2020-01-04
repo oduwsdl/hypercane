@@ -36,7 +36,7 @@ def sample_with_true_random(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cachefile)
+    session = get_web_session(cachefile=args.cache_storage)
 
     logger.info("Starting random sampling of URI-Ms.")
 
@@ -87,7 +87,7 @@ def sample_fmfns(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cachefile)
+    session = get_web_session(cachefile=args.cache_storage)
 
     logger.info("Starting random sampling of URI-Ms.")
 

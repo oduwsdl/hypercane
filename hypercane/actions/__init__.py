@@ -72,7 +72,7 @@ def add_default_args(parser):
         action='store_true',
         help="This will lower the logging level to only show warnings or errors")
 
-    parser.add_argument('-cf', '--cachefile', dest='cachefile',
+    parser.add_argument('-cs', '--cache-storage', dest='cache_storage',
         default='/tmp/hypercane-cache.sqlite',
         help="A SQLite file for use as a cache."
     )
