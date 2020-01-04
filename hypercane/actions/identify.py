@@ -13,7 +13,7 @@ from . import get_logger, calculate_loglevel, get_web_session, add_default_args,
 
 def process_input_args(args, parser):
 
-    parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
+    parser.add_argument('-i', help="the input type and identifier, separated by equals (=) examples: -i archiveit=8788 or -i timemaps=timemap-file.txt,https://archive.example.com/timemap/http://example2.com; supported input types are archiveit, timemap, mementos, original-resources", dest='input_type', required=True, type=process_collection_input_types)
 
     parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
 
@@ -105,7 +105,7 @@ def discover_timemaps(args):
         for urit in urits:
             output.write("{}\n".format(urit))
 
-    logger.info("Done with timemap discovery run.")
+    logger.info("Done with timemap discovery run. Output is in {}".format(args.output_filename))
 
 def discover_original_resources(args):
 
@@ -171,7 +171,7 @@ def discover_original_resources(args):
         for urir in urirs:
             output.write("{}\n".format(urir))
 
-    logger.info("Done with original resource discovery run.")
+    logger.info("Done with original resource discovery run. Output is in {}".format(args.output_filename))
 
 def discover_mementos(args):
 
@@ -243,16 +243,61 @@ def discover_mementos(args):
         for urim in output_urims:
             output.write("{}\n".format(urim))
 
-    logger.info("Done with memento discovery run.")
+    logger.info("Done with memento discovery run. Output is in {}".format(args.output_filename))
+
+def discover_files(args):
+
+    parser = argparse.ArgumentParser(
+        description="Discover the files in a local directory and generate file:// URIs for further processing with other Hypercane actions.",
+        prog="hc identify files"
+        )
+
+    parser.add_argument('-i', help="a directory structure containing files to be processed", dest='input_dir', required=True)
+
+    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser.add_argument('--match', help="only find files containing the given string", dest="match", default=None)
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting directory search")
+
+    output_filenames = []
+
+    for directory, subdirectories, filenames in os.walk(args.input_dir):
+
+        for fname in filenames:
+            file_url = "file://{}/{}".format(directory, fname)
+            if args.match is None:
+                output_filenames.append(file_url)
+            else:
+                if args.match in file_url:
+                    output_filenames.append(file_url)
+
+    with open(args.output_filename, 'w') as output:
+        for filename in output_filenames:
+            output.write("{}\n".format(filename))
+
+    logger.info("Done with directory search")
+
 
 def print_usage():
 
     print("""'hc identify' is used discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
 
     Supported commands:
-    * timemaps - for discovering the TimeMap URI-Ts from a web archive collection
-    * mementos - for discovering the memento URI-Ms in a web archive collection
-    * original-resources - for discovering the original resource URI-Rs in a web archive collection, list of TimeMap URI-Ts, or a directory containing WARCs
+    * timemaps - for discovering the TimeMap URI-Ts
+    * mementos - for discovering the memento URI-Ms
+    * original-resources - for discovering the original resource URI-Rs
+    * files - for discovering files recursively in a directory and constructing file:// URIs for use with other Hypercane actions
 
     Examples:
     
@@ -267,6 +312,7 @@ def print_usage():
 supported_commands = {
     "timemaps": discover_timemaps,
     "mementos": discover_mementos,
-    "original-resources": discover_original_resources
+    "original-resources": discover_original_resources,
+    "files": discover_files
 }
 
