@@ -3,7 +3,7 @@ import scrapy
 
 from scrapy.crawler import CrawlerProcess
 
-module_logger = logging.getLogger('hypercane.discover.archivecrawl')
+module_logger = logging.getLogger('hypercane.identify.archivecrawl')
 
 def extract_href_string(href):
 

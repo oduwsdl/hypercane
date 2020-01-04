@@ -3,7 +3,7 @@ import os
 import argparse
 import json
 
-from ..discover import list_seed_uris, generate_archiveit_urits, download_urits_and_extract_urims, list_seed_mementos, generate_collection_metadata
+from ..identify import list_seed_uris, generate_archiveit_urits, download_urits_and_extract_urims, list_seed_mementos, generate_collection_metadata
 from ..version import __useragent__
 from . import get_logger, calculate_loglevel, get_web_session, add_default_args, process_collection_input_types
 
