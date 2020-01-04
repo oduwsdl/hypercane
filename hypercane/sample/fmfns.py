@@ -7,7 +7,7 @@ from aiu import convert_LinkTimeMap_to_dict
 from requests_futures.sessions import FuturesSession
 from requests.exceptions import RequestException
 
-from ..discover import list_seed_uris, generate_archiveit_urits
+from ..identify import list_seed_uris, generate_archiveit_urits
 
 module_logger = logging.getLogger('hypercane.sample.fmfns')
 

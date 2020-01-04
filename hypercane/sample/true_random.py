@@ -1,6 +1,6 @@
 import random
 
-from ..discover import list_seed_mementos
+from ..identify import list_seed_mementos
 
 def select_true_random(cid, session, sample_count):
 
