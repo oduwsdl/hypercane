@@ -31,7 +31,7 @@ def discover_collection_metadata(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cachefile)
+    session = get_web_session(cachefile=args.cache_storage)
 
     logger.info("Starting collection metadata discovery run.")
 
