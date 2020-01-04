@@ -16,11 +16,11 @@ def print_overall_usage():
     print("""hc (Hypercane) is a complex toolchain requiring a supported action and additional arguments
 
 For example:
-    hc discover seeds -i archiveit=8778 -o seed-output-file.txt
+    hc sample dsa1 -i archiveit=8778 -o story-mementos.txt
 
     Supported actions:
+    * sample - provide a representative sample from a collection using the given algorithm
     * identify - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
-    * sample - provide a representative sample from a collection
 
     For each of these actions, you can view additional help by typing --help after the action name, for example:
     hc discover --help
