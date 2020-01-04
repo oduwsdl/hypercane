@@ -245,50 +245,6 @@ def discover_mementos(args):
 
     logger.info("Done with memento discovery run.")
 
-# def process_discover_collection_metadata_args(args):
-
-#     parser = argparse.ArgumentParser(
-#         description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
-#         prog="hc identify timemaps"
-#         )
-
-#     parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
-
-#     parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
-
-#     parser = add_default_args(parser)
-
-#     args = parser.parse_args(args)
-
-#     return args  
-
-# def discover_collection_metadata(args):
-    
-#     args = process_discover_collection_metadata_args(args)
-
-#     logger = get_logger(
-#         __name__,
-#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-#         args.logfile
-#     )
-
-#     session = get_web_session(cachefile=args.cachefile)
-
-#     logger.info("Starting collection metadata discovery run.")
-
-#     collection_type = args.input_type[0]
-#     collection_id = args.input_type[1]
-
-#     logger.info("Collection type: {}".format(collection_type))
-#     logger.info("Collection identifier: {}".format(collection_id))
-
-#     metadata = generate_collection_metadata(collection_id, session)
-
-#     with open(args.output_filename, 'w') as metadata_file:
-#         json.dump(metadata, metadata_file, indent=4)
-
-#     logger.info("Done with collection metadata discovery run.")
-
 def print_usage():
 
     print("""'hc identify' is used discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs

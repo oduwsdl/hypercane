@@ -3,11 +3,12 @@
 import argparse
 import sys
 
-from hypercane.actions import identify, sample
+from hypercane.actions import identify, sample, report
 from hypercane.version import __useragent__
 
 supported_actions = {
     "identify": identify,
+    "report": report,
     "sample": sample
 }
 
@@ -20,10 +21,11 @@ For example:
 
     Supported actions:
     * sample - provide a representative sample from a collection using the given algorithm
+    * report - provide reports about collections
     * identify - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
 
     For each of these actions, you can view additional help by typing --help after the action name, for example:
-    hc discover --help
+    hc sample --help
 """)
 
 
@@ -33,7 +35,7 @@ if __name__ == '__main__':
 
         action = sys.argv[1]
 
-        # print("action: {}".format(action))
+        print("action: {}".format(action))
 
         if action in supported_actions:
             
@@ -43,7 +45,7 @@ if __name__ == '__main__':
 
                 command = sys.argv[2]
 
-                # print("command: {}".format(command))
+                print("command: {}".format(command))
 
                 if command in commands:
                     
