@@ -4,8 +4,10 @@ import argparse
 import json
 
 from urllib.parse import urlparse
+from scrapy.crawler import CrawlerProcess
 
 from ..identify import list_seed_uris, generate_archiveit_urits, download_urits_and_extract_urims, list_seed_mementos, generate_collection_metadata
+from ..identify.archivecrawl import StorageObject, WaybackSpider
 from ..version import __useragent__
 from . import get_logger, calculate_loglevel, get_web_session, add_default_args, process_collection_input_types
 
@@ -14,6 +16,8 @@ def process_input_args(args, parser):
     parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
 
     parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser.add_argument('--crawl-depth', '--depth', required=False, help="the number of levels to use in the crawl", dest='crawl_depth', default=1, type=int)
 
     parser = add_default_args(parser)
 
@@ -47,7 +51,7 @@ def extract_uris_from_input(input_string):
 def discover_timemaps(args):
 
     parser = argparse.ArgumentParser(
-        description="Discover the timemaps in a web archive collection. Only Archive-It is supported at this time.",
+        description="Discover the timemaps in a web archive collection.",
         prog="hc identify timemaps"
         )
     
@@ -76,6 +80,25 @@ def discover_timemaps(args):
         urits = extract_uris_from_input(args.input_type[1])
     elif collection_type == "mementos":
         urims = extract_uris_from_input(args.input_type[1])
+        process = CrawlerProcess()
+        
+        logger.info("custom_settings: {}".format(WaybackSpider.custom_settings))
+
+        WaybackSpider.custom_settings = {
+            'DEPTH_LIMIT': int(args.crawl_depth)
+        }
+        link_storage = StorageObject()
+        # TODO: replace the allowed_domains with those web archive domains derived from the urims list
+        logger.info("Starting crawl of Mementos")
+        process.crawl(
+            WaybackSpider, start_urls=urims, link_storage=link_storage, allowed_domains=['wayback.archive-it.org']
+            )
+        process.start()
+        logger.info("Crawl complete")
+
+        for item in link_storage.storage:
+            urits.append(item[0])
+        
     elif collection_type == "original-resources":
         raise NotImplementedError("Extracting TimeMaps from Original Resources is not implemented at this time")
     elif collection_type == "warcs":
@@ -243,10 +266,8 @@ def print_usage():
 """)
 
 supported_commands = {
-    "seeds": discover_seeds,
     "timemaps": discover_timemaps,
-    "seed-mementos": discover_seed_mementos,
-    "original-resources": discover_original_resources,
-    "metadata": discover_collection_metadata
+    "mementos": discover_seed_mementos,
+    "original-resources": discover_original_resources
 }
 

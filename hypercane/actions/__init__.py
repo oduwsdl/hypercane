@@ -86,7 +86,10 @@ def process_collection_input_types(input_argument):
 
     supported_input_types = [
         "archiveit",
-        "timemaps"
+        "timemaps",
+        "mementos",
+        "original-resources",
+        "warcs"
     ]
 
     if '=' not in input_argument:

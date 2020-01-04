@@ -2,18 +2,9 @@ import logging
 import scrapy
 
 from scrapy.crawler import CrawlerProcess
-
-module_logger = logging.getLogger('hypercane.identify.archivecrawl')
-
-import scrapy
-import sys
-from scrapy.crawler import CrawlerProcess
-from urllib.parse import urljoin
-import logging
-
 from requests.utils import parse_header_links
 
-module_logger = logging.getLogger()
+module_logger = logging.getLogger('hypercane.identify.archivecrawl')
 
 class WaybackSpiderInitializationException(Exception):
     pass
@@ -62,7 +53,11 @@ def return_urit_and_urir(link_headers):
     return (urit, urir)
 
 class WaybackSpider(scrapy.Spider):
-  
+
+    custom_settings = {
+        'DEPTH_LIMIT': 1 # 0 means no depth limit
+    }
+
     def __init__(self, *args, **kwargs):
 
         try:
@@ -85,12 +80,11 @@ class WaybackSpider(scrapy.Spider):
 
         except KeyError:
 
-            print("Failed to get Link header from {}".format(response.url))
-
+            module_logger.warning("Failed to get Link header from {}".format(response.url))
 
         if retrieved_link_headers is True:
             # Mementos should have Link headers and we only crawl Mementos
-
+            module_logger.info("extracting URI-R and URI-T from {}".format(response.url))
             urit, urir = return_urit_and_urir(link_headers.decode())
 
             self.link_storage.add( (urit, urir) )
@@ -103,32 +97,3 @@ class WaybackSpider(scrapy.Spider):
                 if href is not None:
                     if href != "":
                         yield response.follow(href, self.parse)
-
-process = CrawlerProcess()
-
-starting_url = sys.argv[1]
-depth_limit = sys.argv[2]
-
-WaybackSpider.custom_settings = {
-    'DEPTH_LIMIT': int(depth_limit)
-}
-
-link_storage = StorageObject()
-
-print("starting crawl with {}".format(starting_url))
-
-print("link storage has {} items to start".format(len(link_storage.storage)))
-
-#process.crawl(ShawnSpider, start_urls=[starting_url], link_storage=link_storage)
-process.crawl(WaybackSpider, start_urls=[starting_url], link_storage=link_storage, allowed_domains=['wayback.archive-it.org'])
-
-process.start()
-
-print("link storage has {} items now".format(len(link_storage.storage)))
-
-with open("output.txt", 'w') as f:
-
-    for entry in link_storage.storage:
-        f.write("{}\n".format(entry))
-
-print("done crawling")
