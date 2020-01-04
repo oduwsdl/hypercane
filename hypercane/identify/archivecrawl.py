@@ -1,6 +1,7 @@
 import logging
 import scrapy
 
+from urllib.parse import urlparse
 from scrapy.crawler import CrawlerProcess
 from requests.utils import parse_header_links
 
@@ -10,6 +11,7 @@ class WaybackSpiderInitializationException(Exception):
     pass
 
 class StorageObject:
+    # TODO: make this work with an on-disk database
 
     def __init__(self):
 
@@ -97,3 +99,32 @@ class WaybackSpider(scrapy.Spider):
                 if href is not None:
                     if href != "":
                         yield response.follow(href, self.parse)
+
+def crawl_mementos(link_storage, urims, crawl_depth):
+    process = CrawlerProcess()
+        
+    module_logger.info("custom_settings: {}".format(WaybackSpider.custom_settings))
+
+    WaybackSpider.custom_settings = {
+        'DEPTH_LIMIT': int(crawl_depth)
+    }
+
+    allowed_domains = []
+
+    for uri in urims:
+        o = urlparse(uri)
+        
+        if ':' in o.netloc:
+            host, port = o.netloc.split(':')
+        else:
+            host = o.netloc
+
+        if o.netloc not in allowed_domains:
+            allowed_domains.append(o.netloc)
+
+    module_logger.info("Starting crawl of Mementos")
+    process.crawl(
+        WaybackSpider, start_urls=urims, link_storage=link_storage, allowed_domains=allowed_domains
+        )
+    process.start()
+    module_logger.info("Crawl complete")
