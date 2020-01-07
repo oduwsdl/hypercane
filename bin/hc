@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
         action = sys.argv[1]
 
-        print("action: {}".format(action))
+        # print("action: {}".format(action))
 
         if action in supported_actions:
             
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
                 command = sys.argv[2]
 
-                print("command: {}".format(command))
+                # print("command: {}".format(command))
 
                 if command in commands:
                     
