@@ -63,7 +63,7 @@ def discover_timemaps(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting timemap discovery run.")
 
@@ -122,7 +122,7 @@ def discover_original_resources(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting original resource discovery run.")
 
@@ -188,7 +188,7 @@ def discover_mementos(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting memento discovery run.")
 
