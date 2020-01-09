@@ -96,6 +96,16 @@ def add_default_args(parser):
 
     return parser
 
+def add_input_args(parser):
+
+    parser.add_argument('-i', help="the input type and identifier, separated by equals (=) examples: -i archiveit=8788 or -i timemaps=timemap-file.txt,https://archive.example.com/timemap/http://example2.com; supported input types are archiveit, timemap, mementos, original-resources", dest='input_type', required=True, type=process_collection_input_types)
+
+    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
+
+    parser.add_argument('--crawl-depth', '--depth', required=False, help="the number of levels to use in the crawl", dest='crawl_depth', default=1, type=int)
+
+    return parser
+
 def process_collection_input_types(input_argument):
 
     supported_input_types = [
