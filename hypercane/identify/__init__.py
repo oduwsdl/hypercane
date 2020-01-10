@@ -119,7 +119,7 @@ def generate_collection_metadata(collection_id, session):
 
 def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session):
 
-    module_logger.info("Input type: {}".format(input_type))
+    module_logger.info("discovering timemaps for input type: {}".format(input_type))
     urits = []
 
     if input_type == "archiveit":
@@ -163,7 +163,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
     
     output_urims = []
 
-    module_logger.info("discovering mementos for type {}".format(input_type))
+    module_logger.info("discovering mementos for input type {}".format(input_type))
 
     if input_type == "archiveit":
 
