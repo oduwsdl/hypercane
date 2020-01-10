@@ -1,10 +1,16 @@
 import logging
 import otmt
 import lxml.etree
+import random
+import copy
 
 from justext import justext, get_stoplist
 from aiu import convert_LinkTimeMap_to_dict
 from requests.exceptions import ConnectionError, TooManyRedirects
+from requests.exceptions import RequestException
+from requests_futures.sessions import FuturesSession
+from simhash import Simhash
+from datetime import datetime
 
 module_logger = logging.getLogger('hypercane.reduce.remove_offtopic')
 
@@ -19,6 +25,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         db = self.dbconn.get_default_database()
         self.error_collection = db.mementoerrors
         self.bpfree_collection = db.bpfree
+        self.derived_collection = db.derivedvalues
 
         self.urimlist = []
         self.uritlist = []
@@ -43,14 +50,52 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         return convert_LinkTimeMap_to_dict(self.session.get(urit).text)
 
     def addMemento(self, urim):
-        """Adds Memento `content` specified by `urim` to the object, along 
-        with its headers.
-        """
         try:
             self.session.get(urim)
+            raw_urim = otmt.generate_raw_urim(urim)
+            self.session.get(raw_urim)
             self.urimlist.append(urim)
         except (ConnectionError, TooManyRedirects) as e:
             self.addMementoError(urim, bytes(repr(e), "utf8"))
+
+    def addManyMementos(self, urims):
+
+        futuressession = FuturesSession(session=self.session)
+        futures = {}
+
+        working_urim_list = []
+
+        for uri in urims:
+
+            raw_urim = otmt.generate_raw_urim(uri)
+            working_urim_list.append(uri)
+            futures[uri] = futuressession.get(uri)
+            futures[raw_urim] = futuressession.get(raw_urim)
+
+        def uri_generator(urilist):
+
+            while len(urilist) > 0:
+
+                uchoice = random.choice(urilist)
+
+                yield uchoice
+
+        for uri in uri_generator(working_urim_list):
+
+            if futures[uri].done():
+
+                try:
+                    r = futures[uri].result()
+                    if 'memento-datetime' not in r.headers:
+                        self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
+    
+                except RequestException as e:
+                    self.addMementoError(uri, bytes(repr(e), "utf-8"))
+                    continue
+
+                working_urim_list.remove(uri)
+                del futures[uri]
+
 
     def addMementoError(self, urim, errorinformation):
         """Associates `errorinformation` with memento specified by `urim` to
@@ -75,7 +120,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         If data was stored via `addMementoError` for `urim`, then
         `CollectionModelMementoErrorException` is thrown.
         """
-        return self.session.get(urim).text
+        raw_urim = otmt.generate_raw_urim(urim)
+        return self.session.get(raw_urim).text
 
     def getMementoErrorInformation(self, urim):
         """Returns the error information associated with `urim`, provided that
@@ -142,6 +188,66 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
         except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
             raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
+
+    def getRawSimhash(self, urim):
+
+        if self.getMementoErrorInformation(urim) is not None:
+            raise otmt.CollectionModelMementoErrorException(
+                "Errors were recorded for URI-M {}".format(urim))
+
+        derived_record = self.derived_collection.find_one(
+            { "urim": urim }
+        )
+
+        if derived_record is not None:
+            try:
+                raw_simhash = derived_record["raw simhash"]
+                return raw_simhash
+            except KeyError:
+                content = self.getMementoContent(urim)
+                raw_simhash = Simhash(content).value
+
+                self.derived_collection.update(
+                    { "urim": urim },
+                    { "$set": { "raw simhash": str(raw_simhash) } }
+                )
+                return str(raw_simhash)
+
+        else:
+            content = self.getMementoContent(urim)
+            raw_simhash = Simhash(content).value
+
+            self.derived_collection.insert_one(
+                { "urim": urim, "raw simhash": str(raw_simhash) }
+            )
+
+        return str(raw_simhash)
+
+    def getFirstURIMByRawSimhash(self, raw_simhash):
+        """This function expects getRawSimhash to have been called first."""
+
+        matching_cursor = self.derived_collection.find(
+            { "raw simhash": raw_simhash },
+            { "urim": 1 }
+        )
+
+        matching_cursor.rewind()
+
+        matching_urims = []
+
+        for record in matching_cursor:
+
+            urim = record['urim']
+
+            mdt = datetime.strptime(
+                self.getMementoHeaders(urim)['memento-datetime'],
+                "%a, %d %b %Y %H:%M:%S GMT"
+            )
+
+            matching_urims.append( ( mdt, record["urim"] ) )
+
+        return sorted(matching_urims, reverse=True)[0]
+
 
     def getMementoHeaders(self, urim):
         """Returns the headers associated with memento at `urim`.

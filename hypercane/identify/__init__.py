@@ -23,13 +23,13 @@ def extract_uris_from_input(input_string):
             uri_output_list.append(uri)
         elif o.scheme == 'file':
             with open(o.path) as f:
-                for line in f.read():
+                for line in f:
                     line = line.strip()
                     uri_output_list.append(line)
         else:
             # assume it is a filename
             with open(uri) as f:
-                for line in f.read():
+                for line in f:
                     line = line.strip()
                     uri_output_list.append(line)
 
@@ -163,7 +163,10 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
     
     output_urims = []
 
+    module_logger.info("discovering mementos for type {}".format(input_type))
+
     if input_type == "archiveit":
+
         collection_id = input_args
         seeds = list_seed_uris(collection_id, session)
         urits = generate_archiveit_urits(collection_id, seeds)
