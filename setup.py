@@ -18,7 +18,8 @@ setup(
         'pymongo',
         'requests',
         'requests_cache',
-        'scrapy'
+        'scrapy',
+        'simhash'
     ],
     scripts=[
         'bin/hc'

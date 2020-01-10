@@ -70,8 +70,6 @@ def remove_offtopic(args):
 
     args = process_remove_offtopic_args(args, parser)
 
-    print("args are {}".format(args))
-
     logger = get_logger(
         __name__,
         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
@@ -150,15 +148,58 @@ def remove_near_duplicates(args):
 
     parser = argparse.ArgumentParser(
         description="Remove the near-duplicate documents from a collection.",
-        prog="hc reduce by-language"
+        prog="hc reduce remove-near-duplicates"
     )
 
     args = process_input_args(args, parser)
 
-    # discover_mementos_by_input_type
-    # TODO: do we want to support crawling?
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-    raise NotImplementedError("Removing Near Duplicates not yet implemented")
+    logger.info("Starting detection of near-duplicate documents...")
+
+    input_type = args.input_type[0]
+    input_args = args.input_type[1]
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    dbconn = MongoClient(args.cache_storage)
+
+    # TODO: do we really want to support crawling?
+    urims = discover_mementos_by_input_type(
+        input_type, input_args, args.crawl_depth, session
+    )
+
+    logger.info("discovered {} mementos in input, downloading...".format(len(urims)))
+
+    cm = HypercaneMementoCollectionModel(dbconn, session)
+    cm.addManyMementos(urims)
+
+    # for urim in urims:
+    #     logger.info("adding memento {}".format(urim))
+    #     cm.addMemento(urim)
+
+    logger.info("computing Simhashes on Mementos...")
+    simhashes = []
+    for urim in urims:
+        simhash = cm.getRawSimhash(urim)
+        simhashes.append(simhash)
+
+    logger.info("using {} Simahshes to remove duplicates from output...".format(len(simhashes)))
+    output_urims = []
+    for simhash in simhashes:
+        firsturim = cm.getFirstURIMByRawSimhash(simhash)
+        output_urims.append( firsturim )
+
+    with open(args.output_filename, 'w') as f:
+
+        for urim in output_urims:
+            f.write('{}\n'.format(urim))
+
+    logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
 
 def print_usage():
 
