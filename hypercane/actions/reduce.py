@@ -164,11 +164,12 @@ def remove_near_duplicates(args):
     input_type = args.input_type[0]
     input_args = args.input_type[1]
 
+    logger.info("input type: {}".format(input_type))
+
     session = get_web_session(cache_storage=args.cache_storage)
 
     dbconn = MongoClient(args.cache_storage)
 
-    # TODO: do we really want to support crawling?
     urims = discover_mementos_by_input_type(
         input_type, input_args, args.crawl_depth, session
     )
@@ -177,10 +178,6 @@ def remove_near_duplicates(args):
 
     cm = HypercaneMementoCollectionModel(dbconn, session)
     cm.addManyMementos(urims)
-
-    # for urim in urims:
-    #     logger.info("adding memento {}".format(urim))
-    #     cm.addMemento(urim)
 
     logger.info("computing Simhashes on Mementos...")
     simhashes = []
