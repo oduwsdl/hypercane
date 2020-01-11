@@ -4,15 +4,19 @@ import argparse
 import json
 import otmt
 import concurrent.futures
+import langdetect
+import errno
 
 from pymongo import MongoClient
+from guess_language import guess_language
+from justext import justext, get_stoplist
 
 from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel, get_web_session
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims
 from ..reduce.remove_offtopic import detect_off_topic, \
-    HypercaneMementoCollectionModel
+    HypercaneMementoCollectionModel, get_boilerplate_free_content
 
 def process_input_args(args, parser):
 
@@ -130,6 +134,35 @@ def remove_offtopic(args):
 
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 
+
+
+def get_language(urim, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    # session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    # 1 if lang of urim in cache, return it
+    try:
+        return db.derivedvalues.find_one(
+            { "urim": urim }
+        )["language"]
+    except (KeyError, TypeError):
+        
+        content = get_boilerplate_free_content(
+            urim, cache_storage=cache_storage, dbconn=dbconn
+        )
+
+        language = guess_language(content)
+
+        db.derivedvalues.update(
+            { "urim": urim },
+            { "$set": { "language": language }},
+            upsert=True
+        )
+    
+        return language
+
 def by_language(args):
 
     parser = argparse.ArgumentParser(
@@ -137,12 +170,54 @@ def by_language(args):
         prog="hc reduce by-language"
     )
 
+    parser.add_argument('--lang', '--languages', dest='languages',
+        help="The list of languages to keep in the output, separated by commas.",
+        required=True
+    )
+
     args = process_input_args(args, parser)
 
-    # discover_mementos_by_input_type
-    # TODO: do we want to support crawling?
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-    raise NotImplementedError("Reducing by language not yet implemented")
+    logger.info("Starting detection of languages...")
+
+    input_type = args.input_type[0]
+    input_args = args.input_type[1]
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urims = discover_mementos_by_input_type(
+        input_type, input_args, args.crawl_depth, session
+    )
+
+    logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
+
+    desired_languages = [ i.strip() for i in args.languages.split(',')]
+    logger.info("comparing languages of documents with requested languages of {}...".format(desired_languages))
+
+    with open(args.output_filename, 'w') as f:
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_urim = { executor.submit(get_language, urim, args.cache_storage): urim for urim in urims }
+
+            for future in concurrent.futures.as_completed(future_to_urim):
+                urim = future_to_urim[future]
+
+                try:
+                    language = future.result()
+                    if language in desired_languages:
+                        f.write("{}\n".format(urim))
+                except Exception as exc:
+                    logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
+                    logger.critical("failed to detect language for [{}] quitting...".format(urim))
+                    sys.exit(errno.EWOULDBLOCK)
+
+    logger.info("done with language detection run, mementos in the languages of {} are in {}".format(desired_languages, args.output_filename))
+
 
 def remove_near_duplicates(args):
 
@@ -164,8 +239,6 @@ def remove_near_duplicates(args):
     input_type = args.input_type[0]
     input_args = args.input_type[1]
 
-    logger.info("input type: {}".format(input_type))
-
     session = get_web_session(cache_storage=args.cache_storage)
 
     dbconn = MongoClient(args.cache_storage)
@@ -174,12 +247,12 @@ def remove_near_duplicates(args):
         input_type, input_args, args.crawl_depth, session
     )
 
-    logger.info("discovered {} mementos in input, downloading...".format(len(urims)))
+    logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
     cm = HypercaneMementoCollectionModel(dbconn, session)
     cm.addManyMementos(urims)
 
-    logger.info("computing Simhashes on Mementos...")
+    logger.info("computing Simhashes on documents...")
     simhashes = []
     for urim in urims:
         simhash = cm.getRawSimhash(urim)

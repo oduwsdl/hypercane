@@ -11,8 +11,52 @@ from requests.exceptions import RequestException
 from requests_futures.sessions import FuturesSession
 from simhash import Simhash
 from datetime import datetime
+from langdetect import detect
+from pymongo import MongoClient
+
+from ..actions import get_web_session
 
 module_logger = logging.getLogger('hypercane.reduce.remove_offtopic')
+
+def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
+
+    if dbconn is None:
+        dbconn = MongoClient(cache_storage)
+    
+    if session is None:
+        session = get_web_session(cache_storage)
+
+    db = dbconn.get_default_database()
+
+    # 1. if boilerplate free content in cache, return it
+    try:
+        return db.derivedvalues.find_one(
+            { "urim": urim }
+        )["boilerplate free content"]
+    except (KeyError, TypeError):
+        raw_urim = otmt.generate_raw_urim(urim)
+        r = session.get(raw_urim)
+
+        try:
+            paragraphs = justext(
+                r.text, get_stoplist('English')
+            )
+
+            bpfree = ""
+
+            for paragraph in paragraphs:
+                bpfree += "{}\n".format(paragraph.text)
+
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "boilerplate free content": bpfree } },
+                upsert=True
+            )
+
+            return bpfree
+
+        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
+            raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
     
@@ -56,9 +100,16 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             self.session.get(raw_urim)
             self.urimlist.append(urim)
         except (ConnectionError, TooManyRedirects) as e:
-            self.addMementoError(urim, bytes(repr(e), "utf8"))
+            self.addMementoError(urim, repr(e))
 
     def addManyMementos(self, urims):
+
+        module_logger.info("started with {} URI-Ms for processing...".format(len(urims)))
+
+        # protect the function from duplicates in the urims list
+        urims = list(set(urims))
+
+        module_logger.info("found duplicates, now using {} URI-Ms for processing...".format(len(urims)))
 
         futuressession = FuturesSession(session=self.session)
         futures = {}
@@ -84,14 +135,22 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
             if futures[uri].done():
 
+                module_logger.debug("uri {} is done, processing...".format(uri))
+
+                if len(working_urim_list) % 100 == 0:
+                    module_logger.info("{} mementos left to process".format(len(working_urim_list)))
+
                 try:
                     r = futures[uri].result()
                     if 'memento-datetime' not in r.headers:
                         self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
+                    else:
+                        # the content should be cached by the session
+                        # we just need to keep track of the URI-Ms for this run
+                        self.urimlist.append(uri)
     
                 except RequestException as e:
-                    self.addMementoError(uri, bytes(repr(e), "utf-8"))
-                    continue
+                    self.addMementoError(uri, repr(e))
 
                 working_urim_list.remove(uri)
                 del futures[uri]
@@ -158,36 +217,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             raise otmt.CollectionModelMementoErrorException(
                 "Errors were recorded for URI-M {}".format(urim))
 
-        bprecord = self.bpfree_collection.find_one(
-            { "urim": urim }
-        )
-
-        if bprecord is not None:
-            return bprecord["boilerplate free content"]
-
-        # else...
-        try:
-            paragraphs = justext(
-                self.getMementoContent(urim), get_stoplist('English'))
-
-            content_without_boilerplate = ""
-                
-            for paragraph in paragraphs:
-                content_without_boilerplate += \
-                    "{}\n".format(paragraph.text)
-
-            self.bpfree_collection.insert_one(
-                {
-                    "urim": urim,
-                    "boilerplate free content": content_without_boilerplate,
-                    "algorithm": "justext"
-                }
-            )
-
-            return content_without_boilerplate
-
-        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
-            raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
+        return get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
 
     def getRawSimhash(self, urim):
 
@@ -246,7 +276,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
             matching_urims.append( ( mdt, record["urim"] ) )
 
-        return sorted(matching_urims, reverse=True)[0]
+        return sorted(matching_urims, reverse=True)[0][1]
 
 
     def getMementoHeaders(self, urim):
@@ -256,11 +286,11 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
     def getMementoURIList(self):
         """Returns a list of all URI-Ms stored in this object."""
-        return self.urimlist
+        return copy.deepcopy(self.urimlist)
 
     def getTimeMapURIList(self):
         """Returns a list of all URI-Ts stored in this object."""
-        return self.uritlist
+        return copy.deepcopy(self.uritlist)
 
 def get_list_of_ontopic(measuremodel):
 
