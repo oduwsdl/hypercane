@@ -1,14 +1,7 @@
 import logging
 import sys
-import os
 import argparse
 import pickle
-
-from pymongo import MongoClient
-from requests_cache import CachedSession
-from requests_cache.backends import MongoCache
-from requests import Session
-from urllib.parse import urlparse
 
 from ..version import __useragent__
 
@@ -38,39 +31,6 @@ def calculate_loglevel(verbose=False, quiet=False):
         return logging.WARNING
 
     return logging.INFO
-
-def get_web_session(cache_storage=None):
-    
-    proxies = None
-
-    http_proxy = os.getenv('HTTP_PROXY')
-    https_proxy = os.getenv('HTTPS_PROXY')
-
-    if http_proxy is not None and https_proxy is not None:
-        proxies = {
-            'http': http_proxy,
-            'https': https_proxy
-        }
-
-    if cache_storage is not None:
-        
-        o = urlparse(cache_storage)
-        if o.scheme == "mongodb":
-            # these requests-cache internals gymnastics are necessary 
-            # because it will not create a database with the desired name otherwise
-            dbname = o.path.replace('/', '')
-            dbconn = MongoClient(cache_storage)
-            session = CachedSession(backend='mongodb')
-            session.cache = MongoCache(connection=dbconn, db_name=dbname)
-        else:
-            session = CachedSession(cache_name=cache_storage, extension='')
-    else:
-        session = Session()
-
-    session.proxies = proxies
-    session.headers.update({'User-Agent': __useragent__})
-
-    return session
 
 def add_default_args(parser):
 
