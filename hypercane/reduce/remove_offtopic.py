@@ -4,59 +4,14 @@ import lxml.etree
 import random
 import copy
 
-from justext import justext, get_stoplist
 from aiu import convert_LinkTimeMap_to_dict
 from requests.exceptions import ConnectionError, TooManyRedirects
 from requests.exceptions import RequestException
 from requests_futures.sessions import FuturesSession
-from simhash import Simhash
-from datetime import datetime
-from langdetect import detect
-from pymongo import MongoClient
 
-from ..actions import get_web_session
+from ..utils import get_web_session, get_boilerplate_free_content
 
 module_logger = logging.getLogger('hypercane.reduce.remove_offtopic')
-
-def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
-
-    if dbconn is None:
-        dbconn = MongoClient(cache_storage)
-    
-    if session is None:
-        session = get_web_session(cache_storage)
-
-    db = dbconn.get_default_database()
-
-    # 1. if boilerplate free content in cache, return it
-    try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["boilerplate free content"]
-    except (KeyError, TypeError):
-        raw_urim = otmt.generate_raw_urim(urim)
-        r = session.get(raw_urim)
-
-        try:
-            paragraphs = justext(
-                r.text, get_stoplist('English')
-            )
-
-            bpfree = ""
-
-            for paragraph in paragraphs:
-                bpfree += "{}\n".format(paragraph.text)
-
-            db.derivedvalues.update(
-                { "urim": urim },
-                { "$set": { "boilerplate free content": bpfree } },
-                upsert=True
-            )
-
-            return bpfree
-
-        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
-            raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
     
@@ -217,7 +172,10 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             raise otmt.CollectionModelMementoErrorException(
                 "Errors were recorded for URI-M {}".format(urim))
 
-        return get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
+        try:
+            bpfree = get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
+        except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
+            raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
 
     def getMementoHeaders(self, urim):
         """Returns the headers associated with memento at `urim`.

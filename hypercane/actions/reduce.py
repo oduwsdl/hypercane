@@ -9,16 +9,17 @@ import errno
 
 from datetime import datetime
 from pymongo import MongoClient
-from guess_language import guess_language
 from justext import justext, get_stoplist
 from simhash import Simhash
 
 from ..actions import add_input_args, add_default_args, \
-    get_logger, calculate_loglevel, get_web_session
+    get_logger, calculate_loglevel
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims
 from ..reduce.remove_offtopic import detect_off_topic, \
     HypercaneMementoCollectionModel, get_boilerplate_free_content
+from ..utils import get_memento_datetime_and_timemap, \
+    get_web_session, get_language, get_raw_simhash
 
 def process_input_args(args, parser):
 
@@ -95,12 +96,6 @@ def remove_offtopic(args):
     urims = download_urits_and_extract_urims(urits, session)
     cm = HypercaneMementoCollectionModel(dbconn, session)
 
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-    #     future_to_url = {executor.submit(load_urim, urim, 60): urim for urim in urims}
-
-    #     for future in concurrent.futures.as_completed(future_to_url):
-    #         urim = future_to_url[future]
-
     logger.info("adding {} URI-Ts to collection model".format(
         len( urits )
     ))
@@ -135,33 +130,6 @@ def remove_offtopic(args):
             f.write("{}\n".format(urim))
 
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
-
-def get_language(urim, cache_storage):
-
-    dbconn = MongoClient(cache_storage)
-    # session = get_web_session(cache_storage)
-    db = dbconn.get_default_database()
-
-    # 1 if lang of urim in cache, return it
-    try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["language"]
-    except (KeyError, TypeError):
-        
-        content = get_boilerplate_free_content(
-            urim, cache_storage=cache_storage, dbconn=dbconn
-        )
-
-        language = guess_language(content)
-
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "language": language }},
-            upsert=True
-        )
-    
-        return language
 
 def by_language(args):
 
@@ -217,60 +185,6 @@ def by_language(args):
                     sys.exit(errno.EWOULDBLOCK)
 
     logger.info("done with language detection run, mementos in the languages of {} are in {}".format(desired_languages, args.output_filename))
-
-def get_raw_simhash(urim, cache_storage):
-
-    dbconn = MongoClient(cache_storage)
-    session = get_web_session(cache_storage)
-    db = dbconn.get_default_database()
-
-    # 1 if lang of urim in cache, return it
-    try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["raw simhash"]
-    except (KeyError, TypeError):
-        raw_urim = otmt.generate_raw_urim(urim)
-        r = session.get(raw_urim)
-
-        simhash = Simhash(r.text).value
-
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "raw simhash": str(simhash) }},
-            upsert=True
-        )
-    
-        return str(simhash)
-
-def get_memento_datetime_and_timemap(urim, cache_storage):
-
-    dbconn = MongoClient(cache_storage)
-    session = get_web_session(cache_storage)
-    db = dbconn.get_default_database()
-
-    # 1 if lang of urim in cache, return it
-    try:
-        return (
-            db.derivedvalues.find_one(
-                { "urim": urim }
-                )["memento-datetime"],
-            db.derivedvalues.find_one(
-                { "urim": urim }
-                )["timemap"]
-            )
-    except (KeyError, TypeError):
-        r = session.get(urim)
-        mdt = r.headers['memento-datetime']
-        urit = r.links["timemap"]["url"]
-
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "memento-datetime": str(mdt), "timemap": str(urit) }},
-            upsert=True
-        )
-    
-        return str(mdt), urit
 
 def remove_near_duplicates(args):
 
