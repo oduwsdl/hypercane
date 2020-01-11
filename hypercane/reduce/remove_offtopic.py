@@ -4,6 +4,7 @@ import lxml.etree
 import random
 import copy
 
+from justext import justext, get_stoplist
 from aiu import convert_LinkTimeMap_to_dict
 from requests.exceptions import ConnectionError, TooManyRedirects
 from requests.exceptions import RequestException
@@ -23,7 +24,6 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
         db = self.dbconn.get_default_database()
         self.error_collection = db.mementoerrors
-        self.bpfree_collection = db.bpfree
         self.derived_collection = db.derivedvalues
 
         self.urimlist = []
@@ -174,6 +174,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
         try:
             bpfree = get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
+            return bpfree
         except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
             raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
 
@@ -201,11 +202,39 @@ def get_list_of_ontopic(measuremodel):
                 if measuremodel.get_overall_off_topic_status(urim) == "on-topic":
                     ontopic_mementos.append(urim)
             except KeyError:
-                module_logger.error("failed to get on-topic status for URI-M {}".format(urim))
+                module_logger.warning("failed to get on-topic status for URI-M {}".format(urim))
 
     return ontopic_mementos
 
-def detect_off_topic(collection_model, timemap_measures, num_topics=None):
+def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics=None):
+
+    cm = HypercaneMementoCollectionModel(dbconn, session)
+
+    module_logger.info("adding {} URI-Ts to collection model".format(
+        len( urits )
+    ))
+
+    for urit in urits:
+        module_logger.debug("adding URI-T {}".format(urit))
+        cm.addTimeMap(urit)
+
+    module_logger.info("adding URI-Ms from {} URI-Ts in collection model".format(
+        len( cm.getTimeMapURIList() )
+    ))
+
+    for urim in urims:
+        module_logger.debug("adding URI-M {}".format(urim))
+        cm.addMemento(urim)
+
+    # TOOD: what about document collections outside of web archives?
+    # Note: these algorithms only work for collections with TimeMaps, 
+    # so how would that work exactly?
+
+    module_logger.info(
+        "stored {} mementos for processing...".format(
+            len(cm.getMementoURIList())
+        )
+    )
 
     mm = otmt.MeasureModel()
 
@@ -219,12 +248,12 @@ def detect_off_topic(collection_model, timemap_measures, num_topics=None):
                 num_topics = otmt.supported_timemap_measures[measure]["default number of topics"]
 
             mm = otmt.supported_timemap_measures[measure]["function"](
-                collection_model, mm, num_topics=num_topics)
+                cm, mm, num_topics=num_topics)
 
         else:
 
             mm = otmt.supported_timemap_measures[measure]["function"](
-                collection_model, mm)
+                cm, mm)
 
         module_logger.info("mm: {}".format(mm))
 

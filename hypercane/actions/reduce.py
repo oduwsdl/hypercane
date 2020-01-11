@@ -2,7 +2,6 @@ import sys
 import os
 import argparse
 import json
-import otmt
 import concurrent.futures
 import langdetect
 import errno
@@ -12,12 +11,23 @@ from pymongo import MongoClient
 from justext import justext, get_stoplist
 from simhash import Simhash
 
+# TODO: come back to this
+# the OTMT imports a version of sklearn that generates the following warning:
+# DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
+# I cannot fix sklearn, but I can quiet the warning
+# import warnings
+
+# with warnings.catch_warnings():
+#     warnings.filterwarnings("ignore", category=DeprecationWarning)
+#     import otmt
+import otmt
+
 from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims
-from ..reduce.remove_offtopic import detect_off_topic, \
-    HypercaneMementoCollectionModel, get_boilerplate_free_content
+from ..reduce.remove_offtopic import detect_off_topic
+from ..reduce.near_duplicates import filter_near_duplicates
 from ..utils import get_memento_datetime_and_timemap, \
     get_web_session, get_language, get_raw_simhash
 
@@ -49,7 +59,7 @@ def process_remove_offtopic_args(args, parser):
         "is compared with each subsequent memento to measure topic drift.\n"
         "Specify measure with optional threshold separated by equals.\n"
         "Multiple measures can be specified.\n"
-        "(e.g., jaccard=0.10,cosine=0.15,wcount);\n"
+        "(e.g., jaccard=0.10,cosine=0.15,wordcount);\n"
         "Leave thresholds off to use default thresholds.\n"
         "Accepted values:\n{}".format(tmmeasurehelp)
     )
@@ -89,39 +99,14 @@ def remove_offtopic(args):
     input_args = args.input_type[1]
 
     session = get_web_session(cache_storage=args.cache_storage)
-
     dbconn = MongoClient(args.cache_storage)
     urits = discover_timemaps_by_input_type(
         input_type, input_args, args.crawl_depth, session)
     urims = download_urits_and_extract_urims(urits, session)
-    cm = HypercaneMementoCollectionModel(dbconn, session)
-
-    logger.info("adding {} URI-Ts to collection model".format(
-        len( urits )
-    ))
-
-    for urit in urits:
-        cm.addTimeMap(urit)
-
-    logger.info("adding URI-Ms from {} URI-Ts in collection model".format(
-        len( cm.getTimeMapURIList() )
-    ))
-
-    for urim in urims:
-        cm.addMemento(urim)
-
-    # TOOD: what about document collections outside of web archives?
-    # Note: these algorithms only work for collections with TimeMaps, 
-    # so how would that work exactly?
-
-    logger.info(
-        "stored {} mementos for processing...".format(
-            len(cm.getMementoURIList())
-        )
-    )
 
     ontopic_mementos = detect_off_topic(
-        cm, args.timemap_measures, num_topics=args.num_topics)
+        dbconn, session, urits, urims, args.timemap_measures, 
+        num_topics=args.num_topics)
 
     logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
 
@@ -212,67 +197,7 @@ def remove_near_duplicates(args):
         input_type, input_args, args.crawl_depth, session
     )
 
-    logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
-
-    urim_to_simhash = {}
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-
-        # TODO: allow user to choose tf-simhash rather than raw simhash
-        future_to_urim = { executor.submit(get_raw_simhash, urim, args.cache_storage): urim for urim in urims }
-
-        for future in concurrent.futures.as_completed(future_to_urim):
-            urim = future_to_urim[future]
-
-            try:
-                simhash = future.result()
-                urim_to_simhash[urim] = simhash
-
-            except Exception as exc:
-                logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
-                logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
-                sys.exit(errno.EWOULDBLOCK)
-
-    comparison_structure = {}
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-
-        future_to_urim = { executor.submit(get_memento_datetime_and_timemap, urim, args.cache_storage): urim for urim in urims }
-
-        for future in concurrent.futures.as_completed(future_to_urim):
-            urim = future_to_urim[future]
-
-            try:
-                memento_datetime, urit = future.result()
-
-                comparison_structure.setdefault(urit, []).append(
-                    ( 
-                        datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
-                        int(urim_to_simhash[urim]),
-                        urim
-                    )
-                )
-
-            except Exception as exc:
-                logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                logger.critical("failed to acquire Memento-Datetime and TimeMap for [{}] quitting...".format(urim))
-                sys.exit(errno.EWOULDBLOCK)
-
-    output_urims = []
-
-    for urit in comparison_structure.keys():
-
-        last_simhash = 0
-
-        for mdt, simhash, urim in sorted(comparison_structure[urit]):
-            distance = Simhash(simhash).distance(Simhash(last_simhash))/64.0
-
-            # if the Simhash is great enough, then we have enough of
-            # a change that we are dealing with a non-near duplicate
-            # TODO: allow user to set raw simhash threshold
-            if distance > 0.2:
-                last_simhash = simhash
-                output_urims.append(urim)
+    output_urims = filter_near_duplicates(urims, args.cache_storage)
 
     with open(args.output_filename, 'w') as f:
 

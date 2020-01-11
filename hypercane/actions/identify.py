@@ -12,8 +12,9 @@ from ..identify import list_seed_uris, generate_archiveit_urits, \
     extract_uris_from_input, discover_mementos_by_input_type
 from ..identify.archivecrawl import crawl_mementos, StorageObject
 from ..version import __useragent__
-from . import get_logger, calculate_loglevel, get_web_session, \
+from . import get_logger, calculate_loglevel, \
     add_default_args, process_collection_input_types, add_input_args
+from ..utils import get_web_session
 
 def process_input_args(args, parser):
 
