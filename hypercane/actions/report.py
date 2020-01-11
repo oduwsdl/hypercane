@@ -1,8 +1,9 @@
 import argparse
 import json
 
-from . import get_logger, calculate_loglevel, get_web_session, add_default_args, process_collection_input_types
+from . import get_logger, calculate_loglevel, add_default_args, process_collection_input_types
 from ..identify import generate_collection_metadata
+from ..utils import get_web_session
 
 def process_discover_collection_metadata_args(args):
 
@@ -31,7 +32,7 @@ def discover_collection_metadata(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting collection metadata discovery run.")
 

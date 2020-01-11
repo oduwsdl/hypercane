@@ -1,4 +1,5 @@
 import os
+import sys
 import otmt
 
 from urllib.parse import urlparse
@@ -89,7 +90,7 @@ def get_language(urim, cache_storage):
         
         content = get_boilerplate_free_content(
             urim, cache_storage=cache_storage, dbconn=dbconn
-        )
+        ).decode('utf8')
 
         language = guess_language(content)
 
@@ -138,10 +139,12 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
     # 1. if boilerplate free content in cache, return it
     try:
-        return db.derivedvalues.find_one(
+        bpfree = db.derivedvalues.find_one(
             { "urim": urim }
         )["boilerplate free content"]
+        return bytes(bpfree, "utf8")
     except (KeyError, TypeError):
+
         raw_urim = otmt.generate_raw_urim(urim)
         r = session.get(raw_urim)
 
@@ -160,5 +163,5 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
             upsert=True
         )
 
-        return bpfree
+        return bytes(bpfree, "utf8")
             

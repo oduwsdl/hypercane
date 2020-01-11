@@ -4,7 +4,8 @@ import random
 from ..sample.true_random import select_true_random
 from ..sample.fmfns import execute_fmfns
 
-from . import get_logger, calculate_loglevel, get_web_session, add_default_args, process_collection_input_types
+from . import get_logger, calculate_loglevel, add_default_args, process_collection_input_types
+from ..utils import get_web_session
 
 def sample_with_true_random_args(args):
 
@@ -36,7 +37,7 @@ def sample_with_true_random(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting random sampling of URI-Ms.")
 
@@ -87,7 +88,7 @@ def sample_fmfns(args):
         args.logfile
     )
 
-    session = get_web_session(cachefile=args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting random sampling of URI-Ms.")
 
