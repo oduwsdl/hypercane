@@ -7,9 +7,11 @@ import concurrent.futures
 import langdetect
 import errno
 
+from datetime import datetime
 from pymongo import MongoClient
 from guess_language import guess_language
 from justext import justext, get_stoplist
+from simhash import Simhash
 
 from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel, get_web_session
@@ -134,8 +136,6 @@ def remove_offtopic(args):
 
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 
-
-
 def get_language(urim, cache_storage):
 
     dbconn = MongoClient(cache_storage)
@@ -218,6 +218,59 @@ def by_language(args):
 
     logger.info("done with language detection run, mementos in the languages of {} are in {}".format(desired_languages, args.output_filename))
 
+def get_raw_simhash(urim, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    # 1 if lang of urim in cache, return it
+    try:
+        return db.derivedvalues.find_one(
+            { "urim": urim }
+        )["raw simhash"]
+    except (KeyError, TypeError):
+        raw_urim = otmt.generate_raw_urim(urim)
+        r = session.get(raw_urim)
+
+        simhash = Simhash(r.text).value
+
+        db.derivedvalues.update(
+            { "urim": urim },
+            { "$set": { "raw simhash": str(simhash) }},
+            upsert=True
+        )
+    
+        return str(simhash)
+
+def get_memento_datetime_and_timemap(urim, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    # 1 if lang of urim in cache, return it
+    try:
+        return (
+            db.derivedvalues.find_one(
+                { "urim": urim }
+                )["memento-datetime"],
+            db.derivedvalues.find_one(
+                { "urim": urim }
+                )["timemap"]
+            )
+    except (KeyError, TypeError):
+        r = session.get(urim)
+        mdt = r.headers['memento-datetime']
+        urit = r.links["timemap"]["url"]
+
+        db.derivedvalues.update(
+            { "urim": urim },
+            { "$set": { "memento-datetime": str(mdt), "timemap": str(urit) }},
+            upsert=True
+        )
+    
+        return str(mdt), urit
 
 def remove_near_duplicates(args):
 
@@ -241,28 +294,71 @@ def remove_near_duplicates(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    dbconn = MongoClient(args.cache_storage)
-
     urims = discover_mementos_by_input_type(
         input_type, input_args, args.crawl_depth, session
     )
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
-    cm = HypercaneMementoCollectionModel(dbconn, session)
-    cm.addManyMementos(urims)
+    urim_to_simhash = {}
 
-    logger.info("computing Simhashes on documents...")
-    simhashes = []
-    for urim in urims:
-        simhash = cm.getRawSimhash(urim)
-        simhashes.append(simhash)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-    logger.info("using {} Simahshes to remove duplicates from output...".format(len(simhashes)))
+        # TODO: allow user to choose tf-simhash rather than raw simhash
+        future_to_urim = { executor.submit(get_raw_simhash, urim, args.cache_storage): urim for urim in urims }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+            urim = future_to_urim[future]
+
+            try:
+                simhash = future.result()
+                urim_to_simhash[urim] = simhash
+
+            except Exception as exc:
+                logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
+                logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
+                sys.exit(errno.EWOULDBLOCK)
+
+    comparison_structure = {}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_memento_datetime_and_timemap, urim, args.cache_storage): urim for urim in urims }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+            urim = future_to_urim[future]
+
+            try:
+                memento_datetime, urit = future.result()
+
+                comparison_structure.setdefault(urit, []).append(
+                    ( 
+                        datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
+                        int(urim_to_simhash[urim]),
+                        urim
+                    )
+                )
+
+            except Exception as exc:
+                logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
+                logger.critical("failed to acquire Memento-Datetime and TimeMap for [{}] quitting...".format(urim))
+                sys.exit(errno.EWOULDBLOCK)
+
     output_urims = []
-    for simhash in simhashes:
-        firsturim = cm.getFirstURIMByRawSimhash(simhash)
-        output_urims.append( firsturim )
+
+    for urit in comparison_structure.keys():
+
+        last_simhash = 0
+
+        for mdt, simhash, urim in sorted(comparison_structure[urit]):
+            distance = Simhash(simhash).distance(Simhash(last_simhash))/64.0
+
+            # if the Simhash is great enough, then we have enough of
+            # a change that we are dealing with a non-near duplicate
+            # TODO: allow user to set raw simhash threshold
+            if distance > 0.2:
+                last_simhash = simhash
+                output_urims.append(urim)
 
     with open(args.output_filename, 'w') as f:
 
