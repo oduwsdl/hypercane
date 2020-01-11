@@ -219,66 +219,6 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
         return get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
 
-    def getRawSimhash(self, urim):
-
-        if self.getMementoErrorInformation(urim) is not None:
-            raise otmt.CollectionModelMementoErrorException(
-                "Errors were recorded for URI-M {}".format(urim))
-
-        derived_record = self.derived_collection.find_one(
-            { "urim": urim }
-        )
-
-        if derived_record is not None:
-            try:
-                raw_simhash = derived_record["raw simhash"]
-                return raw_simhash
-            except KeyError:
-                content = self.getMementoContent(urim)
-                raw_simhash = Simhash(content).value
-
-                self.derived_collection.update(
-                    { "urim": urim },
-                    { "$set": { "raw simhash": str(raw_simhash) } }
-                )
-                return str(raw_simhash)
-
-        else:
-            content = self.getMementoContent(urim)
-            raw_simhash = Simhash(content).value
-
-            self.derived_collection.insert_one(
-                { "urim": urim, "raw simhash": str(raw_simhash) }
-            )
-
-        return str(raw_simhash)
-
-    def getFirstURIMByRawSimhash(self, raw_simhash):
-        """This function expects getRawSimhash to have been called first."""
-
-        matching_cursor = self.derived_collection.find(
-            { "raw simhash": raw_simhash },
-            { "urim": 1 }
-        )
-
-        matching_cursor.rewind()
-
-        matching_urims = []
-
-        for record in matching_cursor:
-
-            urim = record['urim']
-
-            mdt = datetime.strptime(
-                self.getMementoHeaders(urim)['memento-datetime'],
-                "%a, %d %b %Y %H:%M:%S GMT"
-            )
-
-            matching_urims.append( ( mdt, record["urim"] ) )
-
-        return sorted(matching_urims, reverse=True)[0][1]
-
-
     def getMementoHeaders(self, urim):
         """Returns the headers associated with memento at `urim`.
         """
