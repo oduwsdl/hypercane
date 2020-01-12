@@ -46,6 +46,53 @@ def get_web_session(cache_storage=None):
 
     return session
 
+def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
+
+    dbconn = MongoClient(cache_storage)
+    session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    output_values = []
+
+    # 1 if lang of urim in cache, return it
+    try:
+
+        for field in metadata_fields:
+
+            output_values.append(
+                db.derivedvalues.find_one(
+                    { "urim": urim }
+                )[field] )
+
+        return output_values
+
+    except (KeyError, TypeError):
+        r = session.get(urim)
+
+        for field in metadata_fields:
+
+            if field == 'memento-datetime':
+
+                mdt = r.headers['memento-datetime']
+                output_values.append( mdt )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "memento-datetime": str(mdt) }},
+                    upsert=True
+                )
+
+            else:
+
+                uri = r.links[field]["url"]
+                output_values.append( uri )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { field: uri }},
+                    upsert=True
+                )
+    
+        return output_values
+
 def get_memento_datetime_and_timemap(urim, cache_storage):
 
     dbconn = MongoClient(cache_storage)

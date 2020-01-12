@@ -3,14 +3,15 @@
 import argparse
 import sys
 
-from hypercane.actions import identify, sample, report, reduce
+from hypercane.actions import identify, sample, report, reduce, cluster
 from hypercane.version import __useragent__
 
 supported_actions = {
-    "identify": identify,
+    "sample": sample,
     "report": report,
+    "identify": identify,
     "reduce": reduce,
-    "sample": sample
+    "cluster": cluster
 }
 
 def print_overall_usage():
@@ -21,10 +22,12 @@ For example:
     hc sample dsa1 -i archiveit=8778 -o story-mementos.txt
 
     Supported actions:
-    * sample - provide a representative sample from a collection using the given algorithm
-    * report - provide reports about collections
-    * identify - discover resource identifiers in a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
+""")
 
+    for action in supported_actions:
+        print("    * {}".format(action))
+
+    print("""
     For each of these actions, you can view additional help by typing --help after the action name, for example:
     hc sample --help
 """)
