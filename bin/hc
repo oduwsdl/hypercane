@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from hypercane.actions import identify, sample, report, reduce, cluster
+from hypercane.actions import identify, sample, report, reduce, cluster, rank
 from hypercane.version import __useragent__
 
 supported_actions = {
@@ -11,7 +11,8 @@ supported_actions = {
     "report": report,
     "identify": identify,
     "reduce": reduce,
-    "cluster": cluster
+    "cluster": cluster,
+    "rank": rank
 }
 
 def print_overall_usage():

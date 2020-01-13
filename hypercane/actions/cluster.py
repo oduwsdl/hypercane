@@ -22,8 +22,6 @@ def process_input_args(args, parser):
 
     parser = add_input_args(parser)
 
-    # TODO: add clustered-mementos= as an input argument
-
     parser = add_default_args(parser)
 
     args = parser.parse_args(args)
