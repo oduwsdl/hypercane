@@ -43,7 +43,7 @@ def process_input_for_clusters(input_list):
 
         if len(list_of_cluster_assignments) == 0:
             for uri in input_list:
-                list_of_cluster_assignments.append( ( "NIL", uri ) )
+                list_of_cluster_assignments.append( ( None, uri ) )
         else:
             raise ClusterInputException("The assignment of clusters to URIs in inconsistent")
 
@@ -104,7 +104,7 @@ def cluster_by_dbscan(args):
         for urim in clustered_urims:
             f.write("{}\t{}\n".format(urim, clustered_urims[urim]))
 
-    logger.info("Clustering of collection via DBSCAN is complete")
+    logger.info("Clustering of collection via DBSCAN on feature {} is complete".format(args.feature))
 
 
 def time_slice(args):
