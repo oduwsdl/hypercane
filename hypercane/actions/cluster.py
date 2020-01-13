@@ -6,12 +6,17 @@ import concurrent.futures
 import math
 
 from datetime import datetime
+from sklearn.cluster import DBSCAN
 
 from ..actions import add_input_args, add_default_args, get_logger, calculate_loglevel
 from ..identify import discover_timemaps_by_input_type, \
-    discover_mementos_by_input_type, download_urits_and_extract_urims
+    discover_mementos_by_input_type, download_urits_and_extract_urims, extract_uris_from_input
 from ..utils import get_web_session, get_memento_http_metadata
 from ..cluster.time_slice import execute_time_slice
+from ..cluster.dbscan import cluster_by_rawsimhash_distance, cluster_by_memento_datetime
+
+class ClusterInputException(Exception):
+    pass
 
 def process_input_args(args, parser):
 
@@ -25,10 +30,87 @@ def process_input_args(args, parser):
 
     return args
 
+def process_input_for_clusters(input_list):
+
+    list_of_cluster_assignments = []
+
+    for item in input_list:
+        if '\t' in item:
+            uri, clusterid = item.split('\t')
+            list_of_cluster_assignments.append( (clusterid, uri) )
+
+    if len(list_of_cluster_assignments) != len(input_list):
+
+        if len(list_of_cluster_assignments) == 0:
+            for uri in input_list:
+                list_of_cluster_assignments.append( ( "NIL", uri ) )
+        else:
+            raise ClusterInputException("The assignment of clusters to URIs in inconsistent")
+
+    return list_of_cluster_assignments
+
+def cluster_by_dbscan(args):
+
+    parser = argparse.ArgumentParser(
+        description="Cluster the input using the dbscan algorithm.",
+        prog="hc cluster dbscan"
+    )
+
+    parser.add_argument('--feature', dest='feature',
+        default='simhash',
+        help='The feature in which to cluster the documents.'
+    )
+
+    args = process_input_args(args, parser)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Beginning the clustering of the collection")
+
+    input_type = args.input_type[0]
+    input_args = args.input_type[1]
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: Note that we do not support crawling for clustering
+    # look at https://stackoverflow.com/questions/32807319/disable-remove-argument-in-argparse for how to remove arguments
+    if input_type == "mementos":
+        items = extract_uris_from_input(input_args)
+        clustered_urims = process_input_for_clusters(items)
+    else:
+        raise NotImplementedError("Input type of {} not yet supported for clustering".format(input_type))
+
+    cache_storage = args.cache_storage
+
+    logger.info("There were {} mementos discovered in the input".format(len(clustered_urims)))
+
+    if args.feature == "raw-simhash":
+        logger.info("Clustering URI-Ms by Raw Simhash")
+        clustered_urims = cluster_by_rawsimhash_distance(clustered_urims, cache_storage)
+
+    elif args.feature == "memento-datetime":
+        logger.info("Clustering URI-Ms by Memento-Datetime")
+        clustered_urims = cluster_by_memento_datetime(clustered_urims, cache_storage)
+
+    else:
+        raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
+   
+    with open(args.output_filename, 'w') as f:
+
+        for urim in clustered_urims:
+            f.write("{}\t{}\n".format(urim, clustered_urims[urim]))
+
+    logger.info("Clustering of collection via DBSCAN is complete")
+
+
 def time_slice(args):
     
     parser = argparse.ArgumentParser(
-        description="Only keep documents from a collection with a specific language.",
+        description="Cluster the input into slices based on memento-datetime.",
         prog="hc cluster time-slice"
     )
 
@@ -87,6 +169,6 @@ def print_usage():
 
 supported_commands = {
     "time-slice": time_slice,
-    "dbscan": dbscan
+    "dbscan": cluster_by_dbscan
 }
 
