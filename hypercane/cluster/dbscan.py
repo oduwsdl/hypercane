@@ -13,9 +13,9 @@ from ..reduce.near_duplicates import NearDuplicateException
 module_logger = logging.getLogger('hypercane.cluster.dbscan')
 
 def shdist(a, b, **oo):
-    return hamming(a, b)
+    return hamming(a, b) / 64
 
-def cluster_by_rawsimhash_distance(urim_clusters, cache_storage):
+def cluster_by_simhash_distance(urim_clusters, cache_storage, simhash_function=get_raw_simhash, min_samples=2, eps=0.3):
 
     output_clusters = {}
 
@@ -59,7 +59,7 @@ def cluster_by_rawsimhash_distance(urim_clusters, cache_storage):
 
         X = np.matrix(simhash_list)
 
-        db = DBSCAN(eps=0.3, min_samples=2, metric=shdist).fit(X.T)
+        db = DBSCAN(eps=eps, min_samples=min_samples, metric=shdist).fit(X.T)
 
         for index, label in enumerate(db.labels_):
             urim = clusters_to_urims[cluster][index]
@@ -72,7 +72,7 @@ def cluster_by_rawsimhash_distance(urim_clusters, cache_storage):
     
     return output_clusters
 
-def cluster_by_memento_datetime(urim_clusters, cache_storage):
+def cluster_by_memento_datetime(urim_clusters, cache_storage, min_samples=5, eps=0.5):
 
     output_clusters = {}
 
@@ -110,7 +110,7 @@ def cluster_by_memento_datetime(urim_clusters, cache_storage):
 
         X = np.matrix(mdt_list)
 
-        db = DBSCAN(min_samples=2).fit(X.T)
+        db = DBSCAN(min_samples=min_samples).fit(X.T)
 
         for index, label in enumerate(db.labels_):
             urim = clusters_to_urims[cluster][index]

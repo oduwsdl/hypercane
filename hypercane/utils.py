@@ -174,6 +174,38 @@ def get_raw_simhash(urim, cache_storage):
     
         return str(simhash)
 
+def get_tf_simhash(urim, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    # 1 if lang of urim in cache, return it
+    try:
+        return db.derivedvalues.find_one(
+            { "urim": urim }
+        )["tf simhash"]
+    except (KeyError, TypeError):
+
+        content = get_boilerplate_free_content(
+            urim, cache_storage=cache_storage, dbconn=dbconn
+        ).decode('utf8')
+
+        # break text into words
+        words = content.split()
+        # sort words
+        words.sort()
+        # submit to Simhash library
+        simhash = Simhash(" ".join(words)).value
+
+        db.derivedvalues.update(
+            { "urim": urim },
+            { "$set": { "tf simhash": str(simhash) }},
+            upsert=True
+        )
+    
+        return str(simhash)
+
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
 
     if dbconn is None:

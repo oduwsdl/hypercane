@@ -11,9 +11,9 @@ from sklearn.cluster import DBSCAN
 from ..actions import add_input_args, add_default_args, get_logger, calculate_loglevel
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims, extract_uris_from_input
-from ..utils import get_web_session, get_memento_http_metadata
+from ..utils import get_web_session, get_memento_http_metadata, get_raw_simhash, get_tf_simhash
 from ..cluster.time_slice import execute_time_slice
-from ..cluster.dbscan import cluster_by_rawsimhash_distance, cluster_by_memento_datetime
+from ..cluster.dbscan import cluster_by_simhash_distance, cluster_by_memento_datetime
 
 class ClusterInputException(Exception):
     pass
@@ -61,6 +61,16 @@ def cluster_by_dbscan(args):
         help='The feature in which to cluster the documents.'
     )
 
+    parser.add_argument('--eps', dest='eps',
+        default=0.5,
+        help='The maximum distance between two samples for one to be considered as in the neighbordhood of the other. See: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html'
+    )
+
+    parser.add_argument('--min-samples', dest='min_samples',
+        default=5,
+        help="The number of samples in a neighbordhood for a point to be considered as a core point. See: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html"
+    )
+
     args = process_input_args(args, parser)
 
     logger = get_logger(
@@ -84,17 +94,29 @@ def cluster_by_dbscan(args):
     else:
         raise NotImplementedError("Input type of {} not yet supported for clustering".format(input_type))
 
-    cache_storage = args.cache_storage
-
     logger.info("There were {} mementos discovered in the input".format(len(clustered_urims)))
 
     if args.feature == "raw-simhash":
         logger.info("Clustering URI-Ms by Raw Simhash")
-        clustered_urims = cluster_by_rawsimhash_distance(clustered_urims, cache_storage)
+        clustered_urims = cluster_by_simhash_distance(
+            clustered_urims, args.cache_storage, 
+            simhash_function=get_raw_simhash, 
+            min_samples=int(args.min_samples), 
+            eps=float(args.eps))
+
+    elif args.feature == "tf-simhash":
+        logger.info("Clustering URI-Ms by Term Frequency Simhash")
+        clustered_urims = cluster_by_simhash_distance(
+            clustered_urims, args.cache_storage, 
+            simhash_function=get_raw_simhash, 
+            min_samples=int(args.min_samples),
+            eps=float(args.eps))
 
     elif args.feature == "memento-datetime":
         logger.info("Clustering URI-Ms by Memento-Datetime")
-        clustered_urims = cluster_by_memento_datetime(clustered_urims, cache_storage)
+        clustered_urims = cluster_by_memento_datetime(
+            clustered_urims, args.cache_storage, 
+            min_samples=args.min_samples, eps=args.eps)
 
     else:
         raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
