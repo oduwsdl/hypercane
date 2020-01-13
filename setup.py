@@ -15,6 +15,7 @@ setup(
     install_requires=[
         'aiu',
         'distance',
+        'newspaper3k',
         'otmt',
         'pymongo',
         'requests',

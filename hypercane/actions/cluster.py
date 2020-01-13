@@ -169,9 +169,6 @@ def time_slice(args):
 
     logger.info("finished time slicing, output is available at {}".format(args.output_filename))
 
-def dbscan(args):
-    raise NotImplementedError("DBSCAN Clustering Not Implementing Yet")
-
 def print_usage():
 
     print("""'hc cluster' is used to employ techniques to cluster a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
