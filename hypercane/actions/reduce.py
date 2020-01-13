@@ -25,11 +25,13 @@ import otmt
 from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel
 from ..identify import discover_timemaps_by_input_type, \
-    discover_mementos_by_input_type, download_urits_and_extract_urims
+    discover_mementos_by_input_type, download_urits_and_extract_urims, \
+    extract_uris_from_input
 from ..reduce.remove_offtopic import detect_off_topic
 from ..reduce.near_duplicates import filter_near_duplicates
 from ..utils import get_memento_datetime_and_timemap, \
     get_web_session, get_language, get_raw_simhash
+from .cluster import ClusterInputException
 
 def process_input_args(args, parser):
 
@@ -206,6 +208,79 @@ def remove_near_duplicates(args):
 
     logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
 
+def process_input_for_clusters_and_ranks(input_list):
+
+    list_of_cluster_assignments = []
+
+    for item in input_list:
+        if '\t' in item:
+            uri, clusterid, rank = item.split('\t')
+            list_of_cluster_assignments.append( (clusterid, uri, rank) )
+
+    if len(list_of_cluster_assignments) != len(input_list):
+
+        raise ClusterInputException("The assignment of clusters to URIs in inconsistent")
+
+    return list_of_cluster_assignments
+
+def highest_ranking_per_cluster(args):
+
+    parser = argparse.ArgumentParser(
+        description="Remove the near-duplicate documents from a collection.",
+        prog="hc reduce remove-near-duplicates"
+    )
+
+    args = process_input_args(args, parser)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting selection of the highest ranked documents in input...")
+
+    input_type = args.input_type[0]
+    input_args = args.input_type[1]
+
+    urim_to_rank = {}
+    cluster_to_urims = {}
+
+    if input_type == "mementos":
+        items = extract_uris_from_input(input_args)
+        ranked_and_clustered_urims = process_input_for_clusters_and_ranks(items)
+
+        for entry in ranked_and_clustered_urims:
+            cluster = entry[0]
+            urim = entry[1]
+            rank = entry[2]
+
+            urim_to_rank[urim] = rank
+            cluster_to_urims.setdefault(cluster, []).append(urim)
+
+    else:
+        raise NotImplementedError("Input type of {} not yet supported for ranking".format(input_type))
+
+    output_urims = []
+
+    for cluster in cluster_to_urims:
+
+        cluster_ranks_to_urims = []
+
+        for urim in cluster_to_urims[cluster]:
+            cluster_ranks_to_urims.append( ( urim_to_rank[urim], urim ) )
+
+        highest_scoring_urim_in_cluster = max(cluster_ranks_to_urims)[1]
+
+        output_urims.append(highest_scoring_urim_in_cluster)
+
+    with open(args.output_filename, 'w') as f:
+
+        for urim in output_urims:
+            f.write("{}\n".format(urim))
+
+    logger.info("Finished selection of highest ranked documents in input; output is at {}".format(args.output_filename))
+
 def print_usage():
 
     print("""'hc reduce' is used to employ techniques to reduce a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
@@ -214,6 +289,7 @@ def print_usage():
     * remove-offtopic - for removing mementos that are off-topic
     * by-language - for keeping documents with a specific language
     * remove-near-duplicates - for removing near duplicate documents
+    * highest-ranking-per-cluster - takes input from "hc rank" and produces a list of the identifiers of the highest ranking documents per cluster
 
     Examples:
     
@@ -222,11 +298,14 @@ def print_usage():
     hc reduce by-language -i archiveit=8788 --keep en,es -o english-and-spanish-docs.txt
 
     hc reduce remove-near-duplicates -i mementos=ontopic-mementos.txt -o novel-content.txt
+
+    hc reduce highest-ranking-per-cluster -i mementos=file-with-scored-mementos.txt -o reduced-mementos.txt
     
 """)
 
 supported_commands = {
     "remove-offtopic": remove_offtopic,
     "by-language": by_language,
-    "remove-near-duplicates": remove_near_duplicates
+    "remove-near-duplicates": remove_near_duplicates,
+    "highest-ranking-per-cluster": highest_ranking_per_cluster
 }

@@ -10,6 +10,7 @@ from requests_cache.backends import MongoCache
 from guess_language import guess_language
 from justext import justext, get_stoplist
 from simhash import Simhash
+from newspaper import Article
 
 from .version import __useragent__
 
@@ -243,4 +244,38 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         )
 
         return bytes(bpfree, "utf8")
+
+def get_newspaper_publication_date(urim, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    session = get_web_session(cache_storage)
+    db = dbconn.get_default_database()
+
+    try:
+        return db.derivedvalues.find_one(
+            { "urim": urim }
+        )["newspaper publication date"]
+    except (KeyError, TypeError):
+        raw_urim = otmt.generate_raw_urim(urim)
+        r = session.get(raw_urim)
+
+        article = Article(urim)
+        article.download(r.text)
+        article.parse()
+        article.nlp()
+        pd = article.publish_date
+
+        if pd is None:
+            pd = r.headers['memento-datetime']
+        else:
+            pd = pd.strftime("%a, %d %b %Y %H:%M:%S GMT")
             
+        db.derivedvalues.update(
+            { "urim": urim },
+            { "$set": { "newspaper publication date": str(pd) } }
+        )
+
+        return pd
+
+        
+
