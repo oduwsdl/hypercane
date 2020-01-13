@@ -116,7 +116,8 @@ def cluster_by_dbscan(args):
         logger.info("Clustering URI-Ms by Memento-Datetime")
         clustered_urims = cluster_by_memento_datetime(
             clustered_urims, args.cache_storage, 
-            min_samples=args.min_samples, eps=args.eps)
+            min_samples=int(args.min_samples),
+            eps=float(args.eps))
 
     else:
         raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
