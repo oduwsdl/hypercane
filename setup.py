@@ -15,7 +15,7 @@ setup(
     install_requires=[
         'aiu',
         'distance',
-        'guess_language',
+        'guess-language-spirit',
         'otmt',
         'pymongo',
         'requests',
