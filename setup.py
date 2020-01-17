@@ -16,6 +16,7 @@ setup(
         'aiu',
         'distance',
         'newspaper3k',
+        'guess-language-spirit',
         'otmt',
         'pymongo',
         'requests',
