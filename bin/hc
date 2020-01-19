@@ -3,12 +3,13 @@
 import argparse
 import sys
 
-from hypercane.actions import identify, sample, report, reduce, cluster, rank, order
+from hypercane.actions import identify, sample, report, reduce, cluster, rank, order, synthesize
 from hypercane.version import __useragent__
 
 supported_actions = {
     "sample": sample,
     "report": report,
+    "synthesize": synthesize,
     "identify": identify,
     "reduce": reduce,
     "cluster": cluster,

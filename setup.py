@@ -22,7 +22,8 @@ setup(
         'requests',
         'requests_cache',
         'scrapy',
-        'simhash'
+        'simhash',
+        'warcio'
     ],
     scripts=[
         'bin/hc'
