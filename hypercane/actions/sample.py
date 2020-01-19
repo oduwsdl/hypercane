@@ -90,7 +90,7 @@ def sample_fmfns(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting random sampling of URI-Ms.")
+    logger.info("Starting sampling of URI-Ms with FMFNS algorithm.")
 
     collection_type = args.input_type[0]
     collection_id = args.input_type[1]
