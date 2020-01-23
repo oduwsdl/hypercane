@@ -14,6 +14,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'aiu',
+        'archivenow',
         'distance',
         'newspaper3k',
         'guess-language-spirit',
