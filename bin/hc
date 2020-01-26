@@ -11,7 +11,7 @@ supported_actions = {
     "report": report,
     "synthesize": synthesize,
     "identify": identify,
-    "reduce": reduce,
+    "filter": reduce,
     "cluster": cluster,
     "rank": rank,
     "order": order

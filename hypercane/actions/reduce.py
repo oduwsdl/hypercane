@@ -74,7 +74,7 @@ def remove_offtopic(args):
 
     parser = argparse.ArgumentParser(
         description="Remove the off-topic documents from a collection.",
-        prog="hc reduce remove-offtopic"
+        prog="hc filter remove-offtopic"
     )
 
     args = process_remove_offtopic_args(args, parser)
@@ -110,7 +110,7 @@ def by_language(args):
 
     parser = argparse.ArgumentParser(
         description="Only keep documents from a collection with a specific language.",
-        prog="hc reduce by-language"
+        prog="hc filter by-language"
     )
 
     parser.add_argument('--lang', '--languages', dest='languages',
@@ -162,7 +162,7 @@ def remove_near_duplicates(args):
 
     parser = argparse.ArgumentParser(
         description="Remove the near-duplicate documents from a collection.",
-        prog="hc reduce remove-near-duplicates"
+        prog="hc filter remove-near-duplicates"
     )
 
     args = process_input_args(args, parser)
@@ -210,7 +210,7 @@ def highest_ranking_per_cluster(args):
 
     parser = argparse.ArgumentParser(
         description="Remove the near-duplicate documents from a collection.",
-        prog="hc reduce remove-near-duplicates"
+        prog="hc filter remove-near-duplicates"
     )
 
     args = process_input_args(args, parser)
@@ -265,7 +265,7 @@ def highest_ranking_per_cluster(args):
 
 def print_usage():
 
-    print("""'hc reduce' is used to employ techniques to reduce a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
+    print("""'hc filter' is used to employ techniques to filter a web archive collection
 
     Supported commands:
     * remove-offtopic - for removing mementos that are off-topic
@@ -275,13 +275,13 @@ def print_usage():
 
     Examples:
     
-    hc reduce remove-offtopic -i archiveit=8788 -o ontopic-mementos.txt
+    hc filter remove-offtopic -i archiveit=8788 -o ontopic-mementos.txt
 
-    hc reduce by-language -i archiveit=8788 --keep en,es -o english-and-spanish-docs.txt
+    hc filter by-language -i archiveit=8788 --keep en,es -o english-and-spanish-docs.txt
 
-    hc reduce remove-near-duplicates -i mementos=ontopic-mementos.txt -o novel-content.txt
+    hc filter remove-near-duplicates -i mementos=ontopic-mementos.txt -o novel-content.txt
 
-    hc reduce highest-ranking-per-cluster -i mementos=file-with-scored-mementos.txt -o reduced-mementos.txt
+    hc filter highest-ranking-per-cluster -i mementos=file-with-scored-mementos.txt -o filtered-mementos.txt
     
 """)
 
