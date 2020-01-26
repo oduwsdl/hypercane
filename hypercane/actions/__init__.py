@@ -58,7 +58,15 @@ def add_default_args(parser):
 
 def add_input_args(parser):
 
-    parser.add_argument('-i', help="the input type and identifier, separated by equals (=) examples: -i archiveit=8788 or -i timemaps=timemap-file.txt,https://archive.example.com/timemap/http://example2.com; supported input types are archiveit, timemap, mementos, original-resources", dest='input_type', required=True, type=process_collection_input_types)
+    parser.add_argument('-i', '--it', '--input-type', 
+        help="the input type, one of mementos, timemaps, archiveit, original-resources, or storygraph",
+        dest="input_type", required=True
+    )
+
+    parser.add_argument('-ia', '--input-arguments', 
+        help="either a file containing a list of URIs, a storygraph service URI, or an Archive-It collection identifier",
+        dest='input_arguments', required=False, default=None
+    )
 
     parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
 
@@ -66,32 +74,38 @@ def add_input_args(parser):
 
     return parser
 
-def process_collection_input_types(input_argument):
+def test_input_args(args):
 
-    supported_input_types = [
-        "archiveit",
+    input_types_requiring_files = [
         "timemaps",
         "mementos",
-        "original-resources",
-        "warcs"
+        "original-resources"
     ]
 
-    if '=' not in input_argument:
-        raise argparse.ArgumentTypeError(
-            "no required argument supplied for input type {}\n\n"
-            "Examples:\n"
-            "for an Archive-It collection use something like\n"
-            "-i archiveit=3639"
-            .format(input_argument)
-            )
+    if args.input_type in input_types_requiring_files:
+        if args.input_arguments is None:
+            raise argparse.ArgumentTypeError(
+                "ERROR: input type {} requires a filename containing URIs".format(
+                    args.input_arguments))
+    elif args.input_type == 'archiveit':
+        if args.input_arguments is None:
+            raise argparse.ArgumentTypeError(
+                "Error: input type archiveit requires an Archive-It collection identifier")
+    elif args.input_type == 'storygraph':
+        if args.input_arguments is None:
+            raise argparse.ArgumentTypeError(
+                "Error: input type storygraph requires a rank number argument")
 
-    input_type, argument = input_argument.split('=') 
+    return args
 
-    if input_type not in supported_input_types:
-        raise argparse.ArgumentTypeError(
-            "{} is not a supported input type, supported types are {}".format(
-                input_type, list(supported_input_types)
-                )
-            )
+def process_input_args(args, parser):
 
-    return input_type, argument
+    parser = add_input_args(parser)
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    args = test_input_args(args)
+
+    return args

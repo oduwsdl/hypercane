@@ -8,7 +8,7 @@ from warcio.warcwriter import WARCWriter
 from warcio.statusandheaders import StatusAndHeaders
 
 from . import add_default_args, add_input_args, \
-    get_logger, calculate_loglevel
+    get_logger, calculate_loglevel, test_input_args
 from ..identify import discover_mementos_by_input_type
 from ..utils import get_web_session
 
@@ -26,6 +26,8 @@ def process_input_args(args, parser):
     parser._actions
 
     args = parser.parse_args(args)
+
+    args = test_input_args(args)
 
     return args
 
@@ -48,10 +50,7 @@ def synthesize_warcs(args):
 
     logger.info("Starting generation of files from input")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
-    urims = discover_mementos_by_input_type(input_type, input_args, args.crawl_depth, session)
+    urims = discover_mementos_by_input_type(args.input_type, args.input_arguments, args.crawl_depth, session)
 
     logger.info("discovered {} URI-Ms from the input".format(len(urims)))
 
@@ -118,10 +117,9 @@ def synthesize_files(args):
 
     logger.info("Starting generation of files from input")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
-    urims = discover_mementos_by_input_type(input_type, input_args, args.crawl_depth, session)
+    urims = discover_mementos_by_input_type(
+        args.input_type, args.input_arguments,
+        args.crawl_depth, session)
 
     logger.info("discovered {} URI-Ms from the input".format(len(urims)))
 
