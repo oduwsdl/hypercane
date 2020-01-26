@@ -24,12 +24,13 @@ hc sample random -i timemaps=timemap-file.txt -o random-mementos.txt
 ```
 
 At the moment, the following actions are supported:
-* `sample` - generate a sample from the collection with various commands, some of the commands may execute various `reduce`, `cluster`, `rank`, and `order` actions
-* `identify` - produce a list of identifiers (URIs) from the collection based on the input, the different commands indicate the type of web resource desired
+* `sample` - generate a sample from the collection with various commands, some of the commands may execute various `filter`, `cluster`, `rank`, and `order` actions
 * `report` - generate a report on the collection according to various commands, different commands provide information on collection metadata or provide statistics on the collection
-* `reduce` - reduce the given collection according to the criteria specified by the given command
+* `synthesize` - sythesize a web archive collection into the a directory containing files, such as warcs or files
+* `identify` - produce a list of identifiers (URIs) from the collection based on the input, the different commands indicate the type of web resource desired
+* `filter` - filter the given collection according to the criteria specified by the given command
 * `cluster` - group the documents identified from the input into clusters, different commands provide different clustering algorithms
 * `rank` - rank the mementos from the input based on the command issued
 * `order` - order the mementos from the input based on the command issued
 
-To discover the list of commands associated with an action, use the `--help` command-line option. For example, to discover the commands associated with the `reduce` action, type `hc reduce --help`.
+To discover the list of commands associated with an action, use the `--help` command-line option. For example, to discover the commands associated with the `filter` action, type `hc filter --help`.

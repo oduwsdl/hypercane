@@ -9,11 +9,11 @@ from ..identify import extract_uris_from_input
 from ..utils import get_web_session
 from ..order.dsa1_publication_alg import order_by_dsa1_publication_alg
 
-def dsa1_publication_alg(args):
+def pubdate_else_memento_datetime(args):
 
     parser = argparse.ArgumentParser(
         description="Remove the near-duplicate documents from a collection.",
-        prog="hc reduce remove-near-duplicates"
+        prog="hc order pubdate_else_memento_datetime"
     )
 
     args = process_input_args(args, parser)
@@ -62,7 +62,7 @@ def print_usage():
 """)
 
 supported_commands = {
-    "dsa1-publication-alg": dsa1_publication_alg
+    "pubdate_else_memento_datetime": pubdate_else_memento_datetime
     # "memento-datetime": memento_datetime,
 }
 
