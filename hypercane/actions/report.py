@@ -1,30 +1,58 @@
 import argparse
 import json
 
-from . import get_logger, calculate_loglevel, add_default_args, process_collection_input_types
-from ..identify import generate_collection_metadata
+from aiu import ArchiveItCollection
+from datetime import datetime
+
+from . import get_logger, calculate_loglevel, process_input_args
+from .identify import discover_original_resources_by_input_type
 from ..utils import get_web_session
 
-def process_discover_collection_metadata_args(args):
+def generate_collection_metadata(collection_id, session):
+
+    aic = ArchiveItCollection(collection_id, session=session)
+
+    return aic.return_all_metadata_dict()
+
+def generate_blank_metadata(urirs):
+
+    blank_metadata = {'id': None,
+        'exists': None,
+        'metadata_timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'name': None,
+        'uri': None,
+        'collected_by': None,
+        'collected_by_uri': None,
+        'description': None,
+        'subject': [],
+        'archived_since': None,
+        'private': None,
+        'optional': {},
+        'seed_metadata': {
+            'seeds': {}
+        },
+        'timestamps': {
+            'seed_metadata_timestamp': '2020-01-25 16:45:59',
+            'seed_report_timestamp': '2020-01-25 16:45:59'
+        }
+    }
+
+    for urir in urirs:
+        blank_metadata['seed_metadata']['seeds'][urir] = {
+            'collection_web_pages': [{}],
+            'seed_report': {}
+        }
+
+    return blank_metadata
+
+def discover_collection_metadata(args):
 
     parser = argparse.ArgumentParser(
         description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
         prog="hc report metadata"
         )
 
-    parser.add_argument('-i', help="the input type and identifier, only archiveit and a collection ID is supported at this time, example: -i archiveit=8788", dest='input_type', required=True, type=process_collection_input_types)
-
-    parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
-
-    parser = add_default_args(parser)
-
-    args = parser.parse_args(args)
-
-    return args  
-
-def discover_collection_metadata(args):
-
-    args = process_discover_collection_metadata_args(args)
+    args = process_input_args(args, parser)
 
     logger = get_logger(
         __name__,
@@ -36,17 +64,13 @@ def discover_collection_metadata(args):
 
     logger.info("Starting collection metadata discovery run.")
 
-    collection_type = args.input_type[0]
-
-    if collection_type != 'archiveit':
-        raise NotImplementedError("Metadata reports are only supported for Archive-It collections")
-
-    collection_id = args.input_type[1]
-
-    logger.info("Collection type: {}".format(collection_type))
-    logger.info("Collection identifier: {}".format(collection_id))
-
-    metadata = generate_collection_metadata(collection_id, session)
+    if args.input_type == 'archiveit':
+        metadata = generate_collection_metadata(args.input_arguments, session)
+    else:
+        logger.warning("Metadata reports are only supported for Archive-It collections, proceeding to create JSON output for URI-Rs.")
+        urirs = discover_original_resources_by_input_type(
+            args.input_type, args.input_arguments, args.crawl_depth, session)
+        metadata = generate_blank_metadata(urirs)
 
     with open(args.output_filename, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=4)
@@ -62,7 +86,7 @@ def print_usage():
 
     Examples:
     
-    hc report metadata -i archiveit=8788 -o 8788-metadata.json
+    hc report metadata -i archiveit -ia 8788 -o 8788-metadata.json
     
 """)
 

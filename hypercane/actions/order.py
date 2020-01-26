@@ -4,22 +4,10 @@ import argparse
 import json
 
 from ..actions import add_input_args, add_default_args, \
-    get_logger, calculate_loglevel
+    get_logger, calculate_loglevel, process_input_args
 from ..identify import extract_uris_from_input
 from ..utils import get_web_session
 from ..order.dsa1_publication_alg import order_by_dsa1_publication_alg
-
-def process_input_args(args, parser):
-
-    parser = add_input_args(parser)
-
-    # TODO: add clustered-mementos= as an input argument
-
-    parser = add_default_args(parser)
-
-    args = parser.parse_args(args)
-
-    return args
 
 def dsa1_publication_alg(args):
 
@@ -38,15 +26,13 @@ def dsa1_publication_alg(args):
 
     logger.info("Starting ordering of the documents by the DSA1 publication algorithm...")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     session = get_web_session(cache_storage=args.cache_storage)
 
-    if input_type == "mementos":
-        urims = extract_uris_from_input(input_args)
+    if args.input_type == "mementos":
+        urims = extract_uris_from_input(args.input_arguments)
     else:
-        raise NotImplementedError("Input type of {} not yet supported for clustering".format(input_type))
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for clustering".format(args.input_type))
 
     logger.info("extracted {} mementos from input".format(len(urims)))
 

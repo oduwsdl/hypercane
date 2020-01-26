@@ -6,27 +6,17 @@ import concurrent.futures
 import math
 
 from datetime import datetime
-from sklearn.cluster import DBSCAN
 
-from ..actions import add_input_args, add_default_args, get_logger, calculate_loglevel
+from ..actions import add_input_args, add_default_args, get_logger, \
+    calculate_loglevel, process_input_args
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims, extract_uris_from_input
 from ..utils import get_web_session, get_memento_http_metadata, get_raw_simhash, get_tf_simhash
 from ..cluster.time_slice import execute_time_slice
 from ..cluster.dbscan import cluster_by_simhash_distance, cluster_by_memento_datetime
 
-class ClusterInputException(Exception):
+class HypercaneClusterInputException(Exception):
     pass
-
-def process_input_args(args, parser):
-
-    parser = add_input_args(parser)
-
-    parser = add_default_args(parser)
-
-    args = parser.parse_args(args)
-
-    return args
 
 def process_input_for_clusters(input_list):
 
@@ -43,7 +33,7 @@ def process_input_for_clusters(input_list):
             for uri in input_list:
                 list_of_cluster_assignments.append( ( None, uri ) )
         else:
-            raise ClusterInputException("The assignment of clusters to URIs in inconsistent")
+            raise HypercaneClusterInputException("The assignment of clusters to URIs in inconsistent")
 
     return list_of_cluster_assignments
 
@@ -84,10 +74,10 @@ def cluster_by_dbscan(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    # TODO: Note that we do not support crawling for clustering
+    # TODO: Note that we do not support crawling for clustering, why not?
     # look at https://stackoverflow.com/questions/32807319/disable-remove-argument-in-argparse for how to remove arguments
-    if input_type == "mementos":
-        items = extract_uris_from_input(input_args)
+    if args.input_type == "mementos":
+        items = extract_uris_from_input(args.input_arguments)
         clustered_urims = process_input_for_clusters(items)
     else:
         raise NotImplementedError("Input type of {} not yet supported for clustering".format(input_type))
@@ -145,13 +135,11 @@ def time_slice(args):
 
     logger.info("beginning time slicing of collection")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     session = get_web_session(cache_storage=args.cache_storage)
 
     urims = discover_mementos_by_input_type(
-        input_type, input_args, args.crawl_depth, session
+        args.input_type, args.input_arguments,
+        args.crawl_depth, session
     )
 
     cache_storage = args.cache_storage

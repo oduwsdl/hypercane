@@ -3,21 +3,12 @@ import os
 import argparse
 import json
 
-from ..actions import add_input_args, add_default_args, get_logger, calculate_loglevel
+from ..actions import add_input_args, add_default_args, get_logger, \
+    calculate_loglevel, process_input_args
 from .cluster import process_input_for_clusters
 from ..identify import extract_uris_from_input
 from ..rank.dsa1_ranking import rank_by_dsa1_score
 from ..utils import get_web_session
-
-def process_input_args(args, parser):
-
-    parser = add_input_args(parser)
-
-    parser = add_default_args(parser)
-
-    args = parser.parse_args(args)
-
-    return args
 
 def dsa1_ranking(args):
 
@@ -58,14 +49,13 @@ def dsa1_ranking(args):
 
     logger.info("Beginning the ranking by DSA1 scoring equation")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-    
-    if input_type == "mementos":
-        items = extract_uris_from_input(input_args)
+    if args.input_type == "mementos":
+        items = extract_uris_from_input(args.input_arguments)
         clustered_urims = process_input_for_clusters(items)
     else:
-        raise NotImplementedError("Input type of {} not yet supported for ranking".format(input_type))
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for ranking".format(
+            args.input_type))
 
     ranked_urims = rank_by_dsa1_score(
         clustered_urims, session,

@@ -23,7 +23,7 @@ from simhash import Simhash
 import otmt
 
 from ..actions import add_input_args, add_default_args, \
-    get_logger, calculate_loglevel
+    get_logger, calculate_loglevel, process_input_args
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims, \
     extract_uris_from_input
@@ -31,17 +31,7 @@ from ..reduce.remove_offtopic import detect_off_topic
 from ..reduce.near_duplicates import filter_near_duplicates
 from ..utils import get_memento_datetime_and_timemap, \
     get_web_session, get_language, get_raw_simhash
-from .cluster import ClusterInputException
-
-def process_input_args(args, parser):
-
-    parser = add_input_args(parser)
-
-    parser = add_default_args(parser)
-
-    args = parser.parse_args(args)
-
-    return args
+from .cluster import HypercaneClusterInputException
 
 def process_remove_offtopic_args(args, parser):
 
@@ -97,13 +87,11 @@ def remove_offtopic(args):
 
     logger.info("Starting detection of off-topic documents...")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     session = get_web_session(cache_storage=args.cache_storage)
     dbconn = MongoClient(args.cache_storage)
     urits = discover_timemaps_by_input_type(
-        input_type, input_args, args.crawl_depth, session)
+        args.input_type, args.input_arguments, 
+        args.crawl_depth, session)
     urims = download_urits_and_extract_urims(urits, session)
 
     ontopic_mementos = detect_off_topic(
@@ -140,13 +128,10 @@ def by_language(args):
 
     logger.info("Starting detection of languages...")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     session = get_web_session(cache_storage=args.cache_storage)
 
     urims = discover_mementos_by_input_type(
-        input_type, input_args, args.crawl_depth, session
+        args.input_type, args.input_arguments, args.crawl_depth, session
     )
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
@@ -190,13 +175,11 @@ def remove_near_duplicates(args):
 
     logger.info("Starting detection of near-duplicate documents...")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     session = get_web_session(cache_storage=args.cache_storage)
 
     urims = discover_mementos_by_input_type(
-        input_type, input_args, args.crawl_depth, session
+        args.input_type, args.input_arguments,
+        args.crawl_depth, session
     )
 
     output_urims = filter_near_duplicates(urims, args.cache_storage)
@@ -219,7 +202,7 @@ def process_input_for_clusters_and_ranks(input_list):
 
     if len(list_of_cluster_assignments) != len(input_list):
 
-        raise ClusterInputException("The assignment of clusters to URIs in inconsistent")
+        raise HypercaneClusterInputException("The assignment of clusters to URIs in inconsistent")
 
     return list_of_cluster_assignments
 
@@ -240,14 +223,11 @@ def highest_ranking_per_cluster(args):
 
     logger.info("Starting selection of the highest ranked documents in input...")
 
-    input_type = args.input_type[0]
-    input_args = args.input_type[1]
-
     urim_to_rank = {}
     cluster_to_urims = {}
 
-    if input_type == "mementos":
-        items = extract_uris_from_input(input_args)
+    if args.input_type == "mementos":
+        items = extract_uris_from_input(args.input_arguments)
         ranked_and_clustered_urims = process_input_for_clusters_and_ranks(items)
 
         for entry in ranked_and_clustered_urims:
@@ -259,7 +239,9 @@ def highest_ranking_per_cluster(args):
             cluster_to_urims.setdefault(cluster, []).append(urim)
 
     else:
-        raise NotImplementedError("Input type of {} not yet supported for ranking".format(input_type))
+        raise NotImplementedError(
+            "Input type of {} not yet supported for ranking".format(
+                args.input_type))
 
     output_urims = []
 

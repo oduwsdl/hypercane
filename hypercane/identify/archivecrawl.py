@@ -128,3 +128,51 @@ def crawl_mementos(link_storage, urims, crawl_depth):
         )
     process.start()
     module_logger.info("Crawl complete")
+
+class LiveWebSpider(scrapy.Spider):
+
+    custom_settings = {
+        'DEPTH_LIMIT': 1 # 0 means no depth limit
+    }
+
+    def __init__(self, *args, **kwargs):
+
+        try:
+            self.start_urls = kwargs['start_urls']
+            self.allowed_domains = kwargs['allowed_domains']
+            self.link_storage = kwargs['link_storage']
+        except KeyError as e:
+            msg = "Failed to supply argument to WaybackSpider, details: {}".format(e)
+            module_logger.exception(msg)
+            raise WaybackSpiderInitializationException(msg)
+
+    def parse(self, response):
+
+        self.link_storage.add(response.url)
+
+        for sel in response.xpath('//a'):
+
+            href = sel.xpath('@href').extract()
+            href = extract_href_string(href)
+
+            if href is not None:
+                if href != "":
+                    yield response.follow(href, self.parse)
+
+def crawl_live_web_resources(link_storage, urirs, crawl_depth):
+    process = CrawlerProcess()
+        
+    module_logger.info("custom_settings: {}".format(LiveWebSpider.custom_settings))
+
+    LiveWebSpider.custom_settings = {
+        'DEPTH_LIMIT': int(crawl_depth)
+    }
+
+    allowed_domains = []
+
+    module_logger.info("Starting crawl of Live Web Resources")
+    process.crawl(
+        LiveWebSpider, start_urls=urirs, link_storage=link_storage, allowed_domains=allowed_domains
+        )
+    process.start()
+    module_logger.info("Crawl complete")
