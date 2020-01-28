@@ -8,7 +8,7 @@ from sklearn.cluster import DBSCAN
 from distance import hamming
 
 from ..utils import get_raw_simhash, get_memento_http_metadata
-from ..reduce.near_duplicates import NearDuplicateException
+from ..hfilter.near_duplicates import NearDuplicateException
 
 module_logger = logging.getLogger('hypercane.cluster.dbscan')
 
