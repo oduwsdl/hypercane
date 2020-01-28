@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from hypercane.actions import identify, sample, report, reduce, cluster, rank, order, synthesize
+from hypercane.actions import identify, sample, report, hfilter, cluster, rank, order, synthesize
 from hypercane.version import __useragent__
 
 supported_actions = {
@@ -11,7 +11,7 @@ supported_actions = {
     "report": report,
     "synthesize": synthesize,
     "identify": identify,
-    "filter": reduce,
+    "filter": hfilter,
     "cluster": cluster,
     "rank": rank,
     "order": order
@@ -44,7 +44,33 @@ if __name__ == '__main__':
 
         # print("action: {}".format(action))
 
-        if action in supported_actions:
+        if action == 'filter':
+
+            # print("args: {}".format(sys.argv))
+
+            command = sys.argv[2]
+            criteria = sys.argv[3]
+
+            if command == 'include-only':
+
+                if criteria == '-h' or criteria == '--help':
+                    supported_actions[action].print_include_usage()
+                else:
+                    supported_actions[action].include_criteria[criteria](
+                        sys.argv[4:])
+
+            elif command == 'exclude':
+
+                if criteria == '-h' or criteria == '--help':
+                    supported_actions[action].print_exclude_usage()
+                else:
+                    supported_actions[action].exclude_criteria[criteria](
+                        sys.argv[4:])
+
+            else:
+                print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
+
+        elif action in supported_actions:
             
             commands = supported_actions[action].supported_commands
 

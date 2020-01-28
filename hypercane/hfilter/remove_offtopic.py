@@ -12,7 +12,7 @@ from requests_futures.sessions import FuturesSession
 
 from ..utils import get_web_session, get_boilerplate_free_content
 
-module_logger = logging.getLogger('hypercane.reduce.remove_offtopic')
+module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
     

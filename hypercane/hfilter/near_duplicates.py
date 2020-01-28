@@ -7,7 +7,7 @@ from simhash import Simhash
 from ..utils import get_memento_datetime_and_timemap, \
     get_web_session, get_language, get_raw_simhash
 
-module_logger = logging.getLogger('hypercane.reduce.near_duplicates')
+module_logger = logging.getLogger('hypercane.hfilter.near_duplicates')
 
 class NearDuplicateException(Exception):
     pass
