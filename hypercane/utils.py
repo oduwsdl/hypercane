@@ -1,6 +1,7 @@
 import os
 import sys
 import otmt
+import csv
 
 from urllib.parse import urlparse
 from pymongo import MongoClient
@@ -178,7 +179,7 @@ def get_raw_simhash(urim, cache_storage):
 def get_tf_simhash(urim, cache_storage):
 
     dbconn = MongoClient(cache_storage)
-    session = get_web_session(cache_storage)
+    # session = get_web_session(cache_storage)
     db = dbconn.get_default_database()
 
     # 1 if lang of urim in cache, return it
@@ -277,5 +278,23 @@ def get_newspaper_publication_date(urim, cache_storage):
 
         return pd
 
-        
+def process_input_for_cluster_and_rank(filename):
 
+    urim_data = {}
+
+    with open(filename) as f:
+        csvreader = csv.DictReader(f)
+
+        for row in csvreader:
+            # urim_data[ row['URI-M'] ] = \
+            rowdata = {}
+            urim = row['URI-M']
+
+            for key in row.keys():
+                if key != 'URI-M':
+                    rowdata[urim][key] = row[key]
+
+            urim_data[urim] = rowdata
+
+    return urim_data
+                
