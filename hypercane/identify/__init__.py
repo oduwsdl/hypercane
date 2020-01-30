@@ -4,6 +4,8 @@ import logging
 import time
 import argparse
 import math
+import os
+import csv
 
 from random import randint
 from datetime import datetime
@@ -15,6 +17,7 @@ from requests.exceptions import RequestException
 from urllib.parse import urlparse
 
 from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resources
+from ..utils import process_input_for_cluster_and_rank
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -100,7 +103,6 @@ def extract_storygraph_arguments_from_input(input_string):
 
     return storygraph_args
     
-
 def extract_urims_from_TimeMap(timemap_json_text):
 
     urimlist = []
@@ -590,3 +592,76 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     return output_urirs
 
+def discover_resource_data_by_input_type(input_type, input_arguments, crawl_depth, session, discovery_function):
+
+    uridata = {}
+
+    input_type_keys = {
+        'mementos': 'URI-M',
+        'timemaps': 'URI-T',
+        'original-resources': 'URI-R'
+    }
+
+    if input_type == 'archiveit' or input_type == 'storygraph':
+        input_data = input_arguments
+        uridata = None
+    else:
+        uridata = process_input_for_cluster_and_rank(input_arguments, input_type_keys[input_type])
+        input_data = list(uridata.keys())
+
+    print("uridata: {}".format(uridata))
+
+    output_uris = discovery_function(
+        input_type, input_data,
+        crawl_depth, session)
+
+    print("output_uris: {}".format(output_uris))
+
+    if uridata is None:
+        uridata = {}
+        for uri in output_uris:
+            uridata[uri] = {}
+
+    return uridata
+
+def save_resource_data(output_filename, resource_data, output_type):
+
+    output_type_keys = {
+        'mementos': 'URI-M',
+        'timemaps': 'URI-T',
+        'original-resources': 'URI-R'
+    }
+
+    type_key = output_type_keys[output_type]
+
+    with open(output_filename, 'w') as output:
+
+        fieldnames = [ type_key ]
+
+        for uri in resource_data:
+            if len(list(resource_data[uri].keys())) > 0:
+                fieldnames.append(list(resource_data[uri].keys()))
+            # just do it once
+            break
+
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+
+        writer.writeheader()
+
+        print(resource_data)
+
+        for uri in resource_data.keys():
+
+            print("writing out record for {}".format(uri))
+
+            row = {}
+            row[ type_key ] = uri
+
+            for key in row.keys():
+                if key != type_key:
+                    if key in resource_data[uri]:
+                        row[key] = resource_data[uri][key]
+                    else:
+                        row[key] = None
+
+            writer.writerow(row)
