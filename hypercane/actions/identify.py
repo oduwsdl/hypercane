@@ -1,24 +1,20 @@
 import sys
-import os
-import argparse
-import json
-import csv
-
-from urllib.parse import urlparse
-from scrapy.crawler import CrawlerProcess
-
-from ..identify import list_seed_uris, generate_archiveit_urits, \
-    download_urits_and_extract_urims, discover_timemaps_by_input_type, \
-    extract_uris_from_input, discover_mementos_by_input_type, \
-    discover_original_resources_by_input_type, \
-    discover_resource_data_by_input_type
-from ..identify.archivecrawl import crawl_mementos, StorageObject
-from ..version import __useragent__
-from . import get_logger, calculate_loglevel, \
-    add_default_args, process_input_args
-from ..utils import get_web_session, save_resource_data
 
 def discover_timemaps(args):
+
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import process_input_args, get_logger, \
+            calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_timemaps_by_input_type
 
     parser = argparse.ArgumentParser(
         description="Discover the timemaps in a web archive collection.",
@@ -49,6 +45,20 @@ def discover_timemaps(args):
 
 def discover_original_resources(args):
 
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import process_input_args, get_logger, \
+            calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_original_resources_by_input_type
+
     parser = argparse.ArgumentParser(
         description="Discover the original resources in a web archive collection.",
         prog="hc identify original-resources"
@@ -76,6 +86,20 @@ def discover_original_resources(args):
     logger.info("Done with original resource discovery run. Output is in {}".format(args.output_filename))
 
 def discover_mementos(args):
+
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import process_input_args, get_logger, \
+            calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_mementos_by_input_type
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",

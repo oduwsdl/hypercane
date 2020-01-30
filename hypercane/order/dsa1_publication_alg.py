@@ -1,13 +1,18 @@
-import concurrent.futures
-
-from datetime import datetime
-
-from ..utils import get_newspaper_publication_date
+import sys
 
 class OrderByDSA1PublicationAlgorithmError(Exception):
     pass
 
 def order_by_dsa1_publication_alg(urims, cache_storage):
+
+    if 'hypercane.utils' not in sys.modules:
+        from ..utils import get_newspaper_publication_date
+
+    if 'datetime' not in sys.modules:
+        from datetime import datetime
+
+    if 'concurrent.futures' not in sys.modules:
+        import concurrent.futures
 
     publication_datetime_to_urim = []
 

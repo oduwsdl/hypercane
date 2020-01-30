@@ -1,6 +1,6 @@
 import os
 import sys
-import otmt
+# import otmt
 import csv
 
 from urllib.parse import urlparse
@@ -153,6 +153,9 @@ def get_language(urim, cache_storage):
 
 def get_raw_simhash(urim, cache_storage):
 
+    if 'otmt' not in sys.modules:
+        import otmt
+
     dbconn = MongoClient(cache_storage)
     session = get_web_session(cache_storage)
     db = dbconn.get_default_database()
@@ -210,6 +213,9 @@ def get_tf_simhash(urim, cache_storage):
 
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
 
+    if 'otmt' not in sys.modules:
+        import otmt
+
     if dbconn is None:
         dbconn = MongoClient(cache_storage)
     
@@ -247,6 +253,9 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         return bytes(bpfree, "utf8")
 
 def get_newspaper_publication_date(urim, cache_storage):
+
+    if 'otmt' not in sys.modules:
+        import otmt
 
     dbconn = MongoClient(cache_storage)
     session = get_web_session(cache_storage)

@@ -1,11 +1,9 @@
-import logging
 import sys
-import argparse
-import pickle
-
-from ..version import __useragent__
 
 def get_logger(appname, loglevel, logfile):
+
+    if 'logging' not in sys.modules:
+        import logging
 
     logger = logging.getLogger(appname)
 
@@ -22,7 +20,10 @@ def get_logger(appname, loglevel, logfile):
     return logger
 
 def calculate_loglevel(verbose=False, quiet=False):
-  
+
+    if 'logging' not in sys.modules:
+        import logging
+
     # verbose trumps quiet
     if verbose:
         return logging.DEBUG
@@ -33,6 +34,9 @@ def calculate_loglevel(verbose=False, quiet=False):
     return logging.INFO
 
 def add_default_args(parser):
+
+    if 'hypercane.version' not in sys.modules:
+        from hypercane.version import __useragent__
 
     parser.add_argument('-l', '--logfile', dest='logfile',
         default=sys.stdout,
@@ -75,6 +79,9 @@ def add_input_args(parser):
     return parser
 
 def test_input_args(args):
+
+    if 'argparse' not in sys.modules:
+        import argparse
 
     input_types_requiring_files = [
         "timemaps",

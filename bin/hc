@@ -1,11 +1,9 @@
 #!python
 
-import argparse
 import sys
 import importlib
 
-from hypercane.version import __useragent__
-
+# we defer imports for performance
 supported_actions = {
     "sample": "hypercane.actions.sample",
     "report": "hypercane.actions.report",
@@ -47,6 +45,7 @@ if __name__ == '__main__':
         if action == "-h" or action == "--help":
             print_overall_usage()
         elif action == "--version":
+            from hypercane.version import __useragent__
             print(__useragent__)
         else:
             actionmodule = importlib.import_module(supported_actions[action])
