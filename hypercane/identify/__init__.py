@@ -139,7 +139,7 @@ def download_urits_and_extract_urims(uritlist, session):
                 timemap_content = convert_LinkTimeMap_to_dict(r.text)
                 urims = extract_urims_from_TimeMap(timemap_content)
 
-            urimlist.extend(urims)
+                urimlist.extend(urims)
 
             working_list.remove(workinguri)
             del futures[workinguri]
@@ -482,12 +482,14 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
     elif input_type == "mementos":
 
-        output_urims = extract_uris_from_input(input_args)
+        output_urims = input_args
+
+        print(output_urims)
 
         if crawl_depth > 1:
             urits = []
             link_storage = StorageObject()
-            crawl_mementos(link_storage, urims, crawl_depth)
+            crawl_mementos(link_storage, output_urims, crawl_depth)
 
             for item in link_storage.storage:
                 urits.append(item[0])

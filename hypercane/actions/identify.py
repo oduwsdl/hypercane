@@ -2,6 +2,7 @@ import sys
 import os
 import argparse
 import json
+import csv
 
 from urllib.parse import urlparse
 from scrapy.crawler import CrawlerProcess
@@ -14,7 +15,7 @@ from ..identify.archivecrawl import crawl_mementos, StorageObject
 from ..version import __useragent__
 from . import get_logger, calculate_loglevel, \
     add_default_args, process_input_args
-from ..utils import get_web_session
+from ..utils import get_web_session, process_input_for_cluster_and_rank
 
 def discover_timemaps(args):
 
@@ -95,13 +96,59 @@ def discover_mementos(args):
 
     logger.info("Starting memento discovery run.")
 
+    urimdata = {}
+
+    if args.input_type == 'mementos':
+        if os.path.exists(args.input_arguments):
+            urimdata = process_input_for_cluster_and_rank(args.input_arguments)
+            input_data = list(urimdata.keys())
+        else:
+            input_data = extract_uris_from_input(args.input_arguments)
+            for urim in input_data:
+                urimdata[urim] = {}
+
+    else:
+        input_data = args.input_arguments
+        urimdata = None
+
     output_urims = discover_mementos_by_input_type(
-        args.input_type, args.input_arguments,
+        args.input_type, input_data,
         args.crawl_depth, session)
 
-    with open(args.output_filename, 'w') as output:
+    if urimdata is None:
+        urimdata = {}
         for urim in output_urims:
-            output.write("{}\n".format(urim))
+            urimdata[urim] = {}
+
+    with open(args.output_filename, 'w') as output:
+
+        fieldnames = ['URI-M']
+
+        for urim in urimdata:
+            if len(list(urimdata[urim].keys())) > 0:
+                fieldnames.append(list(urimdata[urim].keys()))
+            # just do it once
+            break
+
+        print("fieldnames: {}".format(fieldnames))
+
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+
+        writer.writeheader()
+
+        for urim in output_urims:
+
+            row = {}
+            row['URI-M'] = urim
+
+            for key in row.keys():
+                if key != 'URI-M':
+                    if key in urimdata[urim]:
+                        row[key] = urimdata[urim][key]
+                    else:
+                        row[key] = None
+
+            writer.writerow(row)
 
     logger.info("Done with memento discovery run. Output is in {}".format(args.output_filename))
 

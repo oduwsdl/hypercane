@@ -3,7 +3,6 @@ import os
 import argparse
 import json
 import concurrent.futures
-import langdetect
 import errno
 
 from datetime import datetime
@@ -29,6 +28,8 @@ from ..identify import discover_timemaps_by_input_type, \
     extract_uris_from_input
 from ..hfilter.remove_offtopic import detect_off_topic
 from ..hfilter.near_duplicates import filter_near_duplicates
+from ..hfilter.languages import language_included, language_not_included, \
+    filter_languages
 from ..utils import get_memento_datetime_and_timemap, \
     get_web_session, get_language, get_raw_simhash
 from .cluster import HypercaneClusterInputException
@@ -211,6 +212,31 @@ from .cluster import HypercaneClusterInputException
 
 #     logger.info("Finished selection of highest ranked documents in input; output is at {}".format(args.output_filename))
 
+def start_language_processing(parser, args):
+
+    parser.add_argument('--lang', '--languages', dest='languages',
+        help="The list of languages to match, separated by commas.",
+        required=True
+    )
+
+    args = process_input_args(args, parser)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting filtering of mementos by languages...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urims = discover_mementos_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth, session
+    )
+
+    return args, logger, urims
+
 def include_languages(args):
     
     parser = argparse.ArgumentParser(
@@ -218,102 +244,44 @@ def include_languages(args):
         prog="hc filter include-only languages"
     )
 
-    parser.add_argument('--lang', '--languages', dest='languages',
-        help="The list of languages to match, separated by commas.",
-        required=True
-    )
-
-    args = process_input_args(args, parser)
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
-    logger.info("Starting filtering of mementos by languages...")
-
-    session = get_web_session(cache_storage=args.cache_storage)
-
-    urims = discover_mementos_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth, session
-    )
+    args, logger, urims = start_language_processing(parser, args)
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
     desired_languages = [ i.strip() for i in args.languages.split(',')]
     logger.info("comparing languages of documents with requested languages of {}...".format(desired_languages))
 
-    with open(args.output_filename, 'w') as f:
+    filtered_urims = filter_languages(
+        urims, args.cache_storage, desired_languages, language_included)
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_urim = { executor.submit(get_language, urim, args.cache_storage): urim for urim in urims }
+    with open(args.output_filename, 'w') as g:
+        for urim in filtered_urims:
+            g.write("{}\n".format(urim))
 
-            for future in concurrent.futures.as_completed(future_to_urim):
-                urim = future_to_urim[future]
-
-                try:
-                    language = future.result()
-                    if language in desired_languages:
-                        f.write("{}\n".format(urim))
-                except Exception as exc:
-                    logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                    logger.critical("failed to detect language for [{}] quitting...".format(urim))
-                    sys.exit(errno.EWOULDBLOCK)
-
-    logger.info("done with filtering to only include the given languages, mementos in the languages of {} are in {}".format(desired_languages, args.output_filename))
+    logger.info("done, mementos including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
 def exclude_languages(args):
 
     parser = argparse.ArgumentParser(
-        description="Exclude mementos in the specified languages.",
+        description="Exclude mementos with the specified languages.",
         prog="hc filter exclude languages"
     )
 
-    parser.add_argument('--lang', '--languages', dest='languages',
-        help="The list of languages to match, separated by commas.",
-        required=True
-    )
-
-    args = process_input_args(args, parser)
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
-    logger.info("Starting filtering of mementos by languages...")
-
-    session = get_web_session(cache_storage=args.cache_storage)
-
-    urims = discover_mementos_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth, session
-    )
+    args, logger, urims = start_language_processing(parser, args)
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
     desired_languages = [ i.strip() for i in args.languages.split(',')]
     logger.info("comparing languages of documents with requested languages of {}...".format(desired_languages))
 
-    with open(args.output_filename, 'w') as f:
+    filtered_urims = filter_languages(
+        urims, args.cache_storage, desired_languages, language_not_included)
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_urim = { executor.submit(get_language, urim, args.cache_storage): urim for urim in urims }
+    with open(args.output_filename, 'w') as g:
+        for urim in filtered_urims:
+            g.write("{}\n".format(urim))
 
-            for future in concurrent.futures.as_completed(future_to_urim):
-                urim = future_to_urim[future]
-
-                try:
-                    language = future.result()
-                    if language not in desired_languages:
-                        f.write("{}\n".format(urim))
-                except Exception as exc:
-                    logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                    logger.critical("failed to detect language for [{}] quitting...".format(urim))
-                    sys.exit(errno.EWOULDBLOCK)
-
-    logger.info("done with filtering to exclude the given languages, mementos in the languages of {} are in {}".format(desired_languages, args.output_filename))
+    logger.info("done, mementos not including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
 def print_usage():
 
