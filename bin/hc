@@ -2,19 +2,19 @@
 
 import argparse
 import sys
+import importlib
 
-from hypercane.actions import identify, sample, report, hfilter, cluster, rank, order, synthesize
 from hypercane.version import __useragent__
 
 supported_actions = {
-    "sample": sample,
-    "report": report,
-    "synthesize": synthesize,
-    "identify": identify,
-    "filter": hfilter,
-    "cluster": cluster,
-    "rank": rank,
-    "order": order
+    "sample": "hypercane.actions.sample",
+    "report": "hypercane.actions.report",
+    "synthesize": "hypercane.actions.synthesize",
+    "identify": "hypercane.actions.identify",
+    "filter": "hypercane.actions.hfilter",
+    "cluster": "hypercane.actions.cluster",
+    "rank": "hypercane.actions.rank",
+    "order": "hypercane.actions.order"
 }
 
 def print_overall_usage():
@@ -44,62 +44,63 @@ if __name__ == '__main__':
 
         # print("action: {}".format(action))
 
-        if action == 'filter':
+        if action == "-h" or action == "--help":
+            print_overall_usage()
+        elif action == "--version":
+            print(__useragent__)
+        else:
+            actionmodule = importlib.import_module(supported_actions[action])
 
-            # print("args: {}".format(sys.argv))
+            if action == 'filter':
 
-            command = sys.argv[2]
-            criteria = sys.argv[3]
-
-            if command == 'include-only':
-
-                if criteria == '-h' or criteria == '--help':
-                    supported_actions[action].print_include_usage()
-                else:
-                    supported_actions[action].include_criteria[criteria](
-                        sys.argv[4:])
-
-            elif command == 'exclude':
-
-                if criteria == '-h' or criteria == '--help':
-                    supported_actions[action].print_exclude_usage()
-                else:
-                    supported_actions[action].exclude_criteria[criteria](
-                        sys.argv[4:])
-
-            else:
-                print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
-
-        elif action in supported_actions:
-            
-            commands = supported_actions[action].supported_commands
-
-            if len(sys.argv) > 2:
+                # print("args: {}".format(sys.argv))
 
                 command = sys.argv[2]
+                criteria = sys.argv[3]
 
-                # print("command: {}".format(command))
+                if command == 'include-only':
 
-                if command in commands:
-                    
-                    supported_actions[action].supported_commands[command](
-                        sys.argv[3:])
+                    if criteria == '-h' or criteria == '--help':
+
+                        actionmodule.print_include_usage()
+                    else:
+                        actionmodule.include_criteria[criteria](sys.argv[4:])
+
+                elif command == 'exclude':
+
+                    if criteria == '-h' or criteria == '--help':
+                        actionmodule.print_exclude_usage()
+                    else:
+                        actionmodule.exclude_criteria[criteria](sys.argv[4:])
+
                 else:
-                    if command != '-h' and command != '--help':
-                        print("ERROR: command {} is not supported for action {}\n".format(
-                            command, action
-                        ))
-                    supported_actions[action].print_usage()
+                    print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
 
-            else:
-                print("ERROR: action {} requires a command\n".format(action))
-                supported_actions[action].print_usage()
+            elif action in supported_actions:
+                
+                commands = actionmodule.supported_commands
 
-        else:
-            if action == "-h" or action == "--help":
-                print_overall_usage()
-            elif action == "--version":
-                print(__useragent__)
+                if len(sys.argv) > 2:
+
+                    command = sys.argv[2]
+
+                    # print("command: {}".format(command))
+
+                    if command in commands:
+                        
+                        actionmodule.supported_commands[command](
+                            sys.argv[3:])
+                    else:
+                        if command != '-h' and command != '--help':
+                            print("ERROR: command {} is not supported for action {}\n".format(
+                                command, action
+                            ))
+                        actionmodule.print_usage()
+
+                else:
+                    print("ERROR: action {} requires a command\n".format(action))
+                    actionmodule.print_usage()
+
             else:
                 print("ERROR: unsupported action {}\n".format(action))
                 print_overall_usage()
