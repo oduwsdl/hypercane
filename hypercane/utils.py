@@ -298,3 +298,42 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
 
     return urim_data
                 
+def save_resource_data(output_filename, resource_data, output_type, urilist):
+
+    output_type_keys = {
+        'mementos': 'URI-M',
+        'timemaps': 'URI-T',
+        'original-resources': 'URI-R'
+    }
+
+    type_key = output_type_keys[output_type]
+
+    with open(output_filename, 'w') as output:
+
+        fieldnames = [ type_key ]
+
+        for uri in resource_data:
+            if len(list(resource_data[uri].keys())) > 0:
+                fieldnames.append(list(resource_data[uri].keys()))
+            # just do it once
+            break
+
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+
+        writer.writeheader()
+
+        for uri in resource_data.keys():
+
+            if uri in urilist:
+
+                row = {}
+                row[ type_key ] = uri
+
+                for key in row.keys():
+                    if key != type_key:
+                        if key in resource_data[uri]:
+                            row[key] = resource_data[uri][key]
+                        else:
+                            row[key] = None
+
+                writer.writerow(row)

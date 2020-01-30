@@ -8,14 +8,14 @@ from ..utils import get_memento_http_metadata
 
 module_logger = logging.getLogger('hypercane.cluster.time_slice')
 
-def execute_time_slice(urims, cache_storage):
+def execute_time_slice(urimdata, cache_storage):
 
     mementos = []
 
     # extract the memento datetimes
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=[ "memento-datetime"]): urim for urim in urims }
+        future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=[ "memento-datetime"]): urim for urim in urimdata.keys() }
 
         for future in concurrent.futures.as_completed(future_to_urim):
 
@@ -55,4 +55,14 @@ def execute_time_slice(urims, cache_storage):
     if len(current_slice) > 0:
         slices.append(current_slice)
 
-    return slices
+    for i in range(0, len(slices)):
+
+        for urim in slices[i]:
+
+            if 'Cluster' in urimdata[urim]:
+                # preserve original cluster assignment
+                urimdata[urim]['Cluster'] = "{}~~~{}".format( urimdata[ urim['Cluster'] ], i )
+            else:
+                urimdata[urim]['Cluster'] = i        
+
+    return urimdata

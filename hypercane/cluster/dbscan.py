@@ -15,18 +15,17 @@ module_logger = logging.getLogger('hypercane.cluster.dbscan')
 def shdist(a, b, **oo):
     return hamming(a, b) / 64
 
-def cluster_by_simhash_distance(urim_clusters, cache_storage, simhash_function=get_raw_simhash, min_samples=2, eps=0.3):
-
-    output_clusters = {}
+def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_raw_simhash, min_samples=2, eps=0.3):
 
     # learn existing cluster assignments
     urim_to_cluster = {}
     clusters_to_urims = {}
-    for entry in urim_clusters:
-        urim = entry[1]
-        cluster = entry[0]
-        urim_to_cluster[urim] = cluster
-        clusters_to_urims.setdefault(cluster, []).append(urim)
+    for urim in urimdata:
+
+        try:
+            clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+        except KeyError:
+            clusters_to_urims.setdefault( None, [] ).append(urim)
 
     # compute simhashes
     urim_to_simhash = {}
@@ -62,35 +61,35 @@ def cluster_by_simhash_distance(urim_clusters, cache_storage, simhash_function=g
         db = DBSCAN(eps=eps, min_samples=min_samples, metric=shdist).fit(X.T)
 
         for index, label in enumerate(db.labels_):
+
             urim = clusters_to_urims[cluster][index]
            
             if cluster is None:
-                output_clusters[urim] = "{}".format(label)
+                urimdata[urim]['Cluster'] = "{}".format(label)
             else:
                  # preserve original cluster assignment
-                output_clusters[urim] = "{}~~~{}".format(cluster, label)
+                urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
     
-    return output_clusters
+    return urimdata
 
-def cluster_by_memento_datetime(urim_clusters, cache_storage, min_samples=5, eps=0.5):
+def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5):
 
     output_clusters = {}
 
     # learn existing cluster assignments
     urim_to_cluster = {}
     clusters_to_urims = {}
-    for entry in urim_clusters:
-        urim = entry[1]
-        cluster = entry[0]
-        urim_to_cluster[urim] = cluster
-        clusters_to_urims.setdefault(cluster, []).append(urim)
+    for urim in urimdata:
 
-    # compute simhashes
+        try:
+            clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+        except KeyError:
+            clusters_to_urims.setdefault( None, [] ).append(urim)
+
     urim_to_mementodatetime = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        # TODO: allow user to choose tf-simhash rather than raw simhash
         future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=["memento-datetime"]): urim for urim in urim_to_cluster.keys() }
 
         for future in concurrent.futures.as_completed(future_to_urim):

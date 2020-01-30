@@ -83,14 +83,13 @@ def get_memento_damage(memento_uri, memento_damage_url, session):
     else:
         return 0
 
-def rank_by_dsa1_score(urim_clusters, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
+def rank_by_dsa1_score(urimdata, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
 
     urim_to_cluster = {}
     clusters_to_urims = {}
 
-    for entry in urim_clusters:
-        urim = entry[1]
-        cluster = entry[0]
+    for urim in urimdata:
+        cluster = urimdata[urim]['Cluster']
 
         urim_to_cluster[urim] = cluster
         clusters_to_urims.setdefault(cluster, []).append(urim)
@@ -111,15 +110,7 @@ def rank_by_dsa1_score(urim_clusters, session, memento_damage_url=None, damage_w
 
             urim_to_score[urim] = score
 
-    outptut_data = []
-
     for urim in urim_to_score:
-        outptut_data.append(
-            (
-                urim,
-                urim_to_cluster[urim],
-                urim_to_score[urim]
-            )
-        )
+        urimdata[urim]['Rank---DSA1-Score'] = urim_to_score[urim]
 
-    return outptut_data
+    return urimdata

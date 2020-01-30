@@ -486,8 +486,6 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         output_urims = input_args
 
-        print(output_urims)
-
         if crawl_depth > 1:
             urits = []
             link_storage = StorageObject()
@@ -609,13 +607,9 @@ def discover_resource_data_by_input_type(input_type, input_arguments, crawl_dept
         uridata = process_input_for_cluster_and_rank(input_arguments, input_type_keys[input_type])
         input_data = list(uridata.keys())
 
-    print("uridata: {}".format(uridata))
-
     output_uris = discovery_function(
         input_type, input_data,
         crawl_depth, session)
-
-    print("output_uris: {}".format(output_uris))
 
     if uridata is None:
         uridata = {}
@@ -624,44 +618,3 @@ def discover_resource_data_by_input_type(input_type, input_arguments, crawl_dept
 
     return uridata
 
-def save_resource_data(output_filename, resource_data, output_type):
-
-    output_type_keys = {
-        'mementos': 'URI-M',
-        'timemaps': 'URI-T',
-        'original-resources': 'URI-R'
-    }
-
-    type_key = output_type_keys[output_type]
-
-    with open(output_filename, 'w') as output:
-
-        fieldnames = [ type_key ]
-
-        for uri in resource_data:
-            if len(list(resource_data[uri].keys())) > 0:
-                fieldnames.append(list(resource_data[uri].keys()))
-            # just do it once
-            break
-
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-
-        writer.writeheader()
-
-        print(resource_data)
-
-        for uri in resource_data.keys():
-
-            print("writing out record for {}".format(uri))
-
-            row = {}
-            row[ type_key ] = uri
-
-            for key in row.keys():
-                if key != type_key:
-                    if key in resource_data[uri]:
-                        row[key] = resource_data[uri][key]
-                    else:
-                        row[key] = None
-
-            writer.writerow(row)

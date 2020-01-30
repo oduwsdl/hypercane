@@ -5,8 +5,9 @@ import json
 
 from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel, process_input_args
-from ..identify import extract_uris_from_input
-from ..utils import get_web_session
+from ..identify import extract_uris_from_input, \
+    discover_resource_data_by_input_type, discover_mementos_by_input_type
+from ..utils import get_web_session, save_resource_data
 from ..order.dsa1_publication_alg import order_by_dsa1_publication_alg
 
 def pubdate_else_memento_datetime(args):
@@ -29,22 +30,22 @@ def pubdate_else_memento_datetime(args):
     session = get_web_session(cache_storage=args.cache_storage)
 
     if args.input_type == "mementos":
-        urims = extract_uris_from_input(args.input_arguments)
+        # urims = extract_uris_from_input(args.input_arguments)
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
     else:
         # TODO: derive URI-Ms from input type
         raise NotImplementedError("Input type of {} not yet supported for clustering".format(args.input_type))
 
-    logger.info("extracted {} mementos from input".format(len(urims)))
+    logger.info("extracted {} mementos from input".format(len(urimdata.keys())))
 
-    ordered_urims = order_by_dsa1_publication_alg(urims, args.cache_storage)
+    ordered_urims = order_by_dsa1_publication_alg(list(urimdata.keys()), args.cache_storage)
 
     logger.info("placed {} mementos in order".format(len(ordered_urims)))
 
-    with open(args.output_filename, 'w') as f:
-        for item in ordered_urims:
-            urim = item[1]
-
-            f.write("{}\n".format(urim))
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
     logger.info("Finished ordering documents, output is at {}".format(args.output_filename))
 
@@ -53,7 +54,7 @@ def print_usage():
     print("""'hc order' is used to employ techniques that order the mementos from the input
 
     Supported commands:
-    * dsa1-publication-alg - order the documents according to AlNoamany's Algorithm
+    * pubdate-else-memento-datetime - order the documents according to AlNoamany's Algorithm
 
     Examples:
 
@@ -62,7 +63,7 @@ def print_usage():
 """)
 
 supported_commands = {
-    "pubdate_else_memento_datetime": pubdate_else_memento_datetime
+    "pubdate-else-memento-datetime": pubdate_else_memento_datetime
     # "memento-datetime": memento_datetime,
 }
 

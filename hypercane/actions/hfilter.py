@@ -25,13 +25,14 @@ from ..actions import add_input_args, add_default_args, \
     get_logger, calculate_loglevel, process_input_args
 from ..identify import discover_timemaps_by_input_type, \
     discover_mementos_by_input_type, download_urits_and_extract_urims, \
-    extract_uris_from_input
+    extract_uris_from_input, discover_resource_data_by_input_type
 from ..hfilter.remove_offtopic import detect_off_topic
 from ..hfilter.near_duplicates import filter_near_duplicates
 from ..hfilter.languages import language_included, language_not_included, \
     filter_languages
 from ..utils import get_memento_datetime_and_timemap, \
-    get_web_session, get_language, get_raw_simhash
+    get_web_session, get_language, get_raw_simhash, \
+    save_resource_data
 from .cluster import HypercaneClusterInputException
 
 # def process_remove_offtopic_args(args, parser):
@@ -231,11 +232,12 @@ def start_language_processing(parser, args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    urims = discover_mementos_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth, session
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
     )
 
-    return args, logger, urims
+    return args, logger, urimdata
 
 def include_languages(args):
     
@@ -244,7 +246,8 @@ def include_languages(args):
         prog="hc filter include-only languages"
     )
 
-    args, logger, urims = start_language_processing(parser, args)
+    args, logger, urimdata = start_language_processing(parser, args)
+    urims = list(urimdata.keys())
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
@@ -254,9 +257,7 @@ def include_languages(args):
     filtered_urims = filter_languages(
         urims, args.cache_storage, desired_languages, language_included)
 
-    with open(args.output_filename, 'w') as g:
-        for urim in filtered_urims:
-            g.write("{}\n".format(urim))
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
     logger.info("done, mementos including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
@@ -267,7 +268,8 @@ def exclude_languages(args):
         prog="hc filter exclude languages"
     )
 
-    args, logger, urims = start_language_processing(parser, args)
+    args, logger, urimdata = start_language_processing(parser, args)
+    urims = list(urimdata.keys())
 
     logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
@@ -277,9 +279,7 @@ def exclude_languages(args):
     filtered_urims = filter_languages(
         urims, args.cache_storage, desired_languages, language_not_included)
 
-    with open(args.output_filename, 'w') as g:
-        for urim in filtered_urims:
-            g.write("{}\n".format(urim))
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
     logger.info("done, mementos not including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
