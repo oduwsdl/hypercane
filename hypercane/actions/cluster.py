@@ -1,26 +1,28 @@
 import sys
-import os
-import argparse
-import json
-import concurrent.futures
-import math
-
-from datetime import datetime
-
-from ..actions import add_input_args, add_default_args, get_logger, \
-    calculate_loglevel, process_input_args
-from ..identify import discover_timemaps_by_input_type, \
-    discover_mementos_by_input_type, download_urits_and_extract_urims, \
-    extract_uris_from_input, discover_resource_data_by_input_type
-from ..utils import get_web_session, get_memento_http_metadata, \
-    get_raw_simhash, get_tf_simhash, save_resource_data
-from ..cluster.time_slice import execute_time_slice
-from ..cluster.dbscan import cluster_by_simhash_distance, cluster_by_memento_datetime
 
 class HypercaneClusterInputException(Exception):
     pass
 
 def cluster_by_dbscan(args):
+
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import process_input_args, get_logger, \
+            calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data, \
+            get_raw_simhash, get_tf_simhash
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_mementos_by_input_type
+
+    if 'hypercane.cluster.dbscan' not in sys.modules:
+        from hypercane.cluster.dbscan import cluster_by_simhash_distance, \
+            cluster_by_memento_datetime
 
     parser = argparse.ArgumentParser(
         description="Cluster the input using the dbscan algorithm.",
@@ -79,7 +81,7 @@ def cluster_by_dbscan(args):
         logger.info("Clustering URI-Ms by Term Frequency Simhash")
         urimdata = cluster_by_simhash_distance(
             urimdata, args.cache_storage, 
-            simhash_function=get_raw_simhash, 
+            simhash_function=get_tf_simhash, 
             min_samples=int(args.min_samples),
             eps=float(args.eps))
 
@@ -99,7 +101,24 @@ def cluster_by_dbscan(args):
 
 
 def time_slice(args):
-    
+
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import process_input_args, get_logger, \
+            calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_mementos_by_input_type
+
+    if 'hypercane.cluster.time_slice' not in sys.modules:
+        from hypercane.cluster.time_slice import execute_time_slice
+
     parser = argparse.ArgumentParser(
         description="Cluster the input into slices based on memento-datetime.",
         prog="hc cluster time-slice"
