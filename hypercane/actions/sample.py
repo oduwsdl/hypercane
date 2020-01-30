@@ -2,11 +2,9 @@ import sys
 
 def sample_with_true_random_args(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import add_input_args, add_default_args
+    from hypercane.actions import add_input_args, add_default_args
 
     parser = argparse.ArgumentParser(
         description="Sample random URLs from a web archive collection. Only Archive-It is supported at this time.",
@@ -25,18 +23,11 @@ def sample_with_true_random_args(args):
 
 def sample_with_true_random(args):
     
-    if 'hypercane.sample.true_random' not in sys.modules:
-        from hypercane.sample.true_random import select_true_random
-
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import get_logger, calculate_loglevel
-
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session, save_resource_data
-
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
+    from hypercane.sample.true_random import select_true_random
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
 
     args = sample_with_true_random_args(args)
 
@@ -59,7 +50,7 @@ def sample_with_true_random(args):
     sampled_urims = select_true_random(list(urimdata.keys()), int(args.sample_count))
 
     logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
-    save_resource_data(args.output_filename, urimdata, 'original-resources', list(urimdata.keys()))
+    save_resource_data(args.output_filename, urimdata, 'original-resources', sampled_urims)
 
     logger.info("Done sampling.")
 

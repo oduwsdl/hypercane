@@ -2,22 +2,17 @@ import sys
 
 def dsa1_ranking(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
 
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.utils import get_web_session, save_resource_data
 
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
 
-    if 'hypercane.rank.dsa1_ranking' not in sys.modules:
-        from hypercane.rank.dsa1_ranking import rank_by_dsa1_score
+    from hypercane.rank.dsa1_ranking import rank_by_dsa1_score
 
     parser = argparse.ArgumentParser(
         description="Rank the input using the DSA1 scoring equation.",

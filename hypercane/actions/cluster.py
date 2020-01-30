@@ -5,24 +5,19 @@ class HypercaneClusterInputException(Exception):
 
 def cluster_by_dbscan(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
 
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session, save_resource_data, \
-            get_raw_simhash, get_tf_simhash
+    from hypercane.utils import get_web_session, save_resource_data, \
+        get_raw_simhash, get_tf_simhash
 
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
 
-    if 'hypercane.cluster.dbscan' not in sys.modules:
-        from hypercane.cluster.dbscan import cluster_by_simhash_distance, \
-            cluster_by_memento_datetime
+    from hypercane.cluster.dbscan import cluster_by_simhash_distance, \
+        cluster_by_memento_datetime
 
     parser = argparse.ArgumentParser(
         description="Cluster the input using the dbscan algorithm.",
@@ -102,22 +97,17 @@ def cluster_by_dbscan(args):
 
 def time_slice(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
 
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.utils import get_web_session, save_resource_data
 
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
 
-    if 'hypercane.cluster.time_slice' not in sys.modules:
-        from hypercane.cluster.time_slice import execute_time_slice
+    from hypercane.cluster.time_slice import execute_time_slice
 
     parser = argparse.ArgumentParser(
         description="Cluster the input into slices based on memento-datetime.",
