@@ -1,14 +1,12 @@
-import argparse
-import random
-
-from datetime import datetime
-
-from ..sample.true_random import select_true_random
-from . import get_logger, calculate_loglevel, add_default_args, add_input_args
-from ..utils import get_web_session
-from ..identify import discover_mementos_by_input_type, discover_timemaps_by_input_type
+import sys
 
 def sample_with_true_random_args(args):
+
+    if 'argparse' not in sys.modules:
+        import argparse
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import add_input_args, add_default_args
 
     parser = argparse.ArgumentParser(
         description="Sample random URLs from a web archive collection. Only Archive-It is supported at this time.",
@@ -27,6 +25,19 @@ def sample_with_true_random_args(args):
 
 def sample_with_true_random(args):
     
+    if 'hypercane.sample.true_random' not in sys.modules:
+        from hypercane.sample.true_random import select_true_random
+
+    if 'hypercane.actions' not in sys.modules:
+        from hypercane.actions import get_logger, calculate_loglevel
+
+    if 'hypercane.utils' not in sys.modules:
+        from hypercane.utils import get_web_session, save_resource_data
+
+    if 'hypercane.identify' not in sys.modules:
+        from hypercane.identify import discover_resource_data_by_input_type, \
+            discover_mementos_by_input_type
+
     args = sample_with_true_random_args(args)
 
     logger = get_logger(
@@ -39,17 +50,16 @@ def sample_with_true_random(args):
 
     logger.info("Starting random sampling of URI-Ms.")
 
-    urims = discover_mementos_by_input_type(
-        args.input_type, args.input_arguments,
-        args.crawl_depth, session)
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
 
     logger.info("Executing select true random algorithm")
-    sampled_urims = select_true_random(urims, int(args.sample_count))
+    sampled_urims = select_true_random(list(urimdata.keys()), int(args.sample_count))
 
     logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
-    with open(args.output_filename, 'w') as output:
-        for urim in sampled_urims:
-            output.write("{}\n".format(urim))
+    save_resource_data(args.output_filename, urimdata, 'original-resources', list(urimdata.keys()))
 
     logger.info("Done sampling.")
 
