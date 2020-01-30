@@ -10,12 +10,13 @@ from scrapy.crawler import CrawlerProcess
 from ..identify import list_seed_uris, generate_archiveit_urits, \
     download_urits_and_extract_urims, discover_timemaps_by_input_type, \
     extract_uris_from_input, discover_mementos_by_input_type, \
-    discover_original_resources_by_input_type
+    discover_original_resources_by_input_type, \
+    discover_resource_data_by_input_type, save_resource_data
 from ..identify.archivecrawl import crawl_mementos, StorageObject
 from ..version import __useragent__
 from . import get_logger, calculate_loglevel, \
     add_default_args, process_input_args
-from ..utils import get_web_session, process_input_for_cluster_and_rank
+from ..utils import get_web_session
 
 def discover_timemaps(args):
 
@@ -36,13 +37,12 @@ def discover_timemaps(args):
 
     logger.info("Starting timemap discovery run.")
 
-    urits = discover_timemaps_by_input_type(
-        args.input_type, args.input_arguments, 
-        args.crawl_depth, session)
+    urirdata = discover_resource_data_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth,
+        session, discover_timemaps_by_input_type
+    )
 
-    with open(args.output_filename, 'w') as output:
-        for urit in urits:
-            output.write("{}\n".format(urit))
+    save_resource_data(args.output_filename, urirdata, 'timemaps')
 
     logger.info("Done with timemap discovery run. Output is in {}".format(
         args.output_filename))
@@ -66,14 +66,12 @@ def discover_original_resources(args):
 
     logger.info("Starting original resource discovery run.")
 
-    urirs = discover_original_resources_by_input_type(
-        args.input_type, args.input_arguments,
-        args.crawl_depth, session
+    urirdata = discover_resource_data_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth,
+        session, discover_original_resources_by_input_type
     )
 
-    with open(args.output_filename, 'w') as output:
-        for urir in urirs:
-            output.write("{}\n".format(urir))
+    save_resource_data(args.output_filename, urirdata, 'original-resources')
 
     logger.info("Done with original resource discovery run. Output is in {}".format(args.output_filename))
 
@@ -96,59 +94,12 @@ def discover_mementos(args):
 
     logger.info("Starting memento discovery run.")
 
-    urimdata = {}
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
 
-    if args.input_type == 'mementos':
-        if os.path.exists(args.input_arguments):
-            urimdata = process_input_for_cluster_and_rank(args.input_arguments)
-            input_data = list(urimdata.keys())
-        else:
-            input_data = extract_uris_from_input(args.input_arguments)
-            for urim in input_data:
-                urimdata[urim] = {}
-
-    else:
-        input_data = args.input_arguments
-        urimdata = None
-
-    output_urims = discover_mementos_by_input_type(
-        args.input_type, input_data,
-        args.crawl_depth, session)
-
-    if urimdata is None:
-        urimdata = {}
-        for urim in output_urims:
-            urimdata[urim] = {}
-
-    with open(args.output_filename, 'w') as output:
-
-        fieldnames = ['URI-M']
-
-        for urim in urimdata:
-            if len(list(urimdata[urim].keys())) > 0:
-                fieldnames.append(list(urimdata[urim].keys()))
-            # just do it once
-            break
-
-        print("fieldnames: {}".format(fieldnames))
-
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
-
-        writer.writeheader()
-
-        for urim in output_urims:
-
-            row = {}
-            row['URI-M'] = urim
-
-            for key in row.keys():
-                if key != 'URI-M':
-                    if key in urimdata[urim]:
-                        row[key] = urimdata[urim][key]
-                    else:
-                        row[key] = None
-
-            writer.writerow(row)
+    save_resource_data(args.output_filename, urimdata, 'mementos')
 
     logger.info("Done with memento discovery run. Output is in {}".format(args.output_filename))
 

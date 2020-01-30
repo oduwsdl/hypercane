@@ -278,7 +278,7 @@ def get_newspaper_publication_date(urim, cache_storage):
 
         return pd
 
-def process_input_for_cluster_and_rank(filename):
+def process_input_for_cluster_and_rank(filename, input_type_field):
 
     urim_data = {}
 
@@ -286,12 +286,12 @@ def process_input_for_cluster_and_rank(filename):
         csvreader = csv.DictReader(f)
 
         for row in csvreader:
-            # urim_data[ row['URI-M'] ] = \
+
             rowdata = {}
-            urim = row['URI-M']
+            urim = row[input_type_field]
 
             for key in row.keys():
-                if key != 'URI-M':
+                if key != input_type_field:
                     rowdata[urim][key] = row[key]
 
             urim_data[urim] = rowdata
