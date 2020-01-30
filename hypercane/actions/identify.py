@@ -11,12 +11,12 @@ from ..identify import list_seed_uris, generate_archiveit_urits, \
     download_urits_and_extract_urims, discover_timemaps_by_input_type, \
     extract_uris_from_input, discover_mementos_by_input_type, \
     discover_original_resources_by_input_type, \
-    discover_resource_data_by_input_type, save_resource_data
+    discover_resource_data_by_input_type
 from ..identify.archivecrawl import crawl_mementos, StorageObject
 from ..version import __useragent__
 from . import get_logger, calculate_loglevel, \
     add_default_args, process_input_args
-from ..utils import get_web_session
+from ..utils import get_web_session, save_resource_data
 
 def discover_timemaps(args):
 
@@ -37,12 +37,12 @@ def discover_timemaps(args):
 
     logger.info("Starting timemap discovery run.")
 
-    urirdata = discover_resource_data_by_input_type(
+    uritdata = discover_resource_data_by_input_type(
         args.input_type, args.input_arguments, args.crawl_depth,
         session, discover_timemaps_by_input_type
     )
 
-    save_resource_data(args.output_filename, urirdata, 'timemaps')
+    save_resource_data(args.output_filename, uritdata, 'timemaps', list(uritdata.keys()))
 
     logger.info("Done with timemap discovery run. Output is in {}".format(
         args.output_filename))
@@ -71,7 +71,7 @@ def discover_original_resources(args):
         session, discover_original_resources_by_input_type
     )
 
-    save_resource_data(args.output_filename, urirdata, 'original-resources')
+    save_resource_data(args.output_filename, urirdata, 'original-resources', list(urirdata.keys()))
 
     logger.info("Done with original resource discovery run. Output is in {}".format(args.output_filename))
 
@@ -99,7 +99,7 @@ def discover_mementos(args):
         session, discover_mementos_by_input_type
     )
 
-    save_resource_data(args.output_filename, urimdata, 'mementos')
+    save_resource_data(args.output_filename, urimdata, 'original-resources', list(urimdata.keys()))
 
     logger.info("Done with memento discovery run. Output is in {}".format(args.output_filename))
 

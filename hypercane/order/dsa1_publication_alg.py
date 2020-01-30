@@ -23,7 +23,6 @@ def order_by_dsa1_publication_alg(urims, cache_storage):
                 pdt = datetime.strptime(pdt, "%a, %d %b %Y %H:%M:%S GMT")
                 publication_datetime_to_urim.append( (datetime.timestamp(pdt), urim) )
             except Exception as exc:
-                print("pdf is {}".format(pdt))
                 raise OrderByDSA1PublicationAlgorithmError("Failed to determine publication date for {} -- Details: {}".format(urim, repr(exc)))
 
     publication_datetime_to_urim.sort()

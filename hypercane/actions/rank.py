@@ -5,10 +5,10 @@ import json
 
 from ..actions import add_input_args, add_default_args, get_logger, \
     calculate_loglevel, process_input_args
-from .cluster import process_input_for_clusters
-from ..identify import extract_uris_from_input
+from ..identify import extract_uris_from_input, \
+    discover_resource_data_by_input_type, discover_mementos_by_input_type
 from ..rank.dsa1_ranking import rank_by_dsa1_score
-from ..utils import get_web_session
+from ..utils import get_web_session, save_resource_data
 
 def dsa1_ranking(args):
 
@@ -50,28 +50,24 @@ def dsa1_ranking(args):
     logger.info("Beginning the ranking by DSA1 scoring equation")
 
     if args.input_type == "mementos":
-        items = extract_uris_from_input(args.input_arguments)
-        clustered_urims = process_input_for_clusters(items)
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
     else:
         # TODO: derive URI-Ms from input type
         raise NotImplementedError("Input type of {} not yet supported for ranking".format(
             args.input_type))
 
-    ranked_urims = rank_by_dsa1_score(
-        clustered_urims, session,
+    urimdata = rank_by_dsa1_score(
+        urimdata, session,
         memento_damage_url=args.memento_damage_url,
         damage_weight=args.damage_weight,
         category_weight=args.category_weight,
         path_depth_weight=args.path_depth_weight
         )
 
-    with open(args.output_filename, 'w') as f:
-
-        for item in ranked_urims:
-            urim = item[0]
-            cluster = item[1]
-            score = item[2]
-            f.write("{}\t{}\t{}\n".format(urim, cluster, score))
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
     logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
 
