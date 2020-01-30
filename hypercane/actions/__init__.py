@@ -2,8 +2,7 @@ import sys
 
 def get_logger(appname, loglevel, logfile):
 
-    if 'logging' not in sys.modules:
-        import logging
+    import logging
 
     logger = logging.getLogger(appname)
 
@@ -21,8 +20,7 @@ def get_logger(appname, loglevel, logfile):
 
 def calculate_loglevel(verbose=False, quiet=False):
 
-    if 'logging' not in sys.modules:
-        import logging
+    import logging
 
     # verbose trumps quiet
     if verbose:
@@ -35,8 +33,7 @@ def calculate_loglevel(verbose=False, quiet=False):
 
 def add_default_args(parser):
 
-    if 'hypercane.version' not in sys.modules:
-        from hypercane.version import __useragent__
+    from hypercane.version import __useragent__
 
     parser.add_argument('-l', '--logfile', dest='logfile',
         default=sys.stdout,
@@ -80,8 +77,7 @@ def add_input_args(parser):
 
 def test_input_args(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
     input_types_requiring_files = [
         "timemaps",

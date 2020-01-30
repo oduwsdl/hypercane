@@ -1,20 +1,18 @@
-import argparse
-import json
-
-from aiu import ArchiveItCollection
-from datetime import datetime
-
-from . import get_logger, calculate_loglevel, process_input_args
-from .identify import discover_original_resources_by_input_type
-from ..utils import get_web_session
+import sys
 
 def generate_collection_metadata(collection_id, session):
+
+    
+        from aiu import ArchiveItCollection
 
     aic = ArchiveItCollection(collection_id, session=session)
 
     return aic.return_all_metadata_dict()
 
 def generate_blank_metadata(urirs):
+
+    
+        from datetime import datetime
 
     blank_metadata = {'id': None,
         'exists': None,
@@ -47,6 +45,19 @@ def generate_blank_metadata(urirs):
 
 def discover_collection_metadata(args):
 
+    
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_original_resources_by_input_type
+
+    import json
+
     parser = argparse.ArgumentParser(
         description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
         prog="hc report metadata"
@@ -68,9 +79,12 @@ def discover_collection_metadata(args):
         metadata = generate_collection_metadata(args.input_arguments, session)
     else:
         logger.warning("Metadata reports are only supported for Archive-It collections, proceeding to create JSON output for URI-Rs.")
-        urirs = discover_original_resources_by_input_type(
-            args.input_type, args.input_arguments, args.crawl_depth, session)
-        metadata = generate_blank_metadata(urirs)
+
+        urirdata = discover_resource_data_by_input_type(
+            args.input_type, args.input_arguments, args.crawl_depth,
+            session, discover_original_resources_by_input_type
+        )
+        metadata = generate_blank_metadata(list(urirdata.keys()))
 
     with open(args.output_filename, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=4)

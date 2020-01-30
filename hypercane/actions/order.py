@@ -2,22 +2,17 @@ import sys
 
 def pubdate_else_memento_datetime(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
+    import argparse
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
 
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.utils import get_web_session, save_resource_data
 
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
 
-    if 'hypercane.order' not in sys.modules:
-        from hypercane.order.dsa1_publication_alg import order_by_dsa1_publication_alg
+    from hypercane.order.dsa1_publication_alg import order_by_dsa1_publication_alg
 
     parser = argparse.ArgumentParser(
         description="Remove the near-duplicate documents from a collection.",
