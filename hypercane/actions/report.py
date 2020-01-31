@@ -2,8 +2,7 @@ import sys
 
 def generate_collection_metadata(collection_id, session):
 
-    
-        from aiu import ArchiveItCollection
+    from aiu import ArchiveItCollection
 
     aic = ArchiveItCollection(collection_id, session=session)
 
@@ -11,8 +10,7 @@ def generate_collection_metadata(collection_id, session):
 
 def generate_blank_metadata(urirs):
 
-    
-        from datetime import datetime
+    from datetime import datetime
 
     blank_metadata = {'id': None,
         'exists': None,
@@ -64,6 +62,7 @@ def discover_collection_metadata(args):
         )
 
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -81,7 +80,7 @@ def discover_collection_metadata(args):
         logger.warning("Metadata reports are only supported for Archive-It collections, proceeding to create JSON output for URI-Rs.")
 
         urirdata = discover_resource_data_by_input_type(
-            args.input_type, args.input_arguments, args.crawl_depth,
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
             session, discover_original_resources_by_input_type
         )
         metadata = generate_blank_metadata(list(urirdata.keys()))

@@ -38,11 +38,12 @@ def sample_with_true_random(args):
     )
 
     session = get_web_session(cache_storage=args.cache_storage)
+    output_type = 'mementos'
 
     logger.info("Starting random sampling of URI-Ms.")
 
     urimdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
     )
 

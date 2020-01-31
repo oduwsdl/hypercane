@@ -101,12 +101,25 @@ class WaybackSpider(scrapy.Spider):
                         yield response.follow(href, self.parse)
 
 def crawl_mementos(link_storage, urims, crawl_depth):
+
+    # from scrapy.utils.project import get_project_settings
+    # from pprint import PrettyPrinter
+
+    # pp = PrettyPrinter(indent=4)
+    # pp.pprint(get_project_settings())
+
+    # sys.exit()
+
     process = CrawlerProcess()
         
     module_logger.info("custom_settings: {}".format(WaybackSpider.custom_settings))
 
+    # TODO: Try this cache class https://pypi.org/project/scrapy-httpcache/
     WaybackSpider.custom_settings = {
-        'DEPTH_LIMIT': int(crawl_depth)
+        'DEPTH_LIMIT': int(crawl_depth),
+        'HTTPCACHE_ENABLED': True,
+        'HTTPCACHE_DIR' : '/tmp/hypercane/scrapy_cache',
+        'HTTPCACHE_STORAGE': 'scrapy.extensions.httpcache.DbmCacheStorage' # Note: File cache storage seemed to be broken
     }
 
     allowed_domains = []
@@ -114,11 +127,6 @@ def crawl_mementos(link_storage, urims, crawl_depth):
     for uri in urims:
         o = urlparse(uri)
         
-        if ':' in o.netloc:
-            host, port = o.netloc.split(':')
-        else:
-            host = o.netloc
-
         if o.netloc not in allowed_domains:
             allowed_domains.append(o.netloc)
 
@@ -165,7 +173,10 @@ def crawl_live_web_resources(link_storage, urirs, crawl_depth):
     module_logger.info("custom_settings: {}".format(LiveWebSpider.custom_settings))
 
     LiveWebSpider.custom_settings = {
-        'DEPTH_LIMIT': int(crawl_depth)
+        'DEPTH_LIMIT': int(crawl_depth),
+        'HTTPCACHE_ENABLED': True,
+        'HTTPCACHE_DIR' : '/tmp/hypercane/scrapy_cache',
+        'HTTPCACHE_STORAGE': 'scrapy.extensions.httpcache.DbmCacheStorage' # Note: File cache storage seemed to be broken
     }
 
     allowed_domains = []
