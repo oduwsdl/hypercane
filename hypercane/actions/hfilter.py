@@ -1,14 +1,14 @@
 import sys
-import os
-import argparse
-import json
-import concurrent.futures
-import errno
+# import os
+# import argparse
+# import json
+# import concurrent.futures
+# import errno
 
-from datetime import datetime
-from pymongo import MongoClient
-from justext import justext, get_stoplist
-from simhash import Simhash
+# from datetime import datetime
+# from pymongo import MongoClient
+# from justext import justext, get_stoplist
+# from simhash import Simhash
 
 # TODO: come back to this
 # the OTMT imports a version of sklearn that generates the following warning:
@@ -19,21 +19,21 @@ from simhash import Simhash
 # with warnings.catch_warnings():
 #     warnings.filterwarnings("ignore", category=DeprecationWarning)
 #     import otmt
-import otmt
+# import otmt
 
-from ..actions import add_input_args, add_default_args, \
-    get_logger, calculate_loglevel, process_input_args
-from ..identify import discover_timemaps_by_input_type, \
-    discover_mementos_by_input_type, download_urits_and_extract_urims, \
-    extract_uris_from_input, discover_resource_data_by_input_type
-from ..hfilter.remove_offtopic import detect_off_topic
-from ..hfilter.near_duplicates import filter_near_duplicates
-from ..hfilter.languages import language_included, language_not_included, \
-    filter_languages
-from ..utils import get_memento_datetime_and_timemap, \
-    get_web_session, get_language, get_raw_simhash, \
-    save_resource_data
-from .cluster import HypercaneClusterInputException
+# from ..actions import add_input_args, add_default_args, \
+#     get_logger, calculate_loglevel, process_input_args
+# from ..identify import discover_timemaps_by_input_type, \
+#     discover_mementos_by_input_type, download_urits_and_extract_urims, \
+#     extract_uris_from_input, discover_resource_data_by_input_type
+# from ..hfilter.remove_offtopic import detect_off_topic
+# from ..hfilter.near_duplicates import filter_near_duplicates
+# from ..hfilter.languages import language_included, language_not_included, \
+#     filter_languages
+# from ..utils import get_memento_datetime_and_timemap, \
+#     get_web_session, get_language, get_raw_simhash, \
+#     save_resource_data
+# from .cluster import HypercaneClusterInputException
 
 # def process_remove_offtopic_args(args, parser):
 
@@ -215,6 +215,12 @@ from .cluster import HypercaneClusterInputException
 
 def start_language_processing(parser, args):
 
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    
     parser.add_argument('--lang', '--languages', dest='languages',
         help="The list of languages to match, separated by commas.",
         required=True
@@ -241,6 +247,10 @@ def start_language_processing(parser, args):
     return args, logger, urimdata
 
 def include_languages(args):
+
+    import argparse
+    from hypercane.hfilter.languages import filter_languages,language_included
+    from hypercane.utils import save_resource_data
     
     parser = argparse.ArgumentParser(
         description="Include only mementos containing the specified languages.",
@@ -263,6 +273,10 @@ def include_languages(args):
     logger.info("done, mementos including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
 def exclude_languages(args):
+
+    import argparse
+    from hypercane.hfilter.languages import filter_languages, language_not_included
+    from hypercane.utils import save_resource_data
 
     parser = argparse.ArgumentParser(
         description="Exclude mementos with the specified languages.",
