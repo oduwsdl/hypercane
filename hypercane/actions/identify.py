@@ -18,6 +18,7 @@ def discover_timemaps(args):
         )
     
     args = process_input_args(args, parser)
+    output_type = 'timemaps'
 
     logger = get_logger(
         __name__,
@@ -30,7 +31,7 @@ def discover_timemaps(args):
     logger.info("Starting timemap discovery run.")
 
     uritdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_timemaps_by_input_type
     )
 
@@ -57,6 +58,7 @@ def discover_original_resources(args):
         )
     
     args = process_input_args(args, parser)
+    output_type = 'original-resources'
 
     logger = get_logger(
         __name__,
@@ -69,7 +71,7 @@ def discover_original_resources(args):
     logger.info("Starting original resource discovery run.")
 
     urirdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_original_resources_by_input_type
     )
 
@@ -95,6 +97,7 @@ def discover_mementos(args):
         )
     
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -107,11 +110,14 @@ def discover_mementos(args):
     logger.info("Starting memento discovery run.")
 
     urimdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
     )
 
-    save_resource_data(args.output_filename, urimdata, 'original-resources', list(urimdata.keys()))
+    logger.info("discovered {} mementos, preparing to write the list to {}".format(
+        len(urimdata), args.output_filename))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
     logger.info("Done with memento discovery run. Output is in {}".format(args.output_filename))
 

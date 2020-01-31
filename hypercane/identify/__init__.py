@@ -379,7 +379,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     elif input_type == "timemaps":
 
-        urits = extract_uris_from_input(input_args)
+        urits = input_args
         
         if crawl_depth > 1:
             urims = download_urits_and_extract_urims(urits, session)
@@ -392,7 +392,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
             urits = list(set(urits)) # in case of overlap
 
     elif input_type == "mementos":
-        urims = extract_uris_from_input(input_args)
+        urims = input_args
         link_storage = StorageObject()
         crawl_mementos(link_storage, urims, crawl_depth)
 
@@ -401,7 +401,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
         
     elif input_type == "original-resources":
 
-        urirs = extract_uris_from_input(input_args)
+        urirs = input_args
 
         link_storage = StorageObject()
         crawl_live_web_resources(link_storage, urirs, crawl_depth)
@@ -468,7 +468,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         output_urims = find_or_create_mementos(urirs, session)
 
     elif input_type == "timemaps":
-        urits = extract_uris_from_input(input_args)
+        urits = input_args
         
         if crawl_depth > 1:
             urims = download_urits_and_extract_urims(urits, session)
@@ -491,15 +491,19 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
             link_storage = StorageObject()
             crawl_mementos(link_storage, output_urims, crawl_depth)
 
+            module_logger.info("discovered {} items from crawl".format(len(link_storage.storage)))
+
             for item in link_storage.storage:
                 urits.append(item[0])
 
             urits = list(set(urits)) # in case of overlap
-            output_urims = download_urits_and_extract_urims(urits, session)                
+            output_urims = download_urits_and_extract_urims(urits, session)
+
+            module_logger.info("returning {} URI-Ms from crawl".format(len(output_urims)))             
 
     elif input_type == "original-resources":
 
-        urirs = extract_uris_from_input(input_args)
+        urirs = input_args
         output_urims = find_or_create_mementos(urirs, session)
 
     else:
@@ -550,7 +554,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
                     output_urirs.append(item)
 
     elif input_type == "timemaps":
-        urits = extract_uris_from_input(input_type)
+        urits = input_args
         urims = download_urits_and_extract_urims(urits, session)
         link_storage = StorageObject()
         crawl_mementos(link_storage, urims, crawl_depth)
@@ -559,7 +563,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             output_urirs.append(item[1])
 
     elif input_type == "mementos":
-        urims = extract_uris_from_input(input_type)
+        urims = input_args
         link_storage = StorageObject()
         crawl_mementos(link_storage, urims, crawl_depth)
 
@@ -572,7 +576,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
         
     elif input_type == "original-resources":
 
-        output_urirs = extract_uris_from_input(input_args)
+        output_urirs = input_args
 
         if crawl_depth > 1:
             link_storage = StorageObject()
@@ -590,7 +594,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     return output_urirs
 
-def discover_resource_data_by_input_type(input_type, input_arguments, crawl_depth, session, discovery_function):
+def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function):
 
     uridata = {}
 
@@ -607,14 +611,33 @@ def discover_resource_data_by_input_type(input_type, input_arguments, crawl_dept
         uridata = process_input_for_cluster_and_rank(input_arguments, input_type_keys[input_type])
         input_data = list(uridata.keys())
 
+        if input_type != output_type:
+            uridata = None
+
     output_uris = discovery_function(
         input_type, input_data,
         crawl_depth, session)
+
+    module_logger.info("discovered {} URIs".format(len(output_uris)))
 
     if uridata is None:
         uridata = {}
         for uri in output_uris:
             uridata[uri] = {}
+    else:
+        fieldnames = []
+
+        for uri in uridata:
+            if len(list(uridata[uri].keys())) > 0:
+                fieldnames.extend(list(uridata[uri].keys()))
+            # just do it once
+            break
+
+        for uri in output_uris:
+            if uri not in uridata:
+                uridata[uri] = {}
+                for fieldname in fieldnames:
+                    uridata[uri][fieldname] = ''
 
     return uridata
 

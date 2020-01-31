@@ -40,6 +40,7 @@ def dsa1_ranking(args):
     )
 
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -53,7 +54,7 @@ def dsa1_ranking(args):
 
     if args.input_type == "mementos":
         urimdata = discover_resource_data_by_input_type(
-            args.input_type, args.input_arguments, args.crawl_depth,
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
             session, discover_mementos_by_input_type
         )
     else:

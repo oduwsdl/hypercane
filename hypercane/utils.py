@@ -323,7 +323,7 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
 
         for uri in resource_data:
             if len(list(resource_data[uri].keys())) > 0:
-                fieldnames.append(list(resource_data[uri].keys()))
+                fieldnames.extend(list(resource_data[uri].keys()))
             # just do it once
             break
 

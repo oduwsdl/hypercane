@@ -59,6 +59,7 @@ def synthesize_warcs(args):
     )
     
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -71,7 +72,7 @@ def synthesize_warcs(args):
     logger.info("Starting generation of files from input")
 
     urimdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
     )
 
@@ -149,6 +150,7 @@ def synthesize_files(args):
     )
     
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -161,7 +163,7 @@ def synthesize_files(args):
     logger.info("Starting generation of files from input")
 
     urimdata = discover_resource_data_by_input_type(
-        args.input_type, args.input_arguments, args.crawl_depth,
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
     )
 

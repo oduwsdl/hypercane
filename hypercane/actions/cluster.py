@@ -40,6 +40,7 @@ def cluster_by_dbscan(args):
     )
 
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -55,7 +56,7 @@ def cluster_by_dbscan(args):
     # look at https://stackoverflow.com/questions/32807319/disable-remove-argument-in-argparse for how to remove arguments
     if args.input_type == "mementos":
         urimdata = discover_resource_data_by_input_type(
-            args.input_type, args.input_arguments, args.crawl_depth,
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
             session, discover_mementos_by_input_type
         )
 
@@ -115,6 +116,7 @@ def time_slice(args):
     )
 
     args = process_input_args(args, parser)
+    output_type = 'mementos'
 
     logger = get_logger(
         __name__,
@@ -128,7 +130,7 @@ def time_slice(args):
 
     if args.input_type == "mementos":
         urimdata = discover_resource_data_by_input_type(
-            args.input_type, args.input_arguments, args.crawl_depth,
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
             session, discover_mementos_by_input_type
         )
 
