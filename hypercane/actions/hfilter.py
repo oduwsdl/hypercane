@@ -1,145 +1,136 @@
 import sys
-# import os
-# import argparse
-# import json
-# import concurrent.futures
-# import errno
 
-# from datetime import datetime
-# from pymongo import MongoClient
-# from justext import justext, get_stoplist
-# from simhash import Simhash
 
-# TODO: come back to this
-# the OTMT imports a version of sklearn that generates the following warning:
-# DeprecationWarning: the imp module is deprecated in favour of importlib; see the module's documentation for alternative uses
-# I cannot fix sklearn, but I can quiet the warning
-# import warnings
+def process_remove_offtopic_args(args, parser):
 
-# with warnings.catch_warnings():
-#     warnings.filterwarnings("ignore", category=DeprecationWarning)
-#     import otmt
-# import otmt
+    import otmt
+    from hypercane.actions import add_input_args, add_default_args
 
-# from ..actions import add_input_args, add_default_args, \
-#     get_logger, calculate_loglevel, process_input_args
-# from ..identify import discover_timemaps_by_input_type, \
-#     discover_mementos_by_input_type, download_urits_and_extract_urims, \
-#     extract_uris_from_input, discover_resource_data_by_input_type
-# from ..hfilter.remove_offtopic import detect_off_topic
-# from ..hfilter.near_duplicates import filter_near_duplicates
-# from ..hfilter.languages import language_included, language_not_included, \
-#     filter_languages
-# from ..utils import get_memento_datetime_and_timemap, \
-#     get_web_session, get_language, get_raw_simhash, \
-#     save_resource_data
-# from .cluster import HypercaneClusterInputException
+    parser = add_input_args(parser)
 
-# def process_remove_offtopic_args(args, parser):
+    tmmeasurehelp = ""
+    for measure in otmt.supported_timemap_measures:
+        tmmeasurehelp += "* {} - {}, default threshold {}\n".format(
+            measure, otmt.supported_timemap_measures[measure]['name'],
+            otmt.supported_timemap_measures[measure]['default threshold'])
 
-#     parser = add_input_args(parser)
+    parser.add_argument('-tm', '--timemap-measures', dest='timemap_measures',
+        type=otmt.process_timemap_similarity_measure_inputs,
+        default='cosine',
+        help="The TimeMap-based similarity measures specified will be used. \n"
+        "For each of these measures, the first memento in a TimeMap\n"
+        "is compared with each subsequent memento to measure topic drift.\n"
+        "Specify measure with optional threshold separated by equals.\n"
+        "Multiple measures can be specified.\n"
+        "(e.g., jaccard=0.10,cosine=0.15,wordcount);\n"
+        "Leave thresholds off to use default thresholds.\n"
+        "Accepted values:\n{}".format(tmmeasurehelp)
+    )
 
-#     tmmeasurehelp = ""
-#     for measure in otmt.supported_timemap_measures:
-#         tmmeasurehelp += "* {} - {}, default threshold {}\n".format(
-#             measure, otmt.supported_timemap_measures[measure]['name'],
-#             otmt.supported_timemap_measures[measure]['default threshold'])
+    parser.add_argument('--number-of-topics', dest="num_topics", type=int,
+        help="The number of topics to use for gensim_lda and gensim_lsi, "
+        "ignored if these measures are not requested.")
 
-#     parser.add_argument('-tm', '--timemap-measures', dest='timemap_measures',
-#         type=otmt.process_timemap_similarity_measure_inputs,
-#         default='cosine',
-#         help="The TimeMap-based similarity measures specified will be used. \n"
-#         "For each of these measures, the first memento in a TimeMap\n"
-#         "is compared with each subsequent memento to measure topic drift.\n"
-#         "Specify measure with optional threshold separated by equals.\n"
-#         "Multiple measures can be specified.\n"
-#         "(e.g., jaccard=0.10,cosine=0.15,wordcount);\n"
-#         "Leave thresholds off to use default thresholds.\n"
-#         "Accepted values:\n{}".format(tmmeasurehelp)
-#     )
+    parser = add_default_args(parser)
 
-#     parser.add_argument('--number-of-topics', dest="num_topics", type=int,
-#         help="The number of topics to use for gensim_lda and gensim_lsi, "
-#         "ignored if these measures are not requested.")
+    args = parser.parse_args(args)
 
-#     parser = add_default_args(parser)
+    return args
 
-#     args = parser.parse_args(args)
+def load_urim(collection_model, urim):
+    collection_model.addMemento(urim)
+    return urim
 
-#     return args
+def remove_offtopic(args):
 
-# def load_urim(collection_model, urim):
-#     collection_model.addMemento(urim)
-#     return urim
+    import argparse
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session
+    from pymongo import MongoClient
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_timemaps_by_input_type, download_urits_and_extract_urims
+    from hypercane.hfilter.remove_offtopic import detect_off_topic
 
-# def remove_offtopic(args):
+    parser = argparse.ArgumentParser(
+        description="Remove the off-topic documents from a collection.",
+        prog="hc filter remove-offtopic"
+    )
 
-#     parser = argparse.ArgumentParser(
-#         description="Remove the off-topic documents from a collection.",
-#         prog="hc filter remove-offtopic"
-#     )
+    args = process_remove_offtopic_args(args, parser)
+    output_type = 'timemaps'
 
-#     args = process_remove_offtopic_args(args, parser)
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-#     logger = get_logger(
-#         __name__,
-#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-#         args.logfile
-#     )
+    logger.info("Starting detection of off-topic documents...")
 
-#     logger.info("Starting detection of off-topic documents...")
+    session = get_web_session(cache_storage=args.cache_storage)
+    dbconn = MongoClient(args.cache_storage)
 
-#     session = get_web_session(cache_storage=args.cache_storage)
-#     dbconn = MongoClient(args.cache_storage)
-#     urits = discover_timemaps_by_input_type(
-#         args.input_type, args.input_arguments, 
-#         args.crawl_depth, session)
-#     urims = download_urits_and_extract_urims(urits, session)
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_timemaps_by_input_type
+    )
 
-#     ontopic_mementos = detect_off_topic(
-#         dbconn, session, urits, urims, args.timemap_measures, 
-#         num_topics=args.num_topics)
+    urits = list(urimdata.keys())
+    urims = download_urits_and_extract_urims(urits, session)
 
-#     logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
+    ontopic_mementos = detect_off_topic(
+        dbconn, session, urits, urims, args.timemap_measures, 
+        num_topics=args.num_topics)
 
-#     with open(args.output_filename, 'w') as f:
-#         for urim in ontopic_mementos:
-#             f.write("{}\n".format(urim))
+    logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
 
-#     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
+    with open(args.output_filename, 'w') as f:
+        for urim in ontopic_mementos:
+            f.write("{}\n".format(urim))
 
-# def remove_near_duplicates(args):
+    logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 
-#     parser = argparse.ArgumentParser(
-#         description="Remove the near-duplicate documents from a collection.",
-#         prog="hc filter remove-near-duplicates"
-#     )
+def remove_near_duplicates(args):
 
-#     args = process_input_args(args, parser)
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.near_duplicates import filter_near_duplicates
+    from hypercane.utils import save_resource_data
 
-#     logger = get_logger(
-#         __name__,
-#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-#         args.logfile
-#     )
+    parser = argparse.ArgumentParser(
+        description="Remove the near-duplicate documents from a collection.",
+        prog="hc filter remove-near-duplicates"
+    )
 
-#     logger.info("Starting detection of near-duplicate documents...")
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
 
-#     session = get_web_session(cache_storage=args.cache_storage)
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-#     urims = discover_mementos_by_input_type(
-#         args.input_type, args.input_arguments,
-#         args.crawl_depth, session
-#     )
+    logger.info("Starting detection of near-duplicate documents...")
 
-#     output_urims = filter_near_duplicates(urims, args.cache_storage)
+    session = get_web_session(cache_storage=args.cache_storage)
 
-#     with open(args.output_filename, 'w') as f:
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
 
-#         for urim in output_urims:
-#             f.write('{}\n'.format(urim))
+    urims = list(urimdata.keys())
 
-#     logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
+    filtered_urims = filter_near_duplicates(urims, args.cache_storage)
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
 
 # def process_input_for_clusters_and_ranks(input_list):
 
@@ -347,7 +338,9 @@ include_criteria = {
 }
 
 exclude_criteria = {
-    "languages": exclude_languages
+    "languages": exclude_languages,
+    "near-duplicates": remove_near_duplicates,
+    "off-topic": remove_offtopic
 }
 
 
