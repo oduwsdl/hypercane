@@ -334,7 +334,9 @@ def print_exclude_usage():
 """)
 
 include_criteria = {
-    "languages": include_languages
+    "languages": include_languages,
+    "non-duplicates": remove_near_duplicates,
+    "on-topic": remove_offtopic
 }
 
 exclude_criteria = {
