@@ -55,6 +55,8 @@ def execute_time_slice(urimdata, cache_storage):
     if len(current_slice) > 0:
         slices.append(current_slice)
 
+    module_logger.info("We have filled {} slices".format(len(slices)))
+
     for i in range(0, len(slices)):
 
         for urim in slices[i]:

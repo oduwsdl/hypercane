@@ -30,6 +30,8 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
     # compute simhashes
     urim_to_simhash = {}
 
+    module_logger.info("before clustering by Simhash, cluster assignments are: {}".format(clusters_to_urims))
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
         # TODO: allow user to choose tf-simhash rather than raw simhash
