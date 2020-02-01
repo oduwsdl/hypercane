@@ -291,18 +291,29 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
     urim_data = {}
 
     with open(filename) as f:
-        csvreader = csv.DictReader(f)
+        csvreader = csv.DictReader(f, delimiter='\t')
 
         for row in csvreader:
+
+            module_logger.info("reading row {}".format(row))
+
+            module_logger.info("row.keys: {}".format(row.keys()))
 
             rowdata = {}
             urim = row[input_type_field]
 
+            module_logger.info("rowdata: {}".format(rowdata))
+
             for key in row.keys():
+                module_logger.info("examining field {} in input".format(key))
                 if key != input_type_field:
-                    rowdata[urim][key] = row[key]
+                    rowdata[key] = row[key]
+
+            module_logger.info("rowdata now: {}".format(rowdata))
 
             urim_data[urim] = rowdata
+
+    module_logger.info("urimdata from file: {}".format(urim_data))
 
     return urim_data
                 
@@ -332,7 +343,7 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
 
         module_logger.info("fieldnames will be {}".format(fieldnames))
 
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter='\t')
 
         writer.writeheader()
 

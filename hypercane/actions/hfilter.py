@@ -140,9 +140,13 @@ def remove_near_duplicates(parser, args):
         session, discover_mementos_by_input_type
     )
 
+    logger.info("urimdata: {}".format(urimdata))
+
     urims = list(urimdata.keys())
 
     filtered_urims = filter_near_duplicates(urims, args.cache_storage)
+
+    logger.info("writing {} to {}".format(filtered_urims, args.output_filename))
 
     save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
@@ -346,11 +350,15 @@ def include_highest_rank_per_cluster(args):
 
     rankkey = extract_rank_key_from_input(urimdata)
 
+    logger.info("using rank key {}".format(rankkey))
+
     filtered_urims = return_highest_ranking_memento_per_cluster(urimdata, rankkey)
 
     save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
-    logger.info("Completed detection of mementos with the highest rank in each cluster")
+    logger.info("Completed detection of mementos with the highest rank in each cluster, output is in {}".format(
+        args.output_filename
+    ))
 
 
 def start_language_processing(parser, args):

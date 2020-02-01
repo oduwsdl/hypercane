@@ -77,4 +77,6 @@ def filter_near_duplicates(urims, cache_storage):
                 last_simhash = simhash
                 output_urims.append(urim)
 
+    module_logger.info("returning: {}".format(output_urims))
+
     return output_urims

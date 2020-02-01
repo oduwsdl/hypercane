@@ -4,7 +4,7 @@ set -e
 
 function report_and_execute_command() {
     command=$1
-    echo "`date '+%Y%m%d %H%M%S'` [INFO] Executing subcommand: ${command}"
+    echo "`date '+%Y-%m-%d %H:%M:%S'` [INFO] Executing subcommand: ${command}"
     $command
 }
 
