@@ -37,12 +37,9 @@ def process_remove_offtopic_args(args, parser):
 
     return args
 
-def load_urim(collection_model, urim):
-    collection_model.addMemento(urim)
-    return urim
-
 def remove_offtopic(parser, args):
 
+    import argparse
     from hypercane.actions import get_logger, calculate_loglevel
     from hypercane.utils import get_web_session
     from pymongo import MongoClient
@@ -63,6 +60,11 @@ def remove_offtopic(parser, args):
 
     session = get_web_session(cache_storage=args.cache_storage)
     dbconn = MongoClient(args.cache_storage)
+
+    if args.input_type == 'mementos':
+        logger.warning(
+            "Beware that an input type of 'mementos' may cause unexpected behavior. Specific mementos will be converted to TimeMaps and thus provide more mementos for consideration of off-topic analysis than were submitted."
+        )
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -125,7 +127,7 @@ def remove_near_duplicates(parser, args):
         args.logfile
     )
 
-    logger.info("Starting detection of near-duplicate documents...")
+    logger.info("Starting detection of near-duplicate mementos...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -303,6 +305,50 @@ def exclude_rank(args):
         args.output_filename
     ))
 
+def include_highest_rank_per_cluster(args):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.highest_rank_per_cluster import return_highest_ranking_memento_per_cluster
+    from hypercane.utils import save_resource_data
+
+    parser = argparse.ArgumentParser(
+        description="Include only mementos with the highest rank from each cluster.",
+        prog="hc filter include-only highest-rank-per-cluster"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting detection of mementos with the highest rank in each cluster...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: add a note about no crawling for this filter
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
+
+    rankkey = extract_rank_key_from_input(urimdata)
+
+    filtered_urims = return_highest_ranking_memento_per_cluster(urimdata, rankkey)
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Completed detection of mementos with the highest rank in each cluster")
+
+
 def start_language_processing(parser, args):
 
     from hypercane.actions import process_input_args, get_logger, \
@@ -448,7 +494,8 @@ include_criteria = {
     "languages": include_languages,
     "non-duplicates": include_nonduplicates,
     "on-topic": include_ontopic,
-    "rank": include_rank
+    "rank": include_rank,
+    "highest-rank-per-cluster": include_highest_rank_per_cluster
 }
 
 exclude_criteria = {
