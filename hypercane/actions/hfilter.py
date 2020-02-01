@@ -41,20 +41,14 @@ def load_urim(collection_model, urim):
     collection_model.addMemento(urim)
     return urim
 
-def remove_offtopic(args):
+def remove_offtopic(parser, args):
 
-    import argparse
     from hypercane.actions import get_logger, calculate_loglevel
     from hypercane.utils import get_web_session
     from pymongo import MongoClient
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_timemaps_by_input_type, download_urits_and_extract_urims
     from hypercane.hfilter.remove_offtopic import detect_off_topic
-
-    parser = argparse.ArgumentParser(
-        description="Remove the off-topic documents from a collection.",
-        prog="hc filter remove-offtopic"
-    )
 
     args = process_remove_offtopic_args(args, parser)
     output_type = 'timemaps'
@@ -90,9 +84,30 @@ def remove_offtopic(args):
 
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 
-def remove_near_duplicates(args):
+def exclude_offtopic(args):
+    
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Filter the off-topic mementos from a collection.",
+        prog="hc filter exclude off-topic"
+    )
+
+    remove_offtopic(parser, args)
+
+def include_ontopic(args):
 
     import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Include only the on-topic mementos from a collection.",
+        prog="hc filter include-only on-topic"
+    )
+
+    remove_offtopic(parser, args)
+
+def remove_near_duplicates(parser, args):
+
     from hypercane.actions import process_input_args, get_logger, \
         calculate_loglevel
     from hypercane.utils import get_web_session
@@ -100,11 +115,6 @@ def remove_near_duplicates(args):
         discover_mementos_by_input_type
     from hypercane.hfilter.near_duplicates import filter_near_duplicates
     from hypercane.utils import save_resource_data
-
-    parser = argparse.ArgumentParser(
-        description="Remove the near-duplicate documents from a collection.",
-        prog="hc filter remove-near-duplicates"
-    )
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -131,6 +141,28 @@ def remove_near_duplicates(args):
     save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
     logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
+
+def include_nonduplicates(args):
+
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Remove the near-duplicate documents from a collection.",
+        prog="hc filter include-only non-duplicates"
+    )
+    
+    remove_near_duplicates(parser, args)
+
+def exclude_nearduplicates(args):
+
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Remove the near-duplicate documents from a collection.",
+        prog="hc filter exclude near-duplicates"
+    )
+    
+    remove_near_duplicates(parser, args)
 
 def extract_rank_key_from_input(urimdata):
 
@@ -414,15 +446,15 @@ def print_exclude_usage():
 
 include_criteria = {
     "languages": include_languages,
-    "non-duplicates": remove_near_duplicates,
-    "on-topic": remove_offtopic,
+    "non-duplicates": include_nonduplicates,
+    "on-topic": include_ontopic,
     "rank": include_rank
 }
 
 exclude_criteria = {
     "languages": exclude_languages,
-    "near-duplicates": remove_near_duplicates,
-    "off-topic": remove_offtopic,
+    "near-duplicates": exclude_nearduplicates,
+    "off-topic": exclude_offtopic,
     "rank": exclude_rank
 }
 
