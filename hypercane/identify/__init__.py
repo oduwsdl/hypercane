@@ -604,6 +604,8 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
         'original-resources': 'URI-R'
     }
 
+    module_logger.info("processing input for type {}".format(input_type))
+
     if input_type == 'archiveit' or input_type == 'storygraph':
         input_data = input_arguments
         uridata = None

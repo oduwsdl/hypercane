@@ -1,6 +1,6 @@
 import os
 import sys
-# import otmt
+import logging
 import csv
 
 from urllib.parse import urlparse
@@ -14,6 +14,8 @@ from simhash import Simhash
 from newspaper import Article
 
 from .version import __useragent__
+
+module_logger = logging.getLogger("hypercane.utils")
 
 def get_web_session(cache_storage=None):
     
@@ -153,8 +155,7 @@ def get_language(urim, cache_storage):
 
 def get_raw_simhash(urim, cache_storage):
 
-    if 'otmt' not in sys.modules:
-        import otmt
+    import otmt
 
     dbconn = MongoClient(cache_storage)
     session = get_web_session(cache_storage)
@@ -213,8 +214,7 @@ def get_tf_simhash(urim, cache_storage):
 
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
 
-    if 'otmt' not in sys.modules:
-        import otmt
+    import otmt
 
     if dbconn is None:
         dbconn = MongoClient(cache_storage)
@@ -254,8 +254,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
 def get_newspaper_publication_date(urim, cache_storage):
 
-    if 'otmt' not in sys.modules:
-        import otmt
+    import otmt
 
     dbconn = MongoClient(cache_storage)
     session = get_web_session(cache_storage)
@@ -317,6 +316,10 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
 
     type_key = output_type_keys[output_type]
 
+    module_logger.info("attempting to write {} URIs with resource data to {}".format(
+        len(urilist), output_filename
+    ))
+
     with open(output_filename, 'w') as output:
 
         fieldnames = [ type_key ]
@@ -326,6 +329,8 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
                 fieldnames.extend(list(resource_data[uri].keys()))
             # just do it once
             break
+
+        module_logger.info("fieldnames will be {}".format(fieldnames))
 
         writer = csv.DictWriter(output, fieldnames=fieldnames)
 
@@ -338,11 +343,13 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
                 row = {}
                 row[ type_key ] = uri
 
-                for key in row.keys():
+                for key in resource_data[uri].keys():
+                    module_logger.info("working with key {} for uri {}".format(key, uri))
                     if key != type_key:
                         if key in resource_data[uri]:
                             row[key] = resource_data[uri][key]
                         else:
+                            # in case we are writing out data that was not filled
                             row[key] = None
 
                 writer.writerow(row)

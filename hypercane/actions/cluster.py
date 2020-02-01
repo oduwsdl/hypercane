@@ -141,9 +141,12 @@ def time_slice(args):
 
     logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
 
-    slices = execute_time_slice(urimdata, cache_storage)
+    urimdata_with_slices = execute_time_slice(urimdata, cache_storage)
 
-    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+    logger.info(urimdata_with_slices)
+
+    # we use urimdata and urimdata_with_slices because they should match, if they don't we will detect an error
+    save_resource_data(args.output_filename, urimdata_with_slices, 'mementos', list(urimdata.keys()))
 
     logger.info("finished time slicing, output is available at {}".format(args.output_filename))
 

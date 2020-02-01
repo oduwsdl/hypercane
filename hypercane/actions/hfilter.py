@@ -46,9 +46,10 @@ def remove_offtopic(parser, args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_timemaps_by_input_type, download_urits_and_extract_urims
     from hypercane.hfilter.remove_offtopic import detect_off_topic
+    from hypercane.utils import save_resource_data
 
     args = process_remove_offtopic_args(args, parser)
-    output_type = 'timemaps'
+    processing_type = 'timemaps'
 
     logger = get_logger(
         __name__,
@@ -66,12 +67,12 @@ def remove_offtopic(parser, args):
             "Beware that an input type of 'mementos' may cause unexpected behavior. Specific mementos will be converted to TimeMaps and thus provide more mementos for consideration of off-topic analysis than were submitted."
         )
 
-    urimdata = discover_resource_data_by_input_type(
-        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+    uritdata = discover_resource_data_by_input_type(
+        args.input_type, processing_type, args.input_arguments, args.crawl_depth,
         session, discover_timemaps_by_input_type
     )
 
-    urits = list(urimdata.keys())
+    urits = list(uritdata.keys())
     urims = download_urits_and_extract_urims(urits, session)
 
     ontopic_mementos = detect_off_topic(
@@ -80,9 +81,12 @@ def remove_offtopic(parser, args):
 
     logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
 
-    with open(args.output_filename, 'w') as f:
-        for urim in ontopic_mementos:
-            f.write("{}\n".format(urim))
+    # when reading in TimeMap URIs and writing out mementos, the urimdata will not match
+    urimdata = {}
+    for urim in ontopic_mementos:
+        urimdata[urim] = {}
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', ontopic_mementos)
 
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 

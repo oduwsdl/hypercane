@@ -29,7 +29,7 @@ def run_sample_with_dsa1(parser, args):
     parser.add_argument('--working-directory', required=False, 
         help="the directory to which this application should write output",
         default="/tmp/hypercane/working/{}".format(runtime_string),
-        dest='sample_count')
+        dest='working_directory')
 
     args = parser.parse_args(args)
 
@@ -39,23 +39,36 @@ def run_sample_with_dsa1(parser, args):
         args.logfile
     )
 
-    logger.info("Executing DSA1 (AlNoamany's) algorithm")
+    logger.info("Executing DSA1 (AlNoamany's) algorithm with working directory {}".format(args.working_directory))
+
+    os.makedirs(args.working_directory, exist_ok=True)
 
     scriptdir = os.path.dirname(os.path.realpath(__file__))
 
-    subprocess.run(
+    algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(scriptdir)
+
+    logger.info("executing algorithm script from {}".format(algorithm_script))
+
+    if type(args.logfile) != str:
+        args.logfile = ""
+
+    cp = subprocess.run(
         [
-            "{}/../packaged_algorithms/dsa1.sh".format(scriptdir),
+            "/bin/sh",
+            algorithm_script,
             args.input_type,
             args.input_arguments,
             args.cache_storage,
-            args.logfile,
             args.working_directory,
-            args.output_filename
+            args.output_filename,
+            args.logfile
         ]
     )
 
-    logger.info("Done executing DSA1 (AlNoamany's) algorithm")
+    if cp.returncode != 0:
+        logger.critical("An error was encountered while executing DSA1 (AlNoamany's) algorithm")
+    else:
+        logger.info("Done executing DSA1 (AlNoamany's) algorithm")
 
     return args
 
