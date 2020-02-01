@@ -132,77 +132,144 @@ def remove_near_duplicates(args):
 
     logger.info("Completed detection of near-duplicates, output is saved to {}".format(args.output_filename))
 
-# def process_input_for_clusters_and_ranks(input_list):
+def extract_rank_key_from_input(urimdata):
 
-#     list_of_cluster_assignments = []
+    for urim in urimdata:
+        foundkeys = []
+        for key in urimdata[urim]:
+            if 'rank' in key.lower():
+                foundkeys.append(key)
 
-#     for item in input_list:
-#         if '\t' in item:
-#             uri, clusterid, rank = item.split('\t')
-#             list_of_cluster_assignments.append( (clusterid, uri, rank) )
+        if len(foundkeys) > 0:
+            if len(foundkeys) == 1:
+                rankkey = foundkeys[0]
+            else:
+                raise ValueError(
+                    "Too many rank fields in the inputs."
+                )
+        else:
+            raise ValueError(
+                "The input file does not contain rank information."
+            )
 
-#     if len(list_of_cluster_assignments) != len(input_list):
+    return rankkey
 
-#         raise HypercaneClusterInputException("The assignment of clusters to URIs in inconsistent")
+def include_rank(args):
 
-#     return list_of_cluster_assignments
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.utils import get_web_session
+    from hypercane.utils import save_resource_data
 
-# def highest_ranking_per_cluster(args):
+    parser = argparse.ArgumentParser(
+        description="Include only mementos containing a rank meeting the given criteria.",
+        prog="hc filter include-only rank"
+    )
 
-#     parser = argparse.ArgumentParser(
-#         description="Remove the near-duplicate documents from a collection.",
-#         prog="hc filter remove-near-duplicates"
-#     )
+    parser.add_argument('--criteria', default=1, dest='criteria',
+        help="The numeric criteria to use when selecting which values to keep."
+    )
 
-#     args = process_input_args(args, parser)
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
 
-#     logger = get_logger(
-#         __name__,
-#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-#         args.logfile
-#     )
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-#     logger.info("Starting selection of the highest ranked documents in input...")
+    logger.info("Starting detection of documents meeting the criteria for rank ...")
 
-#     urim_to_rank = {}
-#     cluster_to_urims = {}
+    session = get_web_session(cache_storage=args.cache_storage)
 
-#     if args.input_type == "mementos":
-#         items = extract_uris_from_input(args.input_arguments)
-#         ranked_and_clustered_urims = process_input_for_clusters_and_ranks(items)
+    # TODO: add a note about no crawling for this filter
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
 
-#         for entry in ranked_and_clustered_urims:
-#             cluster = entry[0]
-#             urim = entry[1]
-#             rank = entry[2]
+    rankkey = extract_rank_key_from_input(urimdata)
 
-#             urim_to_rank[urim] = rank
-#             cluster_to_urims.setdefault(cluster, []).append(urim)
+    filtered_urims = []
 
-#     else:
-#         raise NotImplementedError(
-#             "Input type of {} not yet supported for ranking".format(
-#                 args.input_type))
+    for urim in urimdata:
+        if eval("{}{}".format(
+            urimdata[urim][rankkey], args.criteria
+            )):
+            filtered_urims.append(urim)
 
-#     output_urims = []
+    logger.info("Saving {} filtered URI-Ms to {}".format(
+        len(filtered_urims), args.output_filename))
 
-#     for cluster in cluster_to_urims:
+    save_resource_data(
+        args.output_filename, urimdata, 'mementos', filtered_urims)
 
-#         cluster_ranks_to_urims = []
+    logger.info("Done filtering mementos by rank, output is saved to {}".format(
+        args.output_filename
+    ))
 
-#         for urim in cluster_to_urims[cluster]:
-#             cluster_ranks_to_urims.append( ( urim_to_rank[urim], urim ) )
 
-#         highest_scoring_urim_in_cluster = max(cluster_ranks_to_urims)[1]
+def exclude_rank(args):
 
-#         output_urims.append(highest_scoring_urim_in_cluster)
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.utils import get_web_session
+    from hypercane.utils import save_resource_data
 
-#     with open(args.output_filename, 'w') as f:
+    parser = argparse.ArgumentParser(
+        description="Include only mementos containing a rank meeting the given criteria.",
+        prog="hc filter include-only rank"
+    )
 
-#         for urim in output_urims:
-#             f.write("{}\n".format(urim))
+    parser.add_argument('--criteria', default=1, dest='criteria',
+        help="The numeric criteria to use when selecting which values to keep."
+    )
 
-#     logger.info("Finished selection of highest ranked documents in input; output is at {}".format(args.output_filename))
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting detection of documents meeting the criteria for rank ...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: add a note about no crawling for this filter
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
+
+    rankkey = extract_rank_key_from_input(urimdata)
+
+    filtered_urims = []
+
+    for urim in urimdata:
+        if not eval("{}{}".format(
+            urimdata[urim][rankkey], args.criteria
+            )):
+            filtered_urims.append(urim)
+
+    logger.info("Saving {} filtered URI-Ms to {}".format(
+        len(filtered_urims), args.output_filename))
+
+    save_resource_data(
+        args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Done filtering mementos by rank, output is saved to {}".format(
+        args.output_filename
+    ))
 
 def start_language_processing(parser, args):
 
@@ -313,6 +380,12 @@ def print_include_usage():
 
     print("""'hc filter include-only' is used to employ techniques to filter a web archive collection by including mementos that satisfy the given criteria
 
+    Supported commands:
+    * on-topic - execute the Off-Topic Memento Toolkit to only include on-topic mementos
+    * non-duplicates - employ Simhash to only include mementos that are not duplicates
+    * language - include mementos with the given languages (specified with --lang)
+    * rank - include mementos with the given rank value (requires output from hc rank)
+
     Examples:
     
     hc filter include-only language en,es -i archiveit=8788 -o ontopic-mementos.txt
@@ -325,6 +398,12 @@ def print_exclude_usage():
 
     print("""'hc filter exclude' is used to employ techniques to filter a web archive collection by excluding mementos that satisfy the given criteria
 
+    Supported commands:
+    * off-topic - execute the Off-Topic Memento Toolkit to exclude off-topic mementos
+    * near-duplicates - employ Simhash to exclude mementos that are near-duplicates
+    * language - exclude mementos with the given languages (specified with --lang)
+    * rank - include mementos with the given rank value (requires output from hc rank)
+
     Examples:
     
     hc filter exclude language en,de -i archiveit=8788 -o ontopic-mementos.txt
@@ -336,13 +415,15 @@ def print_exclude_usage():
 include_criteria = {
     "languages": include_languages,
     "non-duplicates": remove_near_duplicates,
-    "on-topic": remove_offtopic
+    "on-topic": remove_offtopic,
+    "rank": include_rank
 }
 
 exclude_criteria = {
     "languages": exclude_languages,
     "near-duplicates": remove_near_duplicates,
-    "off-topic": remove_offtopic
+    "off-topic": remove_offtopic,
+    "rank": exclude_rank
 }
 
 
