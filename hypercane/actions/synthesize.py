@@ -2,9 +2,8 @@ import sys
 
 def process_input_args(args, parser):
 
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import add_input_args, \
-            add_default_args, test_input_args
+    from hypercane.actions import add_input_args, \
+        add_default_args, test_input_args
 
     parser = add_input_args(parser)
 
@@ -23,35 +22,18 @@ def process_input_args(args, parser):
 
 def synthesize_warcs(args):
 
-    if 'argparse' not in sys.modules:
-        import argparse
-
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
-
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session
-
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
-
-    if 'warcio' not in sys.modules:
-        from warcio.warcwriter import WARCWriter
-        from warcio.statusandheaders import StatusAndHeaders
-
-    if 'os' not in sys.modules:
-        import os
-
-    if 'datetime' not in sys.modules:
-        from datetime import datetime
-
-    if 'otmt' not in sys.modules:
-        import otmt
-
-    if 'hashlib' not in sys.modules:
-        from hashlib import md5
+    import argparse
+    from hypercane.actions import get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from warcio.warcwriter import WARCWriter
+    from warcio.statusandheaders import StatusAndHeaders
+    import os
+    from datetime import datetime
+    import otmt
+    from hashlib import md5
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",
@@ -124,25 +106,14 @@ def synthesize_warcs(args):
 
 def synthesize_files(args):
 
-    if 'os' not in sys.modules:
-        import os
-
-    if 'argparse' not in sys.modules:
-        import argparse
-
-    if 'hypercane.actions' not in sys.modules:
-        from hypercane.actions import process_input_args, get_logger, \
-            calculate_loglevel
-
-    if 'hypercane.utils' not in sys.modules:
-        from hypercane.utils import get_web_session
-
-    if 'hypercane.identify' not in sys.modules:
-        from hypercane.identify import discover_resource_data_by_input_type, \
-            discover_mementos_by_input_type
-
-    if 'hashlib' not in sys.modules:
-        from hashlib import md5
+    import os
+    import argparse
+    from hypercane.actions import get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hashlib import md5
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",
