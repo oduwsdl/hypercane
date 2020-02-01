@@ -24,15 +24,18 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
         try:
             clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+            urim_to_cluster[urim] = urimdata[urim]['Cluster']
         except KeyError:
             clusters_to_urims.setdefault( None, [] ).append(urim)
+            urim_to_cluster[urim] = None
 
     # compute simhashes
     urim_to_simhash = {}
 
-    module_logger.info("before clustering by Simhash, cluster assignments are: {}".format(clusters_to_urims))
+    # module_logger.info("before clustering by Simhash, cluster assignments are: {}".format(clusters_to_urims))
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        # module_logger.info("executing threads to acquire simhashes for {} urims".format(len(urim_to_cluster.keys())))
 
         # TODO: allow user to choose tf-simhash rather than raw simhash
         future_to_urim = { executor.submit(get_raw_simhash, urim, cache_storage): urim for urim in urim_to_cluster.keys() }
@@ -42,6 +45,7 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
             try:
                 simhash = future.result()
+                module_logger.info("result is {}".format(simhash))
                 # simhash is stored as a string in the database, convert to float for clustering
                 urim_to_simhash[urim] = float(simhash)
 
@@ -50,12 +54,14 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
                 # module_logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
                 raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
 
+    module_logger.info("urim_to_simhash: {}".format(urim_to_simhash))
+
     for cluster in clusters_to_urims:
 
         simhash_list = []
 
         for urim in clusters_to_urims[cluster]:
-
+            module_logger.info("examining URI-M {}".format(urim))
             simhash_list.append(urim_to_simhash[urim])
 
         X = np.matrix(simhash_list)

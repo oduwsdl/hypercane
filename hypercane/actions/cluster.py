@@ -48,7 +48,7 @@ def cluster_by_dbscan(args):
         args.logfile
     )
 
-    logger.info("Beginning the clustering of the collection")
+    logger.info("Beginning the clustering of the collection by dbscan...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -124,7 +124,7 @@ def time_slice(args):
         args.logfile
     )
 
-    logger.info("beginning time slicing of collection")
+    logger.info("Beginning time slicing of collection...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
