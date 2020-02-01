@@ -295,25 +295,25 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
 
         for row in csvreader:
 
-            module_logger.info("reading row {}".format(row))
+            # module_logger.info("reading row {}".format(row))
 
-            module_logger.info("row.keys: {}".format(row.keys()))
+            # module_logger.info("row.keys: {}".format(row.keys()))
 
             rowdata = {}
             urim = row[input_type_field]
 
-            module_logger.info("rowdata: {}".format(rowdata))
+            # module_logger.info("rowdata: {}".format(rowdata))
 
             for key in row.keys():
-                module_logger.info("examining field {} in input".format(key))
+                # module_logger.info("examining field {} in input".format(key))
                 if key != input_type_field:
                     rowdata[key] = row[key]
 
-            module_logger.info("rowdata now: {}".format(rowdata))
+            # module_logger.info("rowdata now: {}".format(rowdata))
 
             urim_data[urim] = rowdata
 
-    module_logger.info("urimdata from file: {}".format(urim_data))
+    # module_logger.info("urimdata from file: {}".format(urim_data))
 
     return urim_data
                 
