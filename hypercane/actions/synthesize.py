@@ -20,6 +20,69 @@ def process_input_args(args, parser):
 
     return args
 
+def raintale_story(args):
+
+    import argparse
+    import json
+    import hypercane.actions
+    from hypercane.actions import get_logger, calculate_loglevel, \
+        process_input_args
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    parser = argparse.ArgumentParser(
+        description="Save copies of mementos as files from a web archive collection.",
+        prog="hc synthesize files"
+    )
+
+    parser.add_argument('--title', dest='title',
+        help='The title of the story', required=True
+    )
+    
+    args = hypercane.actions.process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting generation of files from input")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
+
+    story_json = {}
+    story_json['title'] = args.title
+    story_json['elements'] = []
+
+    for urim in urimdata.keys():
+
+        story_element = {
+            "type": "link",
+            "value": urim
+        }
+
+        story_json['elements'].append(story_element)
+
+    logger.info("Writing Raintale JSOn out to {}".format(
+        args.output_filename
+    ))
+
+    with open(args.output_filename, 'w') as f:
+        json.dump(story_json, f, indent=4)
+
+    logger.info("Done generating Raintale JSON output at {}".format(args.output_filename))
+
+
 def synthesize_warcs(args):
 
     import argparse
@@ -114,7 +177,7 @@ def synthesize_files(args):
     from hashlib import md5
 
     parser = argparse.ArgumentParser(
-        description="Discover the mementos in a web archive collection.",
+        description="Save copies of mementos as files from a web archive collection.",
         prog="hc synthesize files"
     )
     
@@ -176,8 +239,8 @@ def synthesize_bpfree_files(args):
     from justext import justext, get_stoplist
 
     parser = argparse.ArgumentParser(
-        description="Discover the mementos in a web archive collection.",
-        prog="hc synthesize files"
+        description="Save boilerplate-free copies of mementos as files from a web archive collection.",
+        prog="hc synthesize bpfree-files"
     )
     
     args = process_input_args(args, parser)
@@ -241,12 +304,15 @@ def print_usage():
 
     Supported commands:
     * warcs - for generating a directory of WARCs
-    * files - for generating a directory of files
+    * files - for generating a directory of mementos
+    * bpfree-files - for generating a directory of boilerplate-free mementos
+    * raintale-story - for generating a JSON file suitable as input for Raintale
 
 """)
 
 supported_commands = {
     "warcs": synthesize_warcs,
     "files": synthesize_files,
-    "bpfree-files": synthesize_bpfree_files
+    "bpfree-files": synthesize_bpfree_files,
+    "raintale-story": raintale_story
 }
