@@ -163,6 +163,78 @@ def synthesize_files(args):
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
+def synthesize_bpfree_files(args):
+
+    import os
+    import argparse
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, get_boilerplate_free_content
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hashlib import md5
+    import otmt
+    from justext import justext, get_stoplist
+
+    parser = argparse.ArgumentParser(
+        description="Discover the mementos in a web archive collection.",
+        prog="hc synthesize files"
+    )
+    
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting generation of boilerplate-free files from input")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
+
+    if not os.path.exists(args.output_directory):
+        logger.info("Output directory {} does not exist, creating...".format(args.output_directory))
+        os.makedirs(args.output_directory)
+
+    # TODO: make this multithreaded
+    with open("{}/metadata.tsv".format(args.output_directory), 'w') as metadatafile:
+
+        for urim in urimdata.keys():
+
+            raw_urim = otmt.generate_raw_urim(urim)
+            r = session.get(raw_urim)
+
+            paragraphs = justext(
+                r.text, get_stoplist('English')
+            )
+
+            bpfree = ""
+
+            for paragraph in paragraphs:
+                bpfree += "{}\n".format(paragraph.text)
+
+            m = md5()
+            m.update(urim.encode('utf8'))
+            urlhash = m.hexdigest()
+            newfilename = urlhash + '.dat'
+
+            logger.info("writing out data for URI-M {}".format(urim))
+            with open("{}/{}".format(
+                args.output_directory, newfilename), 'wb') as newfile:
+                newfile.write(bytes(bpfree, "utf8"))
+
+            metadatafile.write("{}\t{}\n".format(urim, newfilename))
+
+    logger.info("Done generating directory of boilerplate-free files, output is at {}".format(args.output_directory))
+
 def print_usage():
 
     print("""'hc synthesize' is used to synthesize a web archive collection into other formats, like WARC, WAT, or a set of files in a directory
@@ -175,5 +247,6 @@ def print_usage():
 
 supported_commands = {
     "warcs": synthesize_warcs,
-    "files": synthesize_files
+    "files": synthesize_files,
+    "bpfree-files": synthesize_bpfree_files
 }

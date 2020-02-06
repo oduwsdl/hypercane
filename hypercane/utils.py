@@ -289,7 +289,6 @@ def get_newspaper_publication_date(urim, cache_storage):
 def process_input_for_cluster_and_rank(filename, input_type_field):
 
     urim_data = {}
-    fileread = False
 
     with open(filename) as f:
         csvreader = csv.DictReader(f, delimiter='\t')
@@ -330,7 +329,7 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
                 urim = row[0]
                 urim_data[urim] = rowdata
 
-    module_logger.info("urimdata from file: {}".format(urim_data))
+    # module_logger.info("urimdata from file: {}".format(urim_data))
 
     return urim_data
                 
