@@ -23,8 +23,7 @@ def process_input_args(args, parser):
 def synthesize_warcs(args):
 
     import argparse
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
+    from hypercane.actions import get_logger, calculate_loglevel
     from hypercane.utils import get_web_session
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
@@ -108,8 +107,7 @@ def synthesize_files(args):
 
     import os
     import argparse
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
+    from hypercane.actions import get_logger, calculate_loglevel
     from hypercane.utils import get_web_session
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
