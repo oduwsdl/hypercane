@@ -293,25 +293,41 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
     with open(filename) as f:
         csvreader = csv.DictReader(f, delimiter='\t')
 
-        for row in csvreader:
+        if input_type_field == csvreader.fieldnames[0]:
+            # make sure the headers are valid
 
-            # module_logger.info("reading row {}".format(row))
+            for row in csvreader:
 
-            # module_logger.info("row.keys: {}".format(row.keys()))
+                # module_logger.info("reading row {}".format(row))
 
-            rowdata = {}
-            urim = row[input_type_field]
+                # module_logger.info("row.keys: {}".format(row.keys()))
 
-            # module_logger.info("rowdata: {}".format(rowdata))
+                rowdata = {}
+                urim = row[input_type_field]
 
-            for key in row.keys():
-                # module_logger.info("examining field {} in input".format(key))
-                if key != input_type_field:
-                    rowdata[key] = row[key]
+                # module_logger.info("rowdata: {}".format(rowdata))
 
-            # module_logger.info("rowdata now: {}".format(rowdata))
+                for key in row.keys():
+                    # module_logger.info("examining field {} in input".format(key))
+                    if key != input_type_field:
+                        rowdata[key] = row[key]
 
-            urim_data[urim] = rowdata
+                # module_logger.info("rowdata now: {}".format(rowdata))
+
+                urim_data[urim] = rowdata
+            
+    if len(urim_data) == 0:
+        # assume we are just dealing with a list of URI-Ms
+
+        with open(filename) as f:
+
+            csvreader = csv.reader(f)
+
+            for row in csvreader:
+
+                rowdata = {}
+                urim = row[0]
+                urim_data[urim] = rowdata
 
     # module_logger.info("urimdata from file: {}".format(urim_data))
 
