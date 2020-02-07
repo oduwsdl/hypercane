@@ -3,6 +3,71 @@ import sys
 class HypercaneClusterInputException(Exception):
     pass
 
+def cluster_by_kmeans(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data, \
+        get_raw_simhash, get_tf_simhash
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.cluster.kmeans import cluster_by_memento_datetime
+
+    parser = argparse.ArgumentParser(
+        description="Cluster the input using the dbscan algorithm.",
+        prog="hc cluster kmeans"
+    )
+
+    parser.add_argument('--feature', dest='feature',
+        default='memento-datetime',
+        help='The feature in which to cluster the documents.'
+    )
+
+    parser.add_argument('-k', dest='k',
+        default=28, type=int,
+        help='The number of clusters to create.'
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Beginning the clustering of the collection by dbscan...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
+
+    k = args.k
+
+    if len(urimdata) < args.k:
+        k = len(urimdata)
+
+    if args.feature == 'memento-datetime':
+        urimdata = cluster_by_memento_datetime(urimdata, args.cache_storage, k)
+    else:
+        raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Clustering of collection into {} clusters via K-means on feature {} is complete,"
+        "output is available in {}".format(args.k, args.feature, args.output_filename))
+
 def cluster_by_dbscan(args):
 
     import argparse
@@ -214,6 +279,8 @@ def print_usage():
 supported_commands = {
     "time-slice": time_slice,
     "dbscan": cluster_by_dbscan,
-    "lda": cluster_by_lda
+    "lda": cluster_by_lda,
+    "kmeans": cluster_by_kmeans,
+    "k-means": cluster_by_kmeans
 }
 

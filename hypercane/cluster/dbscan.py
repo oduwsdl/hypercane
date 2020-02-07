@@ -54,7 +54,7 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
                 # module_logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
                 raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
 
-    module_logger.info("urim_to_simhash: {}".format(urim_to_simhash))
+    # module_logger.info("urim_to_simhash: {}".format(urim_to_simhash))
 
     for cluster in clusters_to_urims:
 
@@ -81,6 +81,9 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
     return urimdata
 
 def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5):
+
+    # Memento-Datetime values are not all Unique, but does it matter? 
+    # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
 
     output_clusters = {}
 
