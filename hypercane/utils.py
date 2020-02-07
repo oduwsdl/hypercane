@@ -226,14 +226,22 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
     # 1. if boilerplate free content in cache, return it
     try:
+        module_logger.info("returing boilerplate free content from cache for {}".format(urim))
         bpfree = db.derivedvalues.find_one(
             { "urim": urim }
         )["boilerplate free content"]
         return bytes(bpfree, "utf8")
     except (KeyError, TypeError):
 
+        module_logger.info("generating boilerplate free content for {}".format(urim))
         raw_urim = otmt.generate_raw_urim(urim)
         r = session.get(raw_urim)
+
+        module_logger.info("content-type is {}".format(r.headers['content-type']))
+
+        if 'text/html' not in r.headers['content-type']:
+            module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
+            return bytes()
 
         paragraphs = justext(
             r.text, get_stoplist('English')
@@ -243,6 +251,8 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         for paragraph in paragraphs:
             bpfree += "{}\n".format(paragraph.text)
+
+        module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
         db.derivedvalues.update(
             { "urim": urim },
