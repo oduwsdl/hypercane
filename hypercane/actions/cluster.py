@@ -52,16 +52,10 @@ def cluster_by_dbscan(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    # TODO: Note that we do not support crawling for clustering, why not?
-    # look at https://stackoverflow.com/questions/32807319/disable-remove-argument-in-argparse for how to remove arguments
-    if args.input_type == "mementos":
-        urimdata = discover_resource_data_by_input_type(
-            args.input_type, output_type, args.input_arguments, args.crawl_depth,
-            session, discover_mementos_by_input_type
-        )
-
-    else:
-        raise NotImplementedError("Input type of {} not yet supported for clustering".format(args.input_type))
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
 
     logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
 
@@ -128,27 +122,76 @@ def time_slice(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    if args.input_type == "mementos":
-        urimdata = discover_resource_data_by_input_type(
-            args.input_type, output_type, args.input_arguments, args.crawl_depth,
-            session, discover_mementos_by_input_type
-        )
-
-    else:
-        raise NotImplementedError("Input type of {} not yet supported for clustering".format(args.input_type))
-
-    cache_storage = args.cache_storage
+    
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
 
     logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
 
-    urimdata_with_slices = execute_time_slice(urimdata, cache_storage)
+    urimdata_with_slices = execute_time_slice(urimdata, args.cache_storage)
+
+    # we use urimdata and urimdata_with_slices because they should match, if they don't we will detect an error
+    save_resource_data(args.output_filename, urimdata_with_slices, 'mementos', list(urimdata.keys()))
+
+    logger.info("finished time slicing, output is available at {}".format(args.output_filename))
+
+def cluster_by_lda(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.cluster.lda import cluster_with_lda
+
+    parser = argparse.ArgumentParser(
+        description="Cluster the input based on LDA topic modeling with gensim.",
+        prog="hc cluster lda"
+    )
+
+    # TODO: add argument for top scoring cluster (default) or all of them
+
+    parser.add_argument('--num_topics', dest='num_topics',
+        default=20, required=False,
+        help='The number of topics to cluster.'
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Beginning LDA clustering of collection...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
+
+    urimdata_with_slices = cluster_with_lda(urimdata, args.cache_storage, args.num_topics)
 
     logger.info(urimdata_with_slices)
 
     # we use urimdata and urimdata_with_slices because they should match, if they don't we will detect an error
     save_resource_data(args.output_filename, urimdata_with_slices, 'mementos', list(urimdata.keys()))
 
-    logger.info("finished time slicing, output is available at {}".format(args.output_filename))
+    logger.info("finished clustering with LDA, output is available at {}".format(args.output_filename))
+
 
 def print_usage():
 
@@ -163,11 +206,14 @@ def print_usage():
     hc cluster time-slice -i mementos=novel-content.txt -o mdt-slices.json 
 
     hc cluster dbscan features=tf-simhash -i clustered-mementos=mdt-slices.json -o sliced-and-clustered.json
+
+    hc cluster lda -i archiveit=8778 
     
 """)
 
 supported_commands = {
     "time-slice": time_slice,
-    "dbscan": cluster_by_dbscan
+    "dbscan": cluster_by_dbscan,
+    "lda": cluster_by_lda
 }
 
