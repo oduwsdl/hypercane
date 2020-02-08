@@ -84,7 +84,7 @@ def print_usage():
 
     Examples:
 
-    hc rank dsa1-ranking -i mementos=input_mementos.txt -o ranked_mementos.txt 
+    hc rank dsa1-ranking -i mementos -ia input_mementos.tsv -o ranked_mementos.tsv -cs mongodb://localhost/cache
     
 """)
 

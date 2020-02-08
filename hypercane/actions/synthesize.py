@@ -308,6 +308,14 @@ def print_usage():
     * bpfree-files - for generating a directory of boilerplate-free mementos
     * raintale-story - for generating a JSON file suitable as input for Raintale
 
+    Examples:
+
+    hc synthesize warcs -i archiveit -ia 694 --depth 2 -o output-directory -cs mongodb://localhost/cache
+
+    hc synthesize files -i timemaps -ia timemap-file.tsv -o output-directory -cs mongodb://localhost/cache
+
+    hc synthesize raintale-story -i mementos -ia memento-file.tsv -o story.json -cs mongodb://localhost/cache
+
 """)
 
 supported_commands = {

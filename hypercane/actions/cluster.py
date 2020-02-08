@@ -268,11 +268,11 @@ def print_usage():
 
     Examples:
     
-    hc cluster time-slice -i mementos=novel-content.txt -o mdt-slices.json 
+    hc cluster time-slice -i mementos -ia novel-content.tsv -o mdt-slices.tsv -cs mongodb://localhost/cache
 
-    hc cluster dbscan features=tf-simhash -i clustered-mementos=mdt-slices.json -o sliced-and-clustered.json
+    hc cluster dbscan -i mementos -ia mdt-slices.tsv -o sliced-and-clustered.tsv --feature tf-simhash -cs mongodb://localhost/cache
 
-    hc cluster lda -i archiveit=8778 
+    hc cluster lda -i archiveit -ia 8778 -o clustered.tsv -cs mongodb://localhost/cache
     
 """)
 

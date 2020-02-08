@@ -61,7 +61,7 @@ def print_usage():
 
     Examples:
 
-    hc order dsa1-publication-alg -i mementos=ranked_mementos.txt -o ordered_mementos.txt
+    hc order pubdate-else-memento-datetime -i mementos -ia ranked_mementos.tsv -o ordered_mementos.tsv -cs mongodb://localhost/cache
     
 """)
 
