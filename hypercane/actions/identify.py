@@ -132,11 +132,11 @@ def print_usage():
 
     Examples:
     
-    hc identify original-resources -i archiveit=8788 -o seed-output-file.txt
+    hc identify original-resources -i archiveit -ia 8788 -o seed-output-file.tsv -cs mongodb://localhost/cache
 
-    hc identify timemaps -i archiveit=8788 -o timemap-output-file.txt
+    hc identify timemaps -i archiveit -ia 8788 -o timemap-output-file.tsv -cs mongodb://localhost/cache
 
-    hc identify mementos -i timemaps=http://archive.example.net/timemap/link/http://example.com,http://archive2.example.net/timemap/json/http://example3.com -o timemap-output-file.txt
+    hc identify mementos -i timemaps -ia timemap-input-file.tsv -o mementos.tsv -cs mongodb://localhost/cache
     
 """)
 

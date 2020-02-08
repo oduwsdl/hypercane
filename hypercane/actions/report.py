@@ -99,7 +99,7 @@ def print_usage():
 
     Examples:
     
-    hc report metadata -i archiveit -ia 8788 -o 8788-metadata.json
+    hc report metadata -i archiveit -ia 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
     
 """)
 

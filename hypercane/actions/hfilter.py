@@ -456,13 +456,13 @@ def print_usage():
 
     Examples:
     
-    hc filter include-only language en,es -i archiveit=8788 -o ontopic-mementos.txt
+    hc filter include-only language en,es -i archiveit -ia 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
 
-    hc filter exclude off-topic -i archiveit=8788 --keep en,es -o english-and-spanish-docs.txt
+    hc filter exclude off-topic -i timemaps -ia 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
 
-    hc filter exclude near-duplicates -i mementos=ontopic-mementos.txt -o novel-content.txt
+    hc filter exclude near-duplicates -i mementos -ia ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
 
-    hc filter include-only rank "=1" -i mementos=file-with-scored-mementos.txt -o filtered-mementos.txt
+    hc filter include-only rank "=1" -i mementos -ia file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
     
 """)
 
