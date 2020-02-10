@@ -20,7 +20,7 @@ Hypercane allows you to perform **actions** on web archive collections, TimeMaps
 
 For example, the following `sample` action executes the `random` command to randomly sample mementos from the TimeMaps supplied by `timemap-file.txt` and writes the URI-Ms to `random-mementos.txt`:
 ```
-hc sample random -i timemaps=timemap-file.txt -o random-mementos.txt
+hc sample random -i timemaps -ia timemap-file.txt -o random-mementos.txt
 ```
 
 At the moment, the following actions are supported:
