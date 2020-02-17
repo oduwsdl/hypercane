@@ -39,6 +39,11 @@ def raintale_story(args):
     parser.add_argument('--title', dest='title',
         help='The title of the story', required=True
     )
+
+    parser.add_argument('--imagedata', dest='imagedata_filename',
+        help='A file containing image data, as produced by hc report image-data',
+        required=False, default=None
+    )
     
     args = hypercane.actions.process_input_args(args, parser)
     output_type = 'mementos'
@@ -63,6 +68,11 @@ def raintale_story(args):
     story_json = {}
     story_json['title'] = args.title
     story_json['elements'] = []
+
+    if args.imagedata_filename is not None:
+        with open(args.imagedata_filename) as f:
+            jdata = json.load(f)
+            story_json['story image'] = sorted(jdata['ranked data'], reverse=True)[0]
 
     for urim in urimdata.keys():
 
