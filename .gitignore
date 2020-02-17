@@ -108,3 +108,6 @@ venv.bak/
 
 # caching files
 .sqlite
+
+# backup files
+*.bak

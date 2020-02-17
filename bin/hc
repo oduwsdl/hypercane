@@ -48,7 +48,11 @@ if __name__ == '__main__':
             from hypercane.version import __useragent__
             print(__useragent__)
         else:
-            actionmodule = importlib.import_module(supported_actions[action])
+            try:
+                actionmodule = importlib.import_module(supported_actions[action])
+            except KeyError:
+                print("ERROR: unsupported action {}\n".format(action))
+                print_overall_usage()
 
             if action == 'filter':
 
