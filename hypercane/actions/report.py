@@ -42,7 +42,6 @@ def generate_blank_metadata(urirs):
     return blank_metadata
 
 def discover_collection_metadata(args):
-
     
     import argparse
 
@@ -90,12 +89,62 @@ def discover_collection_metadata(args):
 
     logger.info("Done with collection metadata discovery run.")
 
+def report_image_data(args):
+    
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.report.imagedata import generate_image_data, \
+        rank_images
+
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Provide a report on the images from in the mementos discovered in the input.",
+        prog="hc report image-data"
+        )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection image data run")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+    
+    metadata = {}
+    metadata['image data'] = generate_image_data(urimdata, args.cache_storage)
+    metadata['ranked data'] = rank_images(metadata['image data'])
+
+    with open(args.output_filename, 'w') as metadata_file:
+        json.dump(metadata, metadata_file, indent=4)
+
+    logger.info("Done with collection image data run")
+
 def print_usage():
 
     print("""'hc report' is used print reports about web archive collections
 
     Supported commands:
-    * metadata - for discovering the metadata associated with seeds, only Archive-It is supported at this time
+    * metadata - for discovering the metadata associated with seeds
+    * image-data - for generating a report of the images associated with the mementos found in the input
 
     Examples:
     
@@ -104,6 +153,7 @@ def print_usage():
 """)
 
 supported_commands = {
-    "metadata": discover_collection_metadata
+    "metadata": discover_collection_metadata,
+    "image-data": report_image_data
 }
 
