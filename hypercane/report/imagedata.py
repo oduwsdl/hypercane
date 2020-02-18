@@ -12,6 +12,7 @@ def get_managed_session(cache_storage):
     from requests_cache.backends import MongoCache
     from mementoembed.sessions import ManagedSession
     from hypercane.version import __useragent__
+    # from mementoembed.version import __useragent__
 
     proxies = None
 
