@@ -59,14 +59,30 @@ def rank_images(imagedata):
     imageranking = []
 
     for urim in imagedata:
+        module_logger.info("processing images for URI-M {}".format(urim))
         for image_urim in imagedata[urim]:
-            imageranking.append(
-                ( 
-                    1 / imagedata[urim][image_urim]['colorcount'],
-                    1 / imagedata[urim][image_urim]['ratio width/height'],
-                    imagedata[urim][image_urim]['n'] / imagedata[urim][image_urim]['N'],
-                    image_urim
+
+            module_logger.info("processing image at {}".format(image_urim))
+
+            module_logger.info("image data: {}".format(imagedata[urim][image_urim]))
+
+            if 'colorcount' in imagedata[urim][image_urim]:
+
+                colorcount = float(imagedata[urim][image_urim]['colorcount'])
+                ratio = float(imagedata[urim][image_urim]['ratio width/height'])
+                noverN = float(imagedata[urim][image_urim]['n']) / float(imagedata[urim][image_urim]['N'])
+
+                module_logger.info("report for image {}:\n  colorcount: {}\n  ratio width/height: {}\n  n/N: {}\n".format(
+                    image_urim, colorcount, ratio, noverN
+                ))
+
+                imageranking.append(
+                    ( 
+                        1 / colorcount,
+                        1 / ratio,
+                        noverN,
+                        image_urim
+                    )
                 )
-            )
 
     return imageranking
