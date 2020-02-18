@@ -79,7 +79,7 @@ def rank_images(imagedata):
 
                 imageranking.append(
                     ( 
-                        1 / colorcount,
+                        colorcount,
                         1 / ratio,
                         noverN,
                         image_urim
