@@ -64,7 +64,7 @@ def add_input_args(parser):
         dest="input_type", required=True
     )
 
-    parser.add_argument('-ia', '--input-arguments', 
+    parser.add_argument('-a', '-ia', '--input-arguments', 
         help="either a file containing a list of URIs, a storygraph service URI, or an Archive-It collection identifier",
         dest='input_arguments', required=False, default=None
     )
