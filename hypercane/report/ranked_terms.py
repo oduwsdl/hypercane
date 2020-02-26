@@ -8,13 +8,16 @@ def get_document_tokens(urim, cache_storage):
     from hypercane.utils import get_boilerplate_free_content
     from nltk.corpus import stopwords
     from nltk import word_tokenize
+    import string
 
     # TODO: stoplist based on language of the document
-    stoplist = set(stopwords.words('english'))
+    stoplist = list(set(stopwords.words('english')))
+    punctuation = [ i for i in string.punctuation ]
+    allstop = stoplist + punctuation
 
     content = get_boilerplate_free_content(urim, cache_storage=cache_storage)
     doc_tokens = word_tokenize(content.decode('utf8').lower())
-    doc_tokens = [ token for token in doc_tokens if token not in stoplist ]
+    doc_tokens = [ token for token in doc_tokens if token not in allstop ]
     
     return doc_tokens
 
@@ -50,4 +53,9 @@ def generate_ranked_terms(urimlist, count, cache_storage, ngram_length=1):
     for term in fdist:
         tf.append( (fdist[term], term) )
 
-    return sorted(tf, reverse=True)[0:count]
+    returned_terms = {}
+
+    for entry in sorted(tf, reverse=True)[0:count]:
+        returned_terms[entry[1][0]] = entry[0]
+
+    return returned_terms
