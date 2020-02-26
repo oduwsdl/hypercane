@@ -17,6 +17,7 @@ def filter_near_duplicates(urims, cache_storage):
     module_logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
     urim_to_simhash = {}
+    simhashes_completed = 0
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
@@ -28,12 +29,16 @@ def filter_near_duplicates(urims, cache_storage):
 
             try:
                 simhash = future.result()
+                module_logger.info("associating Simhash {} with URI-M {}".format(simhash, urim))
                 urim_to_simhash[urim] = simhash
+                simhashes_completed += 1
+                module_logger.info("completed {}/{} simhashes, {} left".format(
+                    simhashes_completed, len(urims), len(urims) - simhashes_completed))
 
             except Exception as exc:
-                module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
                 # module_logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
-                raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
+                # raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
 
     comparison_structure = {}
 
@@ -56,8 +61,8 @@ def filter_near_duplicates(urims, cache_storage):
                 )
 
             except Exception as exc:
-                module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                raise NearDuplicateException("Failed to acquire Memento-Datetime and TimeMap for [{}]".format(urim))
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                # raise NearDuplicateException("Failed to acquire Memento-Datetime and TimeMap for [{}]".format(urim))
 
     output_urims = []
 
@@ -77,6 +82,6 @@ def filter_near_duplicates(urims, cache_storage):
                 last_simhash = simhash
                 output_urims.append(urim)
 
-    module_logger.info("returning: {}".format(output_urims))
+    module_logger.debug("returning: {}".format(output_urims))
 
     return output_urims
