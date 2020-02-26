@@ -159,7 +159,9 @@ def report_ranked_terms(args):
         prog="hc report ranked-terms"
         )
 
-    parser.add_argument('-n', '--ngram-length', description="The size of the n-grams", dest='ngram_length', default=1, type=int)
+    parser.add_argument('-n', '--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
+
+    parser.add_argument('-k', '--k', help="The number of terms to return", dest='k', type=int, required=True)
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -179,12 +181,17 @@ def report_ranked_terms(args):
         session, discover_mementos_by_input_type
     )
 
-    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.count, args.ngram_length)
+    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.k, args.cache_storage, ngram_length=args.ngram_length)
 
-    for term in ranked_terms:
-        pass
+    with open(args.output_filename, 'w') as f:
 
-    logger.info("Done with collection image data run")
+        f.write("Word\tFrequency\n")
+
+        for term in ranked_terms:
+            f.write("{}\t{}\n".format(term, ranked_terms[term]))
+        
+
+    logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
 
 def print_usage():
 
