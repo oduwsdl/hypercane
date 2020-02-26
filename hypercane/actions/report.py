@@ -138,6 +138,54 @@ def report_image_data(args):
 
     logger.info("Done with collection image data run")
 
+def report_ranked_terms(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.report.ranked_terms import generate_ranked_terms
+
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Provide a report containing the terms from the collection and their associated frequencies.",
+        prog="hc report ranked-terms"
+        )
+
+    parser.add_argument('-n', '--ngram-length', description="The size of the n-grams", dest='ngram_length', default=1, type=int)
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection image data run")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.count, args.ngram_length)
+
+    for term in ranked_terms:
+        pass
+
+    logger.info("Done with collection image data run")
+
 def print_usage():
 
     print("""'hc report' is used print reports about web archive collections
@@ -145,6 +193,7 @@ def print_usage():
     Supported commands:
     * metadata - for discovering the metadata associated with seeds
     * image-data - for generating a report of the images associated with the mementos found in the input
+    * ranked-terms - generates term frequency for the terms in the collection and returns the top k
 
     Examples:
     
@@ -154,6 +203,7 @@ def print_usage():
 
 supported_commands = {
     "metadata": discover_collection_metadata,
-    "image-data": report_image_data
+    "image-data": report_image_data,
+    "ranked-terms": report_ranked_terms
 }
 
