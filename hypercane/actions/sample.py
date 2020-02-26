@@ -1,5 +1,93 @@
 import sys
 
+def run_sample_with(parser, args, algorithm_name, algorithm_script):
+
+    from sys import platform
+    import errno
+
+    if platform == "win32":
+        print("Error: AlNoamany's Algorithm can only be executed via `hc sample` on Linux or macOS. Please see documentation for how to execute it on Windows and submit an issue to our Issue Tracker if you need Windows support.")
+        sys.exit(errno.ENOTSUP)
+
+    import argparse
+    import subprocess
+    import os
+    import shlex
+    from datetime import datetime
+    from hypercane.actions import add_input_args, add_default_args
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_timemaps_by_input_type
+
+    parser = add_input_args(parser)
+
+    parser = add_default_args(parser)
+
+    runtime_string = "{}".format(datetime.now()).replace(' ', 'T')
+
+    parser.add_argument('--working-directory', required=False, 
+        help="the directory to which this application should write output",
+        default="/tmp/hypercane/working/{}".format(runtime_string),
+        dest='working_directory')
+
+    args = parser.parse_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Executing the {} algorithm with working directory {}".format(
+        algorithm_name, args.working_directory))
+
+    os.makedirs(args.working_directory, exist_ok=True)
+
+    logger.info("executing algorithm script from {}".format(algorithm_script))
+
+    if type(args.logfile) != str:
+        args.logfile = ""
+
+    other_arglist = []
+
+    for argname, argvalue in vars(args).items():
+        if argname not in [
+            'input_type',
+            'input_arguments',
+            'cache_storage',
+            'working_directory',
+            'output_filename',
+            'logfile'
+        ]:
+            if argvalue is not False:
+                other_arglist.append( "--{} {}".format(
+                    argname.replace('_', '-'), argvalue
+                ) )
+    
+    other_args = '"' + " ".join(other_arglist) + '"'
+
+    cp = subprocess.run(
+        [
+            "/bin/sh",
+            algorithm_script,
+            args.input_type,
+            args.input_arguments,
+            args.cache_storage,
+            args.working_directory,
+            args.output_filename,
+            args.logfile,
+            other_args
+        ]
+    )
+
+    if cp.returncode != 0:
+        logger.critical("An error was encountered while executing the {} algorithm".format(algorithm_name))
+    else:
+        logger.info("Done executing the {} algorithm".format(algorithm_name))
+
+    return args
+
 def run_sample_with_dsa1(parser, args):
 
     from sys import platform
@@ -91,8 +179,30 @@ def sample_with_alnoamany(args):
         description="Sample URI-Ms from a web archive collection with DSA1 (AlNoamany's) algorithm.",
         prog="hc sample alnoamany"
         )
+
+    # algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
+    #      os.path.dirname(os.path.realpath(__file__))
+    # )
     
     run_sample_with_dsa1(parser, args)
+
+def sample_with_filtered_random(args):
+
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(
+        description="Sample URI-Ms from a web archive collection by filtering off-topic mementos, filtering near-duplicates, and then sampling k of the remainder, randomly.",
+        prog="hc sample filtered-random"
+        )
+
+    algorithm_script = "{}/../packaged_algorithms/filtered_random.sh".format(
+         os.path.dirname(os.path.realpath(__file__))
+    )
+
+    parser.add_argument('-k', required=False, help="the number of items to sample", default=28, dest='k')
+    
+    run_sample_with(parser, args, "Filtered Random", algorithm_script)
 
 def sample_with_true_random_args(args):
 
@@ -107,7 +217,7 @@ def sample_with_true_random_args(args):
 
     parser = add_input_args(parser)
 
-    parser.add_argument('-k', required=False, help="the number of items to sample", default=28, dest='sample_count')
+    parser.add_argument('-k', '--k', required=False, help="the number of items to sample", default=28, dest='sample_count')
 
     parser = add_default_args(parser)
 
@@ -157,6 +267,7 @@ def print_usage():
     * true-random - randomly chooses n URI-Ms from the input
     * dsa1 - select URI-Ms using the DSA1 (AlNoamany's) Algorithm
     * alnoamany - alias for dsa1
+    * filtered-random - filters off-topic mementos, filters near-duplicates, and then samples k of the remainder, randomly
 
     Examples:
     
@@ -169,6 +280,7 @@ def print_usage():
 supported_commands = {
     "true-random": sample_with_true_random,
     "dsa1": sample_with_dsa1,
-    "alnoamany": sample_with_dsa1
+    "alnoamany": sample_with_dsa1,
+    "filtered-random": sample_with_filtered_random
 }
 

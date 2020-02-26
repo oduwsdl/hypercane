@@ -170,6 +170,9 @@ def get_raw_simhash(urim, cache_storage):
         raw_urim = otmt.generate_raw_urim(urim)
         r = session.get(raw_urim)
 
+        if 'text/html' not in r.headers['content-type']:
+            raise Exception("Hypercane currently only operates with HTML resources, refusing to compute Simhash on {}".format(urim))
+
         simhash = Simhash(r.text).value
 
         db.derivedvalues.update(

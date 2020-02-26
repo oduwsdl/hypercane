@@ -140,7 +140,7 @@ def remove_near_duplicates(parser, args):
         session, discover_mementos_by_input_type
     )
 
-    logger.info("urimdata: {}".format(urimdata))
+    logger.debug("urimdata: {}".format(urimdata))
 
     urims = list(urimdata.keys())
 
