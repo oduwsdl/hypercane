@@ -32,8 +32,8 @@ def raintale_story(args):
         discover_mementos_by_input_type
 
     parser = argparse.ArgumentParser(
-        description="Save copies of mementos as files from a web archive collection.",
-        prog="hc synthesize files"
+        description="Generate a story suitable as input to Raintale.",
+        prog="hc synthesize raintale-story"
     )
 
     parser.add_argument('--title', dest='title',
