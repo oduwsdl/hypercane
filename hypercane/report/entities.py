@@ -18,7 +18,7 @@ def get_document_entities(urim, cache_storage, entity_types):
 
     for ent in doc.ents:
         if ent.label_ in entity_types:
-            entities.append(ent.text.strip().lower())
+            entities.append(ent.text.strip().replace('\n', ' ').lower())
 
     return entities
 
@@ -63,9 +63,9 @@ def generate_entities(urimlist, cache_storage, entity_types):
     returned_terms = []
 
     for entry in sorted(tf, reverse=True):
-        
+        entity = entry[1]
         returned_terms.append( (
-            entry[1], entry[0], float(entry[0])/float(len(tf)), 
+            entity, entry[0], float(entry[0])/float(len(tf)), 
             document_frequency[entity], document_frequency[entity] / len(urimlist),
             entry[0] * (document_frequency[entity] / len(urimlist))
         ) )

@@ -253,7 +253,8 @@ def print_usage():
     Supported commands:
     * metadata - for discovering the metadata associated with seeds
     * image-data - for generating a report of the images associated with the mementos found in the input
-    * ranked-terms - generates term frequency for the terms in the collection and returns the top k
+    * terms - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the terms in the collection
+    * entities - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the named entities in the collection
 
     Examples:
     
