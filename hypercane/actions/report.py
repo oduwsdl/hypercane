@@ -212,6 +212,10 @@ def report_entities(args):
         prog="hc report entities"
         )
 
+    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
+
+    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities", dest='entity_types', default=default_entity_types, type=int)
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -230,7 +234,7 @@ def report_entities(args):
         session, discover_mementos_by_input_type
     )
 
-    ranked_terms = generate_entities(list(urimdata.keys()), args.cache_storage)
+    ranked_terms = generate_entities(list(urimdata.keys()), args.cache_storage, args.entity_types)
 
     with open(args.output_filename, 'w') as f:
 
