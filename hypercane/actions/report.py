@@ -161,7 +161,7 @@ def report_ranked_terms(args):
 
     parser.add_argument('-n', '--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
 
-    parser.add_argument('-k', '--k', help="The number of terms to return", dest='k', type=int, required=True)
+    parser.add_argument('-k', '--k', help="The number of terms to return, specify 0 to return all terms.", dest='k', type=int, required=True)
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -185,10 +185,10 @@ def report_ranked_terms(args):
 
     with open(args.output_filename, 'w') as f:
 
-        f.write("Word\tFrequency\n")
+        f.write("Word\tFrequency\tProbability\n")
 
-        for term in ranked_terms:
-            f.write("{}\t{}\n".format(term, ranked_terms[term]))
+        for term, frequency, probability in ranked_terms:
+            f.write("{}\t{}\t{}\n".format(term, frequency, probability))
         
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
