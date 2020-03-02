@@ -49,14 +49,19 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
                 corpus_ngrams.extend( document_ngrams )
 
                 for ngram in list(set(document_ngrams)):
-                    document_frequency.setdefault(ngram[0], 0)                    
-                    document_frequency[ngram[0]] += 1
+
+                    full_ngram = " ".join(ngram)
+
+                    document_frequency.setdefault(full_ngram, 0)                    
+                    document_frequency[full_ngram] += 1
 
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
-                sys.exit(255)
+                # sys.exit(255)
 
     module_logger.info("discovered {} tokens in corpus".format(len(corpus_ngrams)))
+
+    # module_logger.info("corpus_ngrams: {}".format(corpus_ngrams))
 
     fdist = nltk.FreqDist(corpus_ngrams)
 
@@ -70,10 +75,11 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
     returned_terms = []
 
     for entry in sorted(tf, reverse=True):
+        full_ngram = " ".join(entry[1])
         returned_terms.append( (
-            entry[1][0], entry[0], float(entry[0])/float(len(tf)), 
-            document_frequency[entry[1][0]], document_frequency[entry[1][0]] / len(urimlist),
-            entry[0] * (document_frequency[entry[1][0]] / len(urimlist))
+            full_ngram, entry[0], float(entry[0])/float(len(tf)), 
+            document_frequency[full_ngram], document_frequency[full_ngram] / len(urimlist),
+            entry[0] * (document_frequency[full_ngram] / len(urimlist))
         ) )
 
     return returned_terms
