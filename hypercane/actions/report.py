@@ -136,7 +136,7 @@ def report_image_data(args):
     with open(args.output_filename, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=4)
 
-    logger.info("Done with collection image data run")
+    logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
 
 def report_ranked_terms(args):
 

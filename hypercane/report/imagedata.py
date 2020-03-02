@@ -65,7 +65,7 @@ def rank_images(imagedata):
 
             module_logger.info("processing image at {}".format(image_urim))
 
-            module_logger.info("image data: {}".format(imagedata[urim][image_urim]))
+            module_logger.debug("image data: {}".format(imagedata[urim][image_urim]))
 
             if 'colorcount' in imagedata[urim][image_urim]:
 
@@ -73,17 +73,26 @@ def rank_images(imagedata):
                 ratio = float(imagedata[urim][image_urim]['ratio width/height'])
                 noverN = float(imagedata[urim][image_urim]['n']) / float(imagedata[urim][image_urim]['N'])
 
-                module_logger.info("report for image {}:\n  colorcount: {}\n  ratio width/height: {}\n  n/N: {}\n".format(
+                module_logger.debug("report for image {}:\n  colorcount: {}\n  ratio width/height: {}\n  n/N: {}\n".format(
                     image_urim, colorcount, ratio, noverN
                 ))
 
-                imageranking.append(
-                    ( 
-                        colorcount,
-                        1 / ratio,
-                        noverN,
-                        image_urim
-                    )
-                )
+                too_similar = False
+                for entry in imageranking:
+                    if entry[0] == colorcount:
+                        if entry[1] == 1 / ratio:
+                            if entry[2] == noverN:
+                                too_similar = True
 
-    return imageranking
+                if too_similar is False:
+
+                    imageranking.append(
+                        ( 
+                            colorcount,
+                            1 / ratio,
+                            noverN,
+                            image_urim
+                        )
+                    )
+
+    return sorted(imageranking, reverse=True)
