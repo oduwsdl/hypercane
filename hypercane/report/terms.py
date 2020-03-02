@@ -1,7 +1,7 @@
 import sys
 import logging
 
-module_logger = logging.getLogger('hypercane.report.ranked_terms')
+module_logger = logging.getLogger('hypercane.report.terms')
    
 def get_document_tokens(urim, cache_storage, ngram_length):
 

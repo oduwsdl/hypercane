@@ -25,6 +25,7 @@ setup(
         'requests_cache',
         'scrapy',
         'simhash',
+        'spacy',
         'warcio'
     ],
     scripts=[
@@ -32,3 +33,15 @@ setup(
     ],
     test_suite="tests"
 )
+
+import spacy
+import sys
+
+try:
+    nlp = spacy.load('en')
+except OSError:
+    print('Downloading language model for the spaCy POS tagger\n'
+        "(don't worry, this will only happen once)", file=sys.stderr)
+    from spacy.cli import download
+    download('en')
+    nlp = spacy.load('en')

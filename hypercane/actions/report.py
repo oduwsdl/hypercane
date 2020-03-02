@@ -150,18 +150,16 @@ def report_ranked_terms(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.report.ranked_terms import generate_ranked_terms
+    from hypercane.report.terms import generate_ranked_terms
 
     import json
 
     parser = argparse.ArgumentParser(
         description="Provide a report containing the terms from the collection and their associated frequencies.",
-        prog="hc report ranked-terms"
+        prog="hc report terms"
         )
 
-    parser.add_argument('-n', '--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
-
-    # parser.add_argument('-k', '--k', help="The number of terms to return, specify 0 to return all terms.", dest='k', type=int, required=True)
+    parser.add_argument('--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -193,6 +191,57 @@ def report_ranked_terms(args):
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
 
+def report_entities(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.report.entities import generate_entities
+
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Provide a report containing the terms from the collection and their associated frequencies.",
+        prog="hc report entities"
+        )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection image data run")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    ranked_terms = generate_entities(list(urimdata.keys()), args.cache_storage)
+
+    with open(args.output_filename, 'w') as f:
+
+        f.write("Entity\tFrequency in Corpus\tProbability in Corpus\tDocument Frequency\tInverse Document Frequency\tCorpus TF-IDF\n")
+
+        for term, frequency, probability, df, idf, tfidf in ranked_terms:
+            f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
+        
+
+    logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
+
 def print_usage():
 
     print("""'hc report' is used print reports about web archive collections
@@ -211,6 +260,7 @@ def print_usage():
 supported_commands = {
     "metadata": discover_collection_metadata,
     "image-data": report_image_data,
-    "ranked-terms": report_ranked_terms
+    "terms": report_ranked_terms,
+    "entities": report_entities
 }
 
