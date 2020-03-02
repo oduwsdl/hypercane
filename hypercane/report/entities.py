@@ -4,7 +4,7 @@ import logging
 
 module_logger = logging.getLogger('hypercane.report.entities')
 
-def get_document_entities(urim, cache_storage):
+def get_document_entities(urim, cache_storage, entity_types):
     import spacy
     from nltk.corpus import stopwords
     from hypercane.utils import get_boilerplate_free_content
@@ -17,11 +17,12 @@ def get_document_entities(urim, cache_storage):
     entities = []
 
     for ent in doc.ents:
-        entities.append(ent.text + " :-: " + ent.label_)
+        if ent.label_ in entity_types:
+            entities.append(ent.text.strip().lower())
 
     return entities
 
-def generate_entities(urimlist, cache_storage):
+def generate_entities(urimlist, cache_storage, entity_types):
 
     import concurrent.futures
     import nltk
@@ -31,7 +32,7 @@ def generate_entities(urimlist, cache_storage):
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
 
-        future_to_urim = { executor.submit(get_document_entities, urim, cache_storage): urim for urim in urimlist }
+        future_to_urim = { executor.submit(get_document_entities, urim, cache_storage, entity_types): urim for urim in urimlist }
 
         for future in concurrent.futures.as_completed(future_to_urim):
 
