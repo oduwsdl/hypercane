@@ -181,14 +181,14 @@ def report_ranked_terms(args):
         session, discover_mementos_by_input_type
     )
 
-    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.k, args.cache_storage, ngram_length=args.ngram_length)
+    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.cache_storage, ngram_length=args.ngram_length)
 
     with open(args.output_filename, 'w') as f:
 
-        f.write("Word\tFrequency\tProbability\n")
+        f.write("Word\tFrequency in Corpus\tProbability in Corpus\tDocument Frequency\tInverse Document Frequency\tCorpus TF-IDF\n")
 
-        for term, frequency, probability in ranked_terms:
-            f.write("{}\t{}\t{}\n".format(term, frequency, probability))
+        for term, frequency, probability, df, idf, tfidf in ranked_terms:
+            f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
         
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))

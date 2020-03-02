@@ -27,12 +27,13 @@ def get_document_tokens(urim, cache_storage, ngram_length):
     
     return list(doc_ngrams)
 
-def generate_ranked_terms(urimlist, count, cache_storage, ngram_length=1):
+def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
 
     import concurrent.futures
     import nltk
 
     corpus_ngrams = []
+    document_frequency = {}
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
 
@@ -43,7 +44,13 @@ def generate_ranked_terms(urimlist, count, cache_storage, ngram_length=1):
             urim = future_to_urim[future]
 
             try:
-                corpus_ngrams.extend( future.result() )
+                # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
+                document_ngrams = future.result()
+                corpus_ngrams.extend( document_ngrams )
+
+                for ngram in list(set(document_ngrams)):
+                    document_frequency.setdefault(ngram[0], 0)                    
+                    document_frequency[ngram[0]] += 1
 
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
@@ -62,11 +69,11 @@ def generate_ranked_terms(urimlist, count, cache_storage, ngram_length=1):
 
     returned_terms = []
 
-    if count == 0:
-        for entry in sorted(tf, reverse=True):
-            returned_terms.append( ( entry[1][0], entry[0], float(entry[0])/float(len(tf)) ) )
-    else:
-        for entry in sorted(tf, reverse=True)[0:count]:
-            returned_terms.append( ( entry[1][0], entry[0], float(entry[0])/float(len(tf)) ) )
+    for entry in sorted(tf, reverse=True):
+        returned_terms.append( (
+            entry[1][0], entry[0], float(entry[0])/float(len(tf)), 
+            document_frequency[entry[1][0]], document_frequency[entry[1][0]] / len(urimlist),
+            entry[0] * (document_frequency[entry[1][0]] / len(urimlist))
+        ) )
 
     return returned_terms
