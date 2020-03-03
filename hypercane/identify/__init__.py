@@ -57,9 +57,9 @@ def extract_storygraph_arguments_from_input(input_string):
     if ';' in input_string:
         rank, other = input_string.split(';')
 
-        if other.count('/') == 2:
+        if other.count('-') == 2:
 
-            year, month, rest = other.split('/')
+            year, month, rest = other.split('-')
 
             if 'T' in rest:
 
@@ -70,18 +70,18 @@ def extract_storygraph_arguments_from_input(input_string):
             else:
                 date = rest
 
-        elif other.count('/') == 1:
+        elif other.count('-') == 1:
 
-            year, rest = other.split('/')
+            year, rest = other.split('-')
             
         else:
             raise argparse.ArgumentTypeError(
                 "Error: Storygraph input arguments are not formatted correctly."
             )
 
-        if '/' in other:
+        if '-' in other:
 
-            items = other.split('/')
+            items = other.split('-')
 
             year = items[0]
 
