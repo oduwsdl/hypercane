@@ -150,7 +150,7 @@ def report_ranked_terms(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.report.terms import generate_ranked_terms
+    
 
     import json
 
@@ -160,6 +160,10 @@ def report_ranked_terms(args):
         )
 
     parser.add_argument('--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
+
+    parser.add_argument('--sumgrams', '--use-sumgrams', help="If specified, generate sumgrams rather than n-grams.",
+        action='store_true', default=False, dest='use_sumgrams'
+    )
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -179,14 +183,32 @@ def report_ranked_terms(args):
         session, discover_mementos_by_input_type
     )
 
-    ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.cache_storage, ngram_length=args.ngram_length)
+    if args.use_sumgrams is True:
 
-    with open(args.output_filename, 'w') as f:
+        from hypercane.report.sumgrams import generate_sumgrams
 
-        f.write("Term\tFrequency in Corpus\tProbability in Corpus\tDocument Frequency\tInverse Document Frequency\tCorpus TF-IDF\n")
+        ranked_terms = generate_sumgrams(list(urimdata.keys()), args.cache_storage)
 
-        for term, frequency, probability, df, idf, tfidf in ranked_terms:
-            f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
+        with open(args.output_filename, 'w') as f:
+
+            f.write("Term\tFrequency in Corpus\tTerm Rate\n")
+
+            for term, frequency, term_rate in ranked_terms:
+                f.write("{}\t{}\t{}\n".format(
+                    term, frequency, term_rate
+                ))
+
+    else:
+        from hypercane.report.terms import generate_ranked_terms
+
+        ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.cache_storage, ngram_length=args.ngram_length)
+
+        with open(args.output_filename, 'w') as f:
+
+            f.write("Term\tFrequency in Corpus\tProbability in Corpus\tDocument Frequency\tInverse Document Frequency\tCorpus TF-IDF\n")
+
+            for term, frequency, probability, df, idf, tfidf in ranked_terms:
+                f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
         
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
