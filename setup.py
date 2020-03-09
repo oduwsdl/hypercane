@@ -47,6 +47,7 @@ setup(
         'scrapy',
         'simhash',
         'spacy',
+        'sumgram',
         'warcio'
     ],
     scripts=[
