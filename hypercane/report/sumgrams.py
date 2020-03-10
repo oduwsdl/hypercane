@@ -13,7 +13,8 @@ def generate_sumgrams(urimlist, cache_storage):
 
     doc_lst = []
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
         future_to_urim = { executor.submit(get_boilerplate_free_content, urim, cache_storage): urim for urim in urimlist }
 
