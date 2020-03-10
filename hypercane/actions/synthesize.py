@@ -44,6 +44,26 @@ def raintale_story(args):
         help='A file containing image data, as produced by hc report image-data',
         required=False, default=None
     )
+
+    parser.add_argument('--termdata', dest='termdata_filename',
+        help='A file containing term data, as produced by hc report terms',
+        required=False, default=None
+    )
+
+    parser.add_argument('--term-count', dest='term_count',
+        help='The number of top terms to select from the term data.',
+        required=False, default=5
+    )
+
+    parser.add_argument('--entitydata', dest='entitydata_filename',
+        help='A file containing term data, as produced by hc report terms',
+        required=False, default=None
+    )
+
+    parser.add_argument('--entity-count', dest='entity_count',
+        help='The number of top terms to select from the term data.',
+        required=False, default=5
+    )
     
     args = hypercane.actions.process_input_args(args, parser)
     output_type = 'mementos'
@@ -73,6 +93,34 @@ def raintale_story(args):
         with open(args.imagedata_filename) as f:
             jdata = json.load(f)
             story_json['story image'] = sorted(jdata['ranked data'], reverse=True)[0][3]
+
+    if args.termdata_filename is not None:
+        import csv
+        with open(args.termdata_filename) as f:
+            reader = csv.DictReader(f)
+            tf = []
+            for row in reader:
+                tf.append( ( row['Frequency in Corpus'], row['Term'] ) )
+
+            story_json.setdefault('metadata', {})
+            story_json['metadata']['terms'] = []
+
+            for term in sorted(tf, reverse=True)[0:args.term_count]:
+                story_json['metadata']['terms'].append(term[1])
+
+    if args.entitydata_filename is not None:
+        import csv
+        with open(args.entitydata_filename) as f:
+            reader = csv.DictReader(f)
+            tf = []
+            for row in reader:
+                tf.append( ( row['Frequency in Corpus'], row['Entity'] ) )
+
+            story_json.setdefault('metadata', {})
+            story_json['metadata']['entities'] = []
+
+            for entity in sorted(tf, reverse=True)[0:args.entity_count]:
+                story_json['metadata']['entities'].append(entity[1])
 
     for urim in urimdata.keys():
 
