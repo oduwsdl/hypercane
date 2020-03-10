@@ -41,7 +41,7 @@ def get_managed_session(cache_storage):
 
 def generate_image_data(urimdata, cache_storage):
 
-    from mementoembed.imageselection import generate_images_and_scores
+    from mementoembed.imageselection import generate_images_and_scores, get_image_from_metadata
 
     managed_session = get_managed_session(cache_storage)
 
@@ -52,6 +52,7 @@ def generate_image_data(urimdata, cache_storage):
     for urim in urimdata:
         # TODO: cache this information?
         imagedata[urim] = generate_images_and_scores(urim, managed_session)
+        imagedata[urim]['human selected image'] = get_image_from_metadata(urim, managed_session)
 
     return imagedata
 
