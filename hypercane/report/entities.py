@@ -30,7 +30,8 @@ def generate_entities(urimlist, cache_storage, entity_types):
     corpus_entities = []
     document_frequency = {}
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
         future_to_urim = { executor.submit(get_document_entities, urim, cache_storage, entity_types): urim for urim in urimlist }
 

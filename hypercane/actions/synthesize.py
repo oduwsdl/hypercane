@@ -97,10 +97,10 @@ def raintale_story(args):
     if args.termdata_filename is not None:
         import csv
         with open(args.termdata_filename) as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter='\t')
             tf = []
             for row in reader:
-                tf.append( ( row['Frequency in Corpus'], row['Term'] ) )
+                tf.append( ( int(row['Frequency in Corpus']), row['Term'] ) )
 
             story_json.setdefault('metadata', {})
             story_json['metadata']['terms'] = []
@@ -111,10 +111,10 @@ def raintale_story(args):
     if args.entitydata_filename is not None:
         import csv
         with open(args.entitydata_filename) as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, delimiter='\t')
             tf = []
             for row in reader:
-                tf.append( ( row['Frequency in Corpus'], row['Entity'] ) )
+                tf.append( ( float(row['Corpus TF-IDF']), row['Entity'] ) )
 
             story_json.setdefault('metadata', {})
             story_json['metadata']['entities'] = []

@@ -35,7 +35,8 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
     corpus_ngrams = []
     document_frequency = {}
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
         future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length): urim for urim in urimlist }
 
