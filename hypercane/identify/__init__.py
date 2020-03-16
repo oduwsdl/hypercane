@@ -96,10 +96,9 @@ def extract_storygraph_arguments_from_input(input_string):
 
     storygraph_args = {}
     storygraph_args['rank'] = int(rank)
-    storygraph_args['year'] = int(year)
-    storygraph_args['month'] = int(month)
-    storygraph_args['date'] = int(date)
-    storygraph_args['hour'] = int(hour)
+    storygraph_args['year'] = year
+    storygraph_args['month'] = month
+    storygraph_args['date'] = date
 
     return storygraph_args
     
@@ -269,6 +268,15 @@ def find_or_create_mementos(urirs, session):
         urims.append(candidate_urim)
 
     return urims
+
+def get_uris_from_best_graph_via_storygraph_toolkit(session, storygraph_url, rank, year, graph_date):
+
+    from StoryGraphToolkit.SGData import getMaxGraphDataForDateRange
+
+    max_graph = getMaxGraphDataForDateRange(year, graph_date, graph_date, storygraph_url, dailyMaxGraphCount=1, threadCount=5)
+
+    return max_graph['max_graphs'][year + '-' + graph_date][0]['dets']['connected_comp_uris']
+
 
 def get_uris_from_storygraph(session, storygraph_url, rank, year, month, date, hour):
 
@@ -451,10 +459,15 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         storygraph_arguments = extract_storygraph_arguments_from_input(input_args)
 
-        urirs = get_uris_from_storygraph(session, storygraph_url, storygraph_arguments['rank'],
-            storygraph_arguments['year'], storygraph_arguments['month'], storygraph_arguments['date'],
-            storygraph_arguments['hour']
-        )
+        urirs = get_uris_from_best_graph_via_storygraph_toolkit(session, storygraph_url,
+            storygraph_arguments['rank'], storygraph_arguments['year'],
+            "{}-{}".format(storygraph_arguments['month'], storygraph_arguments['date'])
+        )        
+
+        # urirs = get_uris_from_storygraph(session, storygraph_url, storygraph_arguments['rank'],
+        #     storygraph_arguments['year'], storygraph_arguments['month'], storygraph_arguments['date'],
+        #     storygraph_arguments['hour']
+        # )
 
         if crawl_depth > 1:
             link_storage = StorageObject()
