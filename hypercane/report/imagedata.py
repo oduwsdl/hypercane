@@ -41,7 +41,7 @@ def get_managed_session(cache_storage):
 
 def generate_image_data(urimdata, cache_storage):
 
-    from mementoembed.imageselection import generate_images_and_scores, get_image_from_metadata, scores_for_image
+    from mementoembed.imageselection import generate_images_and_scores, scores_for_image
 
     managed_session = get_managed_session(cache_storage)
 
@@ -53,20 +53,23 @@ def generate_image_data(urimdata, cache_storage):
         # TODO: cache this information?
         imagedata[urim] = generate_images_and_scores(urim, managed_session)
 
-        metadata_image_url = get_image_from_metadata(urim, managed_session)
-        metadata_image_data = None
+    return imagedata
 
-        if metadata_image_url is not None:
+def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
 
-            r = managed_session.get(metadata_image_url)
+    from mementoembed.imageselection import generate_images_and_scores, scores_for_image
+    import jsonlines
 
-            if r.status_code == 200:
-                metadata_image_data = scores_for_image(r.content, 0, 0)
+    managed_session = get_managed_session(cache_storage)
+    module_logger.info("generating image data with MementoEmbed libraries...")
 
-        imagedata[urim]['image from metadata'] = {
-            'url': metadata_image_url,
-            'data': metadata_image_data
-        }
+    with jsonlines.open(output_filename, mode='w') as writer:
+
+        for urim in uridata:
+            # TODO: cache this information?
+            imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
+
+            writer.write(imagedata)
 
     return imagedata
 
@@ -90,6 +93,15 @@ def rank_images(imagedata):
 
                 colorcount = float(imagedata[urim][image_urim]['colorcount'])
                 ratio = float(imagedata[urim][image_urim]['ratio width/height'])
+
+                N = imagedata[urim][image_urim]['N'] 
+                n = imagedata[urim][image_urim]['n'] 
+
+                if N == 0:
+                    noverN = None
+                else:
+                    noverN = n / N
+
                 noverN = float(imagedata[urim][image_urim]['n']) / float(imagedata[urim][image_urim]['N'])
 
                 module_logger.debug("report for image {}:\n  colorcount: {}\n  ratio width/height: {}\n  n/N: {}\n".format(
