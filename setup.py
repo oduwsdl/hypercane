@@ -39,6 +39,7 @@ setup(
         'distance',
         'newspaper3k',
         'guess-language-spirit',
+        'jsonlines',
         'MementoEmbed',
         'otmt',
         'pymongo',

@@ -99,10 +99,10 @@ def report_image_data(args):
     from hypercane.utils import get_web_session
 
     from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_mementos_by_input_type
+        discover_mementos_by_input_type, discover_original_resources_by_input_type
 
     from hypercane.report.imagedata import generate_image_data, \
-        rank_images
+        rank_images, output_image_data_as_jsonl
 
     import json
 
@@ -110,6 +110,16 @@ def report_image_data(args):
         description="Provide a report on the images from in the mementos discovered in the input.",
         prog="hc report image-data"
         )
+
+    parser.add_argument('--use-urirs', required=False, 
+        dest='use_urirs', action='store_true',
+        help="Regardless of headers, assume the input are URI-Rs and do not try to archive them."
+    )
+
+    parser.add_argument('--output-format', required=False,
+        dest="output_format", default="json",
+        help="Choose the output format, valid formats are JSON and JSONL"
+    )
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -124,17 +134,28 @@ def report_image_data(args):
 
     logger.info("Starting collection image data run")
 
-    urimdata = discover_resource_data_by_input_type(
-        args.input_type, output_type, args.input_arguments, args.crawl_depth,
-        session, discover_mementos_by_input_type
-    )
+    if args.use_urirs == True:
+        uridata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_original_resources_by_input_type
+        )
+    else:
+        uridata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
     
-    metadata = {}
-    metadata['image data'] = generate_image_data(urimdata, args.cache_storage)
-    metadata['ranked data'] = rank_images(metadata['image data'])
+    if args.output_format == 'json':
 
-    with open(args.output_filename, 'w') as metadata_file:
-        json.dump(metadata, metadata_file, indent=4)
+        metadata = {}
+        metadata['image data'] = generate_image_data(uridata, args.cache_storage)
+        metadata['ranked data'] = rank_images(metadata['image data'])
+
+        with open(args.output_filename, 'w') as metadata_file:
+            json.dump(metadata, metadata_file, indent=4)
+
+    elif args.output_format == 'jsonl':
+        output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)        
 
     logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
 
@@ -149,8 +170,6 @@ def report_ranked_terms(args):
 
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
-
-    
 
     import json
 

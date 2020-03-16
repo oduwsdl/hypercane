@@ -38,10 +38,15 @@ def generate_sumgrams(urimlist, cache_storage):
     
     params = {
         "stanford_corenlp_server": False,
-        "add_stopwords": "2019 read, abc news, apr 2019, april 2019, associated press, aug 2019, august 2019, com, dec 2019, december 2019, donald trump, feb 2019, february 2019, fox news, getty images, jan 2019, january 2019, jul 2019, july 2019, jun 2019, june 2019, last month, last week, last year, mar 2019, march 2019, may 2019, new york, nov 2019, november 2019, oct 2019, october 2019, pic, pm et, president donald, president donald trump, president trump, president trump’s, said statement, send whatsapp, sep 2019, september 2019, sign up, trump administration, trump said, twitter, united states, washington post, white house, york times, privacy policy, terms use, 2020 read, apr 2020, april 2020, aug 2020, august 2020, dec 2020, december 2020, feb 2020, february 2020, jan 2020, january 2020, jul 2020, july 2020, jun 2020, june 2020, mar 2020, march 2020, may 2020, nov 2020, november 2020, oct 2020, october 2020, sep 2020, september 2020"
+        "add_stopwords": "2019 read, abc news, apr 2019, april 2019, associated press, aug 2019, august 2019, com, dec 2019, december 2019, donald trump, feb 2019, february 2019, fox news, getty images, jan 2019, january 2019, jul 2019, july 2019, jun 2019, june 2019, last month, last week, last year, mar 2019, march 2019, may 2019, new york, nov 2019, november 2019, oct 2019, october 2019, pic, pm et, president donald, president donald trump, president trump, president trump’s, said statement, send whatsapp, sep 2019, september 2019, sign up, trump administration, trump said, twitter, united states, washington post, white house, york times, privacy policy, terms use, 2020 read, apr 2020, april 2020, aug 2020, august 2020, dec 2020, december 2020, feb 2020, february 2020, jan 2020, january 2020, jul 2020, july 2020, jun 2020, june 2020, mar 2020, march 2020, may 2020, nov 2020, november 2020, oct 2020, october 2020, sep 2020, september 2020",
+        "top_sumgram_count": 20
     }
 
     sumgrams = get_top_sumgrams(doc_lst, params=params)
+
+#    with open("/Users/smj/tmp/sumgram-debug-20.json", 'w') as f:
+#        import json
+#        json.dump(sumgrams, f, indent=4)
 
     sf = []
     returned_terms = []
@@ -53,8 +58,15 @@ def generate_sumgrams(urimlist, cache_storage):
     # sys.exit(255)
 
     for sumgram in sumgrams["top_sumgrams"]:
+
+        if len(sumgram["ngram"].split(' ')) > 10:
+            module_logger.warning("sumgram [{}] is greater than 10 words, enacting workaround...")
+            ngram = sumgram["sumgram_history"][0]["prev_ngram"]
+        else:
+            ngram = sumgram["ngram"]
+
         sf.append( 
-            ( sumgram["term_freq"], sumgram["term_rate"], sumgram["ngram"] ) 
+            ( sumgram["term_freq"], sumgram["term_rate"], ngram ) 
         )
 
     for entry in sorted(sf, reverse=True):
