@@ -218,6 +218,7 @@ def get_tf_simhash(urim, cache_storage):
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
 
     import otmt
+    from boilerpy3 import extractors
 
     if dbconn is None:
         dbconn = MongoClient(cache_storage)
@@ -246,14 +247,17 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
             module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
             return bytes()
 
-        paragraphs = justext(
-            r.text, get_stoplist('English')
-        )
+        # paragraphs = justext(
+        #     r.text, get_stoplist('English')
+        # )
 
-        bpfree = ""
+        # bpfree = ""
 
-        for paragraph in paragraphs:
-            bpfree += "{}\n".format(paragraph.text)
+        # for paragraph in paragraphs:
+        #     bpfree += "{}\n".format(paragraph.text)
+
+        extractor = extractors.ArticleExtractor()
+        bpfree = extractor.get_content(r.text)
 
         module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
