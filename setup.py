@@ -36,6 +36,7 @@ setup(
     install_requires=[
         'aiu',
         'archivenow',
+        'boilerpy3',
         'distance',
         'newspaper3k',
         'guess-language-spirit',
