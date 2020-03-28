@@ -247,6 +247,9 @@ def find_or_create_mementos(urirs, session):
             except RequestException:
                 available = False
 
+        if r.url[0:29] == "https://web.archive.org/save/":
+            available = False 
+
         if available is True:
             candidate_urim = r.url
         else:
@@ -257,7 +260,7 @@ def find_or_create_mementos(urirs, session):
             module_logger.info("pushing {} into Internet Archive".format(urir))
             candidate_urim = archivenow.push(urir, "ia")[0]
         
-            if candidate_urim[0:5] == "Error":
+            if candidate_urim[0:5] == "Error" or candidate_urim[0:29] == "https://web.archive.org/save/":
                 # for now, skip if error
                 # TODO: try with other archives, we don't use archive.is because new mementos don't immediately have Memento headers
                 # candidate_urim = archivenow.push(urir, "is")[0]

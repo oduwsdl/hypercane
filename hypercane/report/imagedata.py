@@ -98,11 +98,9 @@ def rank_images(imagedata):
                 n = imagedata[urim][image_urim]['n'] 
 
                 if N == 0:
-                    noverN = None
+                    noverN = 0
                 else:
                     noverN = n / N
-
-                noverN = float(imagedata[urim][image_urim]['n']) / float(imagedata[urim][image_urim]['N'])
 
                 module_logger.debug("report for image {}:\n  colorcount: {}\n  ratio width/height: {}\n  n/N: {}\n".format(
                     image_urim, colorcount, ratio, noverN
