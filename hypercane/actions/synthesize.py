@@ -37,7 +37,7 @@ def raintale_story(args):
     )
 
     parser.add_argument('--title', dest='title',
-        help='The title of the story', required=True
+        help='The title of the story', required=False, default=None
     )
 
     parser.add_argument('--imagedata', dest='imagedata_filename',
@@ -57,6 +57,11 @@ def raintale_story(args):
 
     parser.add_argument('--entitydata', dest='entitydata_filename',
         help='A file containing term data, as produced by hc report terms',
+        required=False, default=None
+    )
+
+    parser.add_argument('--collection_metadata', dest='collection_metadata_filename',
+        help='A file containing Archive-It colleciton metadata, as produced by hc report metadata',
         required=False, default=None
     )
 
@@ -86,7 +91,29 @@ def raintale_story(args):
     logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
 
     story_json = {}
-    story_json['title'] = args.title
+
+    if args.collection_metadata_filename is not None:
+        with open(args.collection_metadata_filename) as f:
+            jdata = json.load(f)
+
+            if 'name' in jdata:
+                story_json['title'] = jdata['name']
+
+            for key in jdata:
+
+                if key != 'seed_metadata':
+                    story_json[key] = jdata[key]
+    
+    if args.title is None:
+        if args.collection_metadata_filename is None:
+            logger.critical("Cannot continue, either supply a title with --title or a collection metadata file containing a title with --collection_metadata")
+            sys.exit(255)
+        else:
+            # if we get here, the title should already be set
+            pass
+    else:
+        story_json['title'] = args.title
+
     story_json['elements'] = []
 
     if args.imagedata_filename is not None:
@@ -114,7 +141,10 @@ def raintale_story(args):
             reader = csv.DictReader(f, delimiter='\t')
             tf = []
             for row in reader:
-                tf.append( ( float(row['Corpus TF-IDF']), row['Entity'] ) )
+                try:
+                    tf.append( ( float(row['Corpus TF-IDF']), row['Entity'] ) )
+                except TypeError:
+                    logger.exception("row caused type error, skipping: {}".format(row))
 
             story_json.setdefault('metadata', {})
             story_json['metadata']['entities'] = []

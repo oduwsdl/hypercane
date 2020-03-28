@@ -10,6 +10,7 @@ def generate_sumgrams(urimlist, cache_storage):
     from sumgram.sumgram import get_top_sumgrams
     from hypercane.utils import get_boilerplate_free_content
     from otmt import generate_raw_urim
+    from datetime import datetime
 
     doc_lst = []
 
@@ -36,26 +37,128 @@ def generate_sumgrams(urimlist, cache_storage):
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
                 # sys.exit(255)
     
+    now = datetime.now()
+    current_year = now.year
+    last_year = current_year - 1
+    current_date = now.day
+
+    # sumgram processes stop words at two levels:
+    # 1. when the vocabulary is built
+    # 2. stopwords are applied when finding sumgrams
+    # start with single terms before moving on to bigrams, etc.
+
+    # TODO: load these from a file
+    added_stopwords = [
+        "associated press",
+        "com",
+        "donald trump",
+        "fox news",
+        "abc news",
+        "getty images",
+        "last month",
+        "last week",
+        "last year",
+        "pic",
+        "pm et",
+        "president donald",
+        "president donald trump",
+        "president trump",
+        "president trump's",
+        "said statement",
+        "send whatsapp",
+        "sign up",
+        "trump administration",
+        "trump said",
+        "twitter",
+        "united states",
+        "washington post",
+        "white house",
+        "york times",
+        "privacy policy",
+        "terms use"
+    ]
+
+    added_stopwords.append( "{} read".format(last_year) )
+    added_stopwords.append( "{} read".format(current_year) )
+
+    # add just the month to the stop words
+    added_stopwords.extend([
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december"
+    ])
+
+    added_stopwords.extend([
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec"
+    ])
+
+    # add the day of the week, too
+    added_stopwords.extend([
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+    ])
+
+    added_stopwords.extend([
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+    ])
+
+    for i in range(1, 13):
+        added_stopwords.append(
+            datetime(current_year, i, current_date).strftime('%b %Y')
+        )
+        added_stopwords.append(
+            datetime(last_year, i, current_date).strftime('%b %Y')
+        )
+
+    for i in range(1, 13):
+        added_stopwords.append(
+            datetime(current_year, i, current_date).strftime('%B %Y')
+        )
+        added_stopwords.append(
+            datetime(last_year, i, current_date).strftime('%B %Y')
+        )
+
     params = {
         "stanford_corenlp_server": False,
-        "add_stopwords": "2019 read, abc news, apr 2019, april 2019, associated press, aug 2019, august 2019, com, dec 2019, december 2019, donald trump, feb 2019, february 2019, fox news, getty images, jan 2019, january 2019, jul 2019, july 2019, jun 2019, june 2019, last month, last week, last year, mar 2019, march 2019, may 2019, new york, nov 2019, november 2019, oct 2019, october 2019, pic, pm et, president donald, president donald trump, president trump, president trump’s, said statement, send whatsapp, sep 2019, september 2019, sign up, trump administration, trump said, twitter, united states, washington post, white house, york times, privacy policy, terms use, 2020 read, apr 2020, april 2020, aug 2020, august 2020, dec 2020, december 2020, feb 2020, february 2020, jan 2020, january 2020, jul 2020, july 2020, jun 2020, june 2020, mar 2020, march 2020, may 2020, nov 2020, november 2020, oct 2020, october 2020, sep 2020, september 2020",
+        "add_stopwords": ", ".join(added_stopwords),
         "top_sumgram_count": 20
     }
 
     sumgrams = get_top_sumgrams(doc_lst, params=params)
 
-#    with open("/Users/smj/tmp/sumgram-debug-20.json", 'w') as f:
-#        import json
-#        json.dump(sumgrams, f, indent=4)
-
     sf = []
     returned_terms = []
-
-    # import pprint
-    # pp = pprint.PrettyPrinter(indent=4)
-
-    # pp.pprint(sumgrams)
-    # sys.exit(255)
 
     for sumgram in sumgrams["top_sumgrams"]:
 
