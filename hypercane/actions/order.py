@@ -15,8 +15,8 @@ def memento_datetime(args):
     from hypercane.order.memento_datetime import order_by_memento_datetime
 
     parser = argparse.ArgumentParser(
-        description="Remove the near-duplicate documents from a collection.",
-        prog="hc order pubdate_else_memento_datetime"
+        description="Order by memento-datetime.",
+        prog="hc order memento_datetime"
     )
 
     args = process_input_args(args, parser)
@@ -69,7 +69,7 @@ def pubdate_else_memento_datetime(args):
     from hypercane.order.dsa1_publication_alg import order_by_dsa1_publication_alg
 
     parser = argparse.ArgumentParser(
-        description="Remove the near-duplicate documents from a collection.",
+        description="Order by publication date first, fall back to memento-datetime.",
         prog="hc order pubdate_else_memento_datetime"
     )
 
@@ -112,6 +112,7 @@ def print_usage():
 
     Supported commands:
     * pubdate-else-memento-datetime - order the documents according to AlNoamany's Algorithm
+    * memento-datetime - order the documents by memento-datetime
 
     Examples:
 
