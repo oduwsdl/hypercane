@@ -1,4 +1,7 @@
 import sys
+import logging
+
+module_logger = logging.getLogger("hypercane.order.dsa1_publication_alg")
 
 class OrderByDSA1PublicationAlgorithmError(Exception):
     pass
@@ -23,7 +26,7 @@ def order_by_dsa1_publication_alg(urims, cache_storage):
                 pdt = datetime.strptime(pdt, "%a, %d %b %Y %H:%M:%S GMT")
                 publication_datetime_to_urim.append( (datetime.timestamp(pdt), urim) )
             except Exception as exc:
-                raise OrderByDSA1PublicationAlgorithmError("Failed to determine publication date for {} -- Details: {}".format(urim, repr(exc)))
+                module_logger.exception("Failed to determine publication date for {}, skipping...".format(urim, repr(exc)))
 
     publication_datetime_to_urim.sort()
 

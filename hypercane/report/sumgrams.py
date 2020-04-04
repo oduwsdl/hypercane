@@ -133,21 +133,21 @@ def generate_sumgrams(urimlist, cache_storage):
         "sun"
     ])
 
-    for i in range(1, 13):
-        added_stopwords.append(
-            datetime(current_year, i, current_date).strftime('%b %Y')
-        )
-        added_stopwords.append(
-            datetime(last_year, i, current_date).strftime('%b %Y')
-        )
+    # for i in range(1, 13):
+    #     added_stopwords.append(
+    #         datetime(current_year, i, current_date).strftime('%b %Y')
+    #     )
+    #     added_stopwords.append(
+    #         datetime(last_year, i, current_date).strftime('%b %Y')
+    #     )
 
-    for i in range(1, 13):
-        added_stopwords.append(
-            datetime(current_year, i, current_date).strftime('%B %Y')
-        )
-        added_stopwords.append(
-            datetime(last_year, i, current_date).strftime('%B %Y')
-        )
+    # for i in range(1, 13):
+    #     added_stopwords.append(
+    #         datetime(current_year, i, current_date).strftime('%B %Y')
+    #     )
+    #     added_stopwords.append(
+    #         datetime(last_year, i, current_date).strftime('%B %Y')
+    #     )
 
     params = {
         "stanford_corenlp_server": False,
