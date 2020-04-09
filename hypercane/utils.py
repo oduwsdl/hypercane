@@ -256,16 +256,24 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         # for paragraph in paragraphs:
         #     bpfree += "{}\n".format(paragraph.text)
 
+        module_logger.debug("attempting to extract boilerplate free content from {}".format(urim))
+
         extractor = extractors.ArticleExtractor()
-        bpfree = extractor.get_content(r.text)
 
-        module_logger.info("storing boilerplate free content in cache {}".format(urim))
+        try:
+            bpfree = extractor.get_content(r.text)
 
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "boilerplate free content": bpfree } },
-            upsert=True
-        )
+            module_logger.info("storing boilerplate free content in cache {}".format(urim))
+
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "boilerplate free content": bpfree } },
+                upsert=True
+            )
+
+        except Exception:
+            module_logger.exception("failed to extract boilerplate from {}, setting value to empty string".format(urim))
+            return bytes()
 
         return bytes(bpfree, "utf8")
 

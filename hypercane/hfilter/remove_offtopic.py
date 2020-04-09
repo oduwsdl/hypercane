@@ -9,6 +9,8 @@ from aiu import convert_LinkTimeMap_to_dict
 from requests.exceptions import ConnectionError, TooManyRedirects
 from requests.exceptions import RequestException
 from requests_futures.sessions import FuturesSession
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from ..utils import get_web_session, get_boilerplate_free_content
 
@@ -54,7 +56,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             raw_urim = otmt.generate_raw_urim(urim)
             self.session.get(raw_urim)
             self.urimlist.append(urim)
-        except (ConnectionError, TooManyRedirects) as e:
+        except (ConnectionError, TooManyRedirects, RequestException) as e:
             self.addMementoError(urim, repr(e))
 
     def addManyMementos(self, urims):
@@ -67,6 +69,18 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         module_logger.info("found duplicates, now using {} URI-Ms for processing...".format(len(urims)))
 
         futuressession = FuturesSession(session=self.session)
+
+        retry = Retry(
+            total=10,
+            read=10,
+            connect=10,
+            backoff_factor=0.3,
+            status_forcelist=(500, 502, 504)
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        futuressession.mount('http://', adapter)
+        futuressession.mount('https://', adapter)  
+
         futures = {}
 
         working_urim_list = []
@@ -77,6 +91,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             working_urim_list.append(uri)
             futures[uri] = futuressession.get(uri)
             futures[raw_urim] = futuressession.get(raw_urim)
+
+        working_starting_size = len(working_urim_list)
 
         def uri_generator(urilist):
 
@@ -93,7 +109,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                 module_logger.debug("uri {} is done, processing...".format(uri))
 
                 if len(working_urim_list) % 100 == 0:
-                    module_logger.info("{} mementos left to process".format(len(working_urim_list)))
+                    module_logger.info("{}/{} mementos left to process".format(len(working_urim_list), working_starting_size))
 
                 try:
                     r = futures[uri].result()
@@ -222,9 +238,10 @@ def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics
         len( cm.getTimeMapURIList() )
     ))
 
-    for urim in urims:
-        module_logger.debug("adding URI-M {}".format(urim))
-        cm.addMemento(urim)
+    # for urim in urims:
+    #     module_logger.debug("adding URI-M {}".format(urim))
+    #     cm.addMemento(urim)
+    cm.addManyMementos(urims)
 
     # TOOD: what about document collections outside of web archives?
     # Note: these algorithms only work for collections with TimeMaps, 

@@ -11,6 +11,7 @@ def generate_sumgrams(urimlist, cache_storage):
     from hypercane.utils import get_boilerplate_free_content
     from otmt import generate_raw_urim
     from datetime import datetime
+    from string import punctuation
 
     doc_lst = []
 
@@ -81,8 +82,7 @@ def generate_sumgrams(urimlist, cache_storage):
     added_stopwords.append( "{} read".format(last_year) )
     added_stopwords.append( "{} read".format(current_year) )
 
-    # add just the month to the stop words
-    added_stopwords.extend([
+    stopmonths = [
         "january",
         "february",
         "march",
@@ -95,9 +95,12 @@ def generate_sumgrams(urimlist, cache_storage):
         "october",
         "november",
         "december"
-    ])
+    ]
 
-    added_stopwords.extend([
+    # add just the month to the stop words
+    added_stopwords.extend(stopmonths)
+    
+    stopmonths_short = [
         "jan",
         "feb",
         "mar",
@@ -110,7 +113,9 @@ def generate_sumgrams(urimlist, cache_storage):
         "oct",
         "nov",
         "dec"
-    ])
+    ]
+
+    added_stopwords.extend(stopmonths_short)
 
     # add the day of the week, too
     added_stopwords.extend([
@@ -160,21 +165,42 @@ def generate_sumgrams(urimlist, cache_storage):
     sf = []
     returned_terms = []
 
-    for sumgram in sumgrams["top_sumgrams"]:
+    if "top_sumgrams" in sumgrams:
 
-        if len(sumgram["ngram"].split(' ')) > 10:
-            module_logger.warning("sumgram [{}] is greater than 10 words, enacting workaround...")
-            ngram = sumgram["sumgram_history"][0]["prev_ngram"]
-        else:
-            ngram = sumgram["ngram"]
+        for sumgram in sumgrams["top_sumgrams"]:
 
-        sf.append( 
-            ( sumgram["term_freq"], sumgram["term_rate"], ngram ) 
-        )
+            if len(sumgram["ngram"].split(' ')) > 10:
+                module_logger.warning("sumgram [{}] is greater than 10 words, enacting workaround...")
+                ngram = sumgram["sumgram_history"][0]["prev_ngram"]
+            else:
+                ngram = sumgram["ngram"]
 
-    for entry in sorted(sf, reverse=True):
-        returned_terms.append(
-            ( entry[2], entry[0], entry[1] )
-        )
+            addsumgram = True
+
+            # workaround for sumgram expanding dates
+            for stopmonth in stopmonths:
+                module_logger.info("checking if long stopmonth {} in {}".format(stopmonth, ngram))
+                if stopmonth in ngram and str(current_year) in ngram:
+                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+                    addsumgram = False
+                    break
+
+            for stopmonth in stopmonths_short:
+                module_logger.info("checking if short stopmonth {} in {}".format(stopmonth, ngram))
+                if stopmonth in ngram and str(current_year) in ngram:
+                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+                    addsumgram = False
+                    break
+
+            if addsumgram == True:
+                sf.append( 
+                    ( sumgram["term_freq"], sumgram["term_rate"], ngram ) 
+                )
+
+        for entry in sorted(sf, reverse=True):
+            ngram = entry[2].strip(punctuation)
+            returned_terms.append(
+                ( ngram, entry[0], entry[1] )
+            )
 
     return returned_terms
