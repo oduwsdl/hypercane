@@ -1,5 +1,56 @@
 import sys
 
+def bm25_ranking(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.rank.bm25 import rank_by_bm25
+
+    parser = argparse.ArgumentParser(
+        description="Rank the input using a query and the BM25 algorithm.",
+        prog="hc rank bm25"
+    )
+
+    parser.add_argument('--query', dest='query',
+        required=True, help="The query to use with BM25"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the ranking by BM25")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urimdata = rank_by_bm25(
+        urimdata, session, args.query
+    )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished ranking by BM25, output is at {}".format(args.output_filename))
+
+
+
 def dsa1_ranking(args):
 
     import argparse
@@ -81,6 +132,7 @@ def print_usage():
 
     Supported commands:
     * dsa1-ranking - rank the documents according to the scoring function of AlNoamany's Algorithm
+    * bm25 - rank documents according to the input query
 
     Examples:
 
@@ -89,6 +141,7 @@ def print_usage():
 """)
 
 supported_commands = {
-    "dsa1-ranking": dsa1_ranking
+    "dsa1-ranking": dsa1_ranking,
+    "bm25": bm25_ranking
 }
 

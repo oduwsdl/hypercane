@@ -44,6 +44,7 @@ setup(
         'MementoEmbed',
         'otmt',
         'pymongo',
+        'rank_bm25',
         'requests',
         'requests_cache',
         'scrapy',
