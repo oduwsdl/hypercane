@@ -90,7 +90,9 @@ def raintale_story(args):
 
     logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
 
-    story_json = {}
+    story_json = {
+        'metadata': {}
+    }
 
     if args.collection_metadata_filename is not None:
         with open(args.collection_metadata_filename) as f:
@@ -102,7 +104,7 @@ def raintale_story(args):
             for key in jdata:
 
                 if key != 'seed_metadata':
-                    story_json[key] = jdata[key]
+                    story_json['metadata'][key] = jdata[key]
     
     if args.title is None:
         if args.collection_metadata_filename is None:
@@ -113,6 +115,15 @@ def raintale_story(args):
             pass
     else:
         story_json['title'] = args.title
+
+        if args.title == "Archive-It Collection":
+
+            if 'id' in jdata:
+                story_json['title'] = args.title + " " + jdata['id']
+
+            if 'name' in jdata:
+                story_json['title'] = story_json['title'] + ': ' + jdata['name']
+
 
     story_json['elements'] = []
 

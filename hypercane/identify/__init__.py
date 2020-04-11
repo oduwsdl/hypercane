@@ -138,7 +138,12 @@ def download_urits_and_extract_urims(uritlist, session):
 
             if r.status_code == 200:
                 timemap_content = convert_LinkTimeMap_to_dict(r.text)
-                urims = extract_urims_from_TimeMap(timemap_content)
+
+                try:
+                    urims = extract_urims_from_TimeMap(timemap_content)
+                except KeyError as e:
+                    module_logger.exception(
+                        "Skipping TimeMap {}, encountered problem extracting URI-Ms from TimeMap: {}".format(workinguri, repr(e)))
 
                 urimlist.extend(urims)
 
