@@ -163,28 +163,46 @@ def run_sample_with_dsa1(parser, args):
 def sample_with_dsa1(args):
 
     import argparse
+    import os
 
     parser = argparse.ArgumentParser(
         description="Sample URI-Ms from a web archive collection with DSA1 (AlNoamany's) algorithm.",
         prog="hc sample dsa1"
-        )
+    )
 
-    run_sample_with_dsa1(parser, args)
+    parser.add_argument('--memento-damage-url', dest='memento_damage_url',
+        default=None,
+        help="The URL of the Memento-Damage service to use for ranking."
+    )
+
+    algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
+        os.path.dirname(os.path.realpath(__file__))
+    )
+
+    # run_sample_with_dsa1(parser, args)
+    run_sample_with(parser, args, "DSA1", algorithm_script)
 
 def sample_with_alnoamany(args):
 
     import argparse
+    import os
 
     parser = argparse.ArgumentParser(
         description="Sample URI-Ms from a web archive collection with DSA1 (AlNoamany's) algorithm.",
         prog="hc sample alnoamany"
         )
 
-    # algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
-    #      os.path.dirname(os.path.realpath(__file__))
-    # )
+    parser.add_argument('--memento-damage-url', dest='memento_damage_url',
+        default=None,
+        help="The URL of the Memento-Damage service to use for ranking."
+    )
+
+    algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
+        os.path.dirname(os.path.realpath(__file__))
+    )
     
-    run_sample_with_dsa1(parser, args)
+    # run_sample_with_dsa1(parser, args)
+    run_sample_with(parser, args, "AlNoamany", algorithm_script)
 
 def sample_with_filtered_random(args):
 

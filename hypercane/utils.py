@@ -239,7 +239,12 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         module_logger.info("generating boilerplate free content for {}".format(urim))
         raw_urim = otmt.generate_raw_urim(urim)
-        r = session.get(raw_urim)
+
+        try:
+            r = session.get(raw_urim)
+        except Exception:
+            module_logger.exception("failed to execute GET on {}".format(urim))
+            return bytes()
 
         module_logger.info("content-type is {}".format(r.headers['content-type']))
 

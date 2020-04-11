@@ -2,6 +2,7 @@ import re
 import requests.exceptions
 import json
 import logging
+import concurrent.futures
 
 from urllib.parse import urlparse
 
@@ -83,32 +84,49 @@ def get_memento_damage(memento_uri, memento_damage_url, session):
     else:
         return 0
 
+def get_memento_score(urim, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
+
+    category_score = get_memento_uri_category(urim)
+    path_depth_score = get_memento_depth(urim)
+    damage_score = get_memento_damage(urim, memento_damage_url, session)
+
+    score = ( 1 -  damage_weight * damage_score ) + \
+        ( path_depth_weight * path_depth_score ) + \
+        ( category_weight * category_score )
+
+    return score
+
 def rank_by_dsa1_score(urimdata, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
 
-    urim_to_cluster = {}
-    clusters_to_urims = {}
+    # urim_to_cluster = {}
+    # clusters_to_urims = {}
 
-    for urim in urimdata:
-        cluster = urimdata[urim]['Cluster']
+    urims = list(urimdata.keys())
 
-        urim_to_cluster[urim] = cluster
-        clusters_to_urims.setdefault(cluster, []).append(urim)
+    # for urim in urims:
+    #     cluster = urimdata[urim]['Cluster']
+    #     urim_to_cluster[urim] = cluster
+    #     clusters_to_urims.setdefault(cluster, []).append(urim)
 
     urim_to_score = {}
 
-    for cluster in clusters_to_urims:
+    total_urims = len(urims)
+    completed_urims = 0
 
-        for urim in clusters_to_urims[cluster]:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-            category_score = get_memento_uri_category(urim)
-            path_depth_score = get_memento_depth(urim)
-            damage_score = get_memento_damage(urim, memento_damage_url, session)
+        future_to_urim = { executor.submit(get_memento_score, urim, session, memento_damage_url, damage_weight, category_weight, path_depth_weight): urim for urim in urims }
 
-            score = ( 1 -  damage_weight * damage_score ) + \
-                ( path_depth_weight * path_depth_score ) + \
-                ( category_weight * category_score )
+        for future in concurrent.futures.as_completed(future_to_urim):
 
-            urim_to_score[urim] = score
+            completed_urims += 1
+            module_logger.info("extracting score result for {}/{}".format(completed_urims, total_urims))
+
+            try:
+                urim = future_to_urim[future]
+                urim_to_score[urim] = future.result()
+            except Exception as exc:
+                module_logger.exception("Error: {}, failed to compute score for {}, skipping...".format(repr(exc), urim))
 
     for urim in urim_to_score:
         urimdata[urim]['Rank---DSA1-Score'] = urim_to_score[urim]
