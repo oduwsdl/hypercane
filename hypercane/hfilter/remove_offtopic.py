@@ -120,7 +120,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                         # we just need to keep track of the URI-Ms for this run
                         self.urimlist.append(uri)
     
-                except RequestException as e:
+                except Exception as e:
                     self.addMementoError(uri, repr(e))
 
                 working_urim_list.remove(uri)
