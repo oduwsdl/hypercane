@@ -8,11 +8,21 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 
 # Installing Hypercane
 
-1. Clone this repository
-2. change into the cloned directory
-3. type `pip install .`
+## Using PIP
+
+1. Install [MongoDB](https://www.mongodb.com/download-center/community)
+2. Clone this repository
+3. Change into the cloned directory
+4. type `pip install .`
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
+
+## Using Docker
+
+The software is still volatile, so you will need to build your own docker image.
+
+1. Clone this repository
+2. type `docker build -t hypercane:dev .`
 
 # Running Hypercane
 
@@ -34,3 +44,11 @@ At the moment, the following actions are supported:
 * `order` - order the mementos from the input based on the command issued
 
 To discover the list of commands associated with an action, use the `--help` command-line option. For example, to discover the commands associated with the `filter` action, type `hc filter --help`.
+
+## Running Hypercane with Docker Compose
+
+1. Build the software as specified in the **Installing Hypercane - Using Docker** subsection above
+2. Create a working directory for your project
+3. Copy `docker-compose.yml` into your working directory
+4. Type `docker-compose run hypercane bash`
+5. Run your desired commands, output will appear within your working directory
