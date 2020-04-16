@@ -5,7 +5,7 @@ from datetime import datetime
 from simhash import Simhash
 
 from ..utils import get_memento_datetime_and_timemap, \
-    get_web_session, get_language, get_raw_simhash
+    get_web_session, get_language, get_raw_simhash, get_tf_simhash
 
 module_logger = logging.getLogger('hypercane.hfilter.near_duplicates')
 
@@ -22,7 +22,7 @@ def filter_near_duplicates(urims, cache_storage):
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
         # TODO: allow user to choose tf-simhash rather than raw simhash
-        future_to_urim = { executor.submit(get_raw_simhash, urim, cache_storage): urim for urim in urims }
+        future_to_urim = { executor.submit(get_tf_simhash, urim, cache_storage): urim for urim in urims }
 
         for future in concurrent.futures.as_completed(future_to_urim):
             urim = future_to_urim[future]
