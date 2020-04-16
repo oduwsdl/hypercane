@@ -29,6 +29,7 @@ def discover_timemaps(args):
     session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting timemap discovery run.")
+    logger.info("Using {} for cache storage".format(args.cache_storage))
 
     uritdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -69,6 +70,7 @@ def discover_original_resources(args):
     session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting original resource discovery run.")
+    logger.info("Using {} for cache storage".format(args.cache_storage))
 
     urirdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -108,6 +110,8 @@ def discover_mementos(args):
     session = get_web_session(cache_storage=args.cache_storage)
 
     logger.info("Starting memento discovery run.")
+
+    logger.info("Using {} for cache storage".format(args.cache_storage))
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,

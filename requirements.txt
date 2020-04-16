@@ -1,4 +1,4 @@
-aiu==0.1.1a2
+aiu==0.1.1a4
 alabaster==0.7.12
 appnope==0.1.0
 archivenow==2019.7.27.2.35.46
@@ -35,7 +35,6 @@ dicttoxml==1.7.4
 Distance==0.1.3
 distro==1.4.0
 docutils==0.15.2
-en-core-web-sm==2.2.5
 fasttext==0.9.1
 feedfinder2==0.0.4
 feedparser==5.2.1
@@ -45,7 +44,6 @@ google-compute-engine==2.8.13
 guess-language-spirit==0.5.3
 html5lib==1.0.1
 htmlmin==0.1.12
-hypercane==0.2020.4.4.30126
 hyperlink==19.0.0
 idna==2.8
 imageio==2.5.0
@@ -70,7 +68,6 @@ lxml==4.2.1
 MarkupSafe==1.1.1
 matplotlib==3.1.3
 mccabe==0.6.1
-mementoembed==0.2020.2.12.43928
 murmurhash==1.0.2
 networkx==2.4
 newspaper3k==0.2.8
@@ -131,7 +128,6 @@ spacy==2.2.3
 Sphinx==1.8.4
 sphinxcontrib-websupport==1.2.0
 srsly==1.0.1
-StoryGraphToolkit==0.0.0
 sumgram==0.0.15
 summa==1.2.0
 thinc==7.3.1
