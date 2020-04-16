@@ -45,14 +45,19 @@ def generate_default_cache_storage():
     config_locations.append( "./hc-config.json" )
     config_locations.append( "/etc/hc-config.json" )
 
-    for config in config_locations:
+    cache_storage = os.getenv('HC_CACHE_STORAGE')
 
-        if os.path.exists(config):
-            with open(config) as f:
-                jdata = json.load(f)
-                return jdata['cache_storage']
+    if len(cache_storage) == 0:
+        
+        for config in config_locations:
 
-    return None
+            if os.path.exists(config):
+                with open(config) as f:
+                    jdata = json.load(f)
+                    cache_storage = jdata['cache_storage']
+                    break
+
+    return cache_storage
     
 
 def add_default_args(parser):
