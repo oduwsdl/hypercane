@@ -31,6 +31,30 @@ def calculate_loglevel(verbose=False, quiet=False):
 
     return logging.INFO
 
+def generate_default_cache_storage():
+
+    import os
+    import json
+
+    config_locations = []
+
+    homedir = os.getenv('HOME')
+
+    config_locations.append( "{}/.hc-config.json".format(homedir))
+    config_locations.append( "./.hc-config.json" )
+    config_locations.append( "./hc-config.json" )
+    config_locations.append( "/etc/hc-config.json" )
+
+    for config in config_locations:
+
+        if os.path.exists(config):
+            with open(config) as f:
+                jdata = json.load(f)
+                return jdata['cache_storage']
+
+    return None
+    
+
 def add_default_args(parser):
 
     from hypercane.version import __useragent__
@@ -48,8 +72,8 @@ def add_default_args(parser):
         help="This will lower the logging level to only show warnings or errors")
 
     parser.add_argument('-cs', '--cache-storage', dest='cache_storage',
-        default='/tmp/hypercane-cache.sqlite',
-        help="A SQLite file for use as a cache."
+        default=generate_default_cache_storage(),
+        help="The path to the MongoDB database to use as a cache."
     )
 
     parser.add_argument('--version', action='version', 
