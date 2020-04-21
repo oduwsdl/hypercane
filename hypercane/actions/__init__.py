@@ -47,7 +47,7 @@ def generate_default_cache_storage():
 
     cache_storage = os.getenv('HC_CACHE_STORAGE')
 
-    if len(cache_storage) == 0:
+    if cache_storage is not None:
         
         for config in config_locations:
 
@@ -56,6 +56,10 @@ def generate_default_cache_storage():
                     jdata = json.load(f)
                     cache_storage = jdata['cache_storage']
                     break
+
+    else:
+
+        cache_storage = ""
 
     return cache_storage
     

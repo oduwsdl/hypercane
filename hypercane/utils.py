@@ -246,7 +246,11 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
             module_logger.exception("failed to execute GET on {}".format(urim))
             return bytes()
 
-        module_logger.info("content-type is {}".format(r.headers['content-type']))
+        try:
+            module_logger.info("content-type is {}".format(r.headers['content-type']))
+        except Exception:
+            module_logger.exception("could not determine content type for {}, returning zero bytes")
+            return bytes()
 
         if 'text/html' not in r.headers['content-type']:
             module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")

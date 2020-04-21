@@ -321,7 +321,7 @@ def report_seedstats(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection image data run")
+    logger.info("Starting collection original resource statistics run")
 
     urirs = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -336,7 +336,58 @@ def report_seedstats(args):
     output['percentage of top-level URIs'] = calculate_top_level_path_percentage(urirs)
     output['query string percentage'] = calculate_percentage_querystring(urirs)        
 
-    logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
+    logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
+
+# def report_growth_curve_stats(args):
+
+#     import argparse
+
+#     from hypercane.actions import process_input_args, get_logger, \
+#         calculate_loglevel
+
+#     from hypercane.utils import get_web_session
+
+#     from hypercane.identify import discover_resource_data_by_input_type, \
+#         discover_original_resources_by_input_type
+
+#     from hypercane.report.seedstats import calculate_domain_diversity, \
+#         calculate_path_depth_diversity, most_frequent_seed_uri_path_depth, \
+#         calculate_top_level_path_percentage, calculate_percentage_querystring
+
+#     import json
+
+#     parser = argparse.ArgumentParser(
+#         description="Provide a report containing statistics growth of mementos derived from the input.",
+#         prog="hc report seed-statistics"
+#         )
+
+#     args = process_input_args(args, parser)
+#     output_type = 'original-resources'
+
+#     logger = get_logger(
+#         __name__,
+#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+#         args.logfile
+#     )
+
+#     session = get_web_session(cache_storage=args.cache_storage)
+
+#     logger.info("Starting collection original resource statistics run")
+
+#     urirs = discover_resource_data_by_input_type(
+#         args.input_type, output_type, args.input_arguments, args.crawl_depth,
+#         session, discover_original_resources_by_input_type
+#     )
+
+#     output = {}
+#     output['number of original-resources'] = len(urirs)
+#     output['domain diversity'] = calculate_domain_diversity(urirs)
+#     output['path depth diversity'] = calculate_path_depth_diversity(urirs)
+#     output['most frequent path depth'] = most_frequent_seed_uri_path_depth(urirs)
+#     output['percentage of top-level URIs'] = calculate_top_level_path_percentage(urirs)
+#     output['query string percentage'] = calculate_percentage_querystring(urirs)        
+
+#     logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
 
 def print_usage():
 
@@ -361,5 +412,6 @@ supported_commands = {
     "terms": report_ranked_terms,
     "entities": report_entities,
     "seed-statistics": report_seedstats
+    # "growth-curve": report_growth_curve_stats
 }
 
