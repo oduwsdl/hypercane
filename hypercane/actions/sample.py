@@ -42,6 +42,8 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
     logger.info("Executing the {} algorithm with working directory {}".format(
         algorithm_name, args.working_directory))
 
+    logger.info("Using cache storage of '{}'".format(args.cache_storage))
+
     os.makedirs(args.working_directory, exist_ok=True)
 
     logger.info("executing algorithm script from {}".format(algorithm_script))
