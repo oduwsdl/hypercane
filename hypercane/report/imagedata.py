@@ -91,8 +91,10 @@ def rank_images(imagedata):
 
             if 'colorcount' in imagedata[urim][image_urim]:
 
+                pixelsize = float(imagedata[urim][image_urim]['size in pixels'])
                 colorcount = float(imagedata[urim][image_urim]['colorcount'])
                 ratio = float(imagedata[urim][image_urim]['ratio width/height'])
+                score = float(imagedata[urim][image_urim]['calculated score'])
 
                 N = imagedata[urim][image_urim]['N'] 
                 n = imagedata[urim][image_urim]['n'] 
@@ -117,6 +119,8 @@ def rank_images(imagedata):
 
                     imageranking.append(
                         ( 
+                            score,
+                            pixelsize,
                             colorcount,
                             1 / ratio,
                             noverN,
