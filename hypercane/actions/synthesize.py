@@ -130,7 +130,7 @@ def raintale_story(args):
     if args.imagedata_filename is not None:
         with open(args.imagedata_filename) as f:
             jdata = json.load(f)
-            story_json['story image'] = sorted(jdata['ranked data'], reverse=True)[0][3]
+            story_json['story image'] = sorted(jdata['ranked data'], reverse=True)[0][-1]
 
     if args.termdata_filename is not None:
         import csv
