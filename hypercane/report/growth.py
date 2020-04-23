@@ -346,11 +346,11 @@ def draw_both_axes_pct_growth(
     fig.set_figwidth(10)
 
     labels = []
-    label = ax.plot(mdts_pct, urims_pct, label="% seed mementos", color="#ff0000", linewidth=3.0)
+    label = ax.plot(mdts_pct, urims_pct, label="% mementos", color="#ff0000", linewidth=3.0)
     labels.append(label)
 
     labels = []
-    label = ax.plot(mdts_pct, urirs_pct, label="% seeds", color="#00ff00", linewidth=3.0)
+    label = ax.plot(mdts_pct, urirs_pct, label="% original resources", color="#00ff00", linewidth=3.0)
     labels.append(label)
 
     if shape_percentage_of_whole:
