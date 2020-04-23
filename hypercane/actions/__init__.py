@@ -59,7 +59,7 @@ def generate_default_cache_storage():
 
     else:
 
-        cache_storage = ""
+        cache_storage = None
 
     return cache_storage
     

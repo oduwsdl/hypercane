@@ -447,11 +447,16 @@ def print_usage():
     * image-data - for generating a report of the images associated with the mementos found in the input
     * terms - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the terms in the collection
     * entities - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the named entities in the collection
-    * seed-statistics
+    * seed-statistics - calculates metrics on the original resources discovered from the input
+    * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
 
     Examples:
     
-    hc report metadata -i archiveit -ia 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
+    hc report metadata -i archiveit -a 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
+
+    hc report entities -i mementos -a memento-file.tsv -o entity-report.json
+
+    hc report seed-statistics -i original-resources -a urirs.tsv -o seedstats.json
     
 """)
 
