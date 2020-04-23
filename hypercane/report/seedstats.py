@@ -1,3 +1,7 @@
+import logging
+
+module_logger = logging.getLogger('hypercane.report.seedstats')
+
 def calculate_domain_diversity(uri_list):
     
     import tldextract
@@ -11,6 +15,13 @@ def calculate_domain_diversity(uri_list):
 
     u = len(set(domains))
     n = len(domains)
+
+    module_logger.info("discovered {} unique domains".format(u))
+
+    module_logger.info("size of collection: {}".format(n))
+
+    if n == 1:
+        return 1
 
     return (u - 1) / (n - 1)
 
@@ -38,6 +49,13 @@ def calculate_path_depth_diversity(uri_list):
 
     u = len(set(depths))
     n = len(depths)
+
+    module_logger.info("discovered {} unique depths".format(u))
+
+    module_logger.info("size of collection: {}".format(n))
+
+    if n == 1:
+        return 1
 
     return (u - 1) / (n - 1)
 
