@@ -66,7 +66,7 @@ def discover_collection_metadata(args):
         )
 
     args = process_input_args(args, parser)
-    output_type = 'mementos'
+    output_type = 'original-resources'
 
     logger = get_logger(
         __name__,
@@ -93,6 +93,69 @@ def discover_collection_metadata(args):
         json.dump(metadata, metadata_file, indent=4)
 
     logger.info("Done with collection metadata discovery run.")
+
+def report_metadatastats(args):
+
+    import sys
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type, discover_original_resources_by_input_type
+
+    from hypercane.report.metadatastats import get_pct_seeds_with_metadata, \
+        get_pct_seeds_with_specific_field, get_pct_seeds_with_title, \
+        get_pct_seeds_with_description, get_mean_default_field_score, \
+        get_metadata_compression_ratio, get_mean_raw_field_count
+
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
+        prog="hc report metadata"
+        )
+
+    args = process_input_args(args, parser)
+    output_type = 'original-resources'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection metadata statistics run.")
+
+    output = {}
+
+    if args.input_type == 'archiveit':
+        metadata = generate_collection_metadata(args.input_arguments, session)
+        output['id'] = metadata['id']
+        output['archived since'] = metadata['archived_since']
+        output['# of seeds'] = len(metadata['seed_metadata']['seeds'])
+        output['% of seeds with any metadata'] = get_pct_seeds_with_metadata(metadata)
+        output['% title field use'] = get_pct_seeds_with_title(metadata)
+        output['% description field use'] = get_pct_seeds_with_description(metadata)
+        output['mean default fields metadata score'] = get_mean_default_field_score(metadata)
+        output['mean non-normalized metadata count'] = get_mean_raw_field_count(metadata)
+        output['metadata compression ratio'] = get_metadata_compression_ratio(metadata)
+    else:
+        logger.critical("Metadata statistics are only supported for Archive-It collections")
+        sys.exit(255)
+
+    with open(args.output_filename, 'w') as report_file:
+        json.dump(output, report_file, indent=4)
+
+    logger.info("Done with collection metadata discovery run.")
+
+
 
 def report_image_data(args):
     
@@ -466,6 +529,7 @@ supported_commands = {
     "terms": report_ranked_terms,
     "entities": report_entities,
     "seed-statistics": report_seedstats,
-    "growth": report_growth_curve_stats
+    "growth": report_growth_curve_stats,
+    "metadata-statistics": report_metadatastats
 }
 
