@@ -336,6 +336,9 @@ def report_seedstats(args):
     output['percentage of top-level URIs'] = calculate_top_level_path_percentage(urirs)
     output['query string percentage'] = calculate_percentage_querystring(urirs)        
 
+    with open(args.output_filename, 'w') as report_file:
+        json.dump(output, report_file, indent=4)
+
     logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
 
 # def report_growth_curve_stats(args):
