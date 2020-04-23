@@ -1,5 +1,12 @@
 import sys
 
+from datetime import datetime
+
+def dtconverter(o):
+
+    if isinstance(o, datetime):
+        return o.__str__()
+
 def generate_collection_metadata(collection_id, session):
 
     from aiu import ArchiveItCollection
@@ -9,8 +16,6 @@ def generate_collection_metadata(collection_id, session):
     return aic.return_all_metadata_dict()
 
 def generate_blank_metadata(urirs):
-
-    from datetime import datetime
 
     blank_metadata = {'id': None,
         'exists': None,
@@ -341,56 +346,97 @@ def report_seedstats(args):
 
     logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
 
-# def report_growth_curve_stats(args):
+def report_growth_curve_stats(args):
 
-#     import argparse
+    import argparse
 
-#     from hypercane.actions import process_input_args, get_logger, \
-#         calculate_loglevel
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
 
-#     from hypercane.utils import get_web_session
+    from hypercane.utils import get_web_session
 
-#     from hypercane.identify import discover_resource_data_by_input_type, \
-#         discover_original_resources_by_input_type
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_timemaps_by_input_type
 
-#     from hypercane.report.seedstats import calculate_domain_diversity, \
-#         calculate_path_depth_diversity, most_frequent_seed_uri_path_depth, \
-#         calculate_top_level_path_percentage, calculate_percentage_querystring
+    from hypercane.report.growth import get_last_memento_datetime, \
+        get_first_memento_datetime, process_timemaps_for_mementos, \
+        calculate_mementos_per_seed, calculate_memento_seed_ratio, \
+        calculate_number_of_mementos, parse_data_for_mementos_list, \
+        convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct, \
+        draw_both_axes_pct_growth
 
-#     import json
+    import json
 
-#     parser = argparse.ArgumentParser(
-#         description="Provide a report containing statistics growth of mementos derived from the input.",
-#         prog="hc report seed-statistics"
-#         )
+    from sklearn.metrics import auc
 
-#     args = process_input_args(args, parser)
-#     output_type = 'original-resources'
+    parser = argparse.ArgumentParser(
+        description="Provide a report containing statistics growth of mementos derived from the input.",
+        prog="hc report growth"
+        )
 
-#     logger = get_logger(
-#         __name__,
-#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-#         args.logfile
-#     )
+    parser.add_argument('--growth-curve-file', dest='growthcurve_filename',
+        help="If present, draw a growth curve and write it to the filename specified.",
+        default=None, required=False)
 
-#     session = get_web_session(cache_storage=args.cache_storage)
+    args = process_input_args(args, parser)
+    output_type = 'original-resources'
 
-#     logger.info("Starting collection original resource statistics run")
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-#     urirs = discover_resource_data_by_input_type(
-#         args.input_type, output_type, args.input_arguments, args.crawl_depth,
-#         session, discover_original_resources_by_input_type
-#     )
+    session = get_web_session(cache_storage=args.cache_storage)
 
-#     output = {}
-#     output['number of original-resources'] = len(urirs)
-#     output['domain diversity'] = calculate_domain_diversity(urirs)
-#     output['path depth diversity'] = calculate_path_depth_diversity(urirs)
-#     output['most frequent path depth'] = most_frequent_seed_uri_path_depth(urirs)
-#     output['percentage of top-level URIs'] = calculate_top_level_path_percentage(urirs)
-#     output['query string percentage'] = calculate_percentage_querystring(urirs)        
+    logger.info("Starting collection original resource statistics run")
 
-#     logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
+    urits = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_timemaps_by_input_type
+    )
+
+    timemap_data, errors_data = process_timemaps_for_mementos(urits, session)
+    mementos_list = parse_data_for_mementos_list(timemap_data)
+    mdts_pct, urims_pct, urirs_pct = \
+        convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct(
+        mementos_list)
+
+    output = {}
+    output['auc_memento_curve'] = auc(mdts_pct, urims_pct) 
+    output['auc_seed_curve'] = auc(mdts_pct, urirs_pct)
+    output['auc_memento_minus_diag'] = output['auc_memento_curve'] - 0.5
+    output['auc_seed_minus_diag'] = output['auc_seed_curve'] - 0.5
+    output['auc_seed_minus_auc_memento'] = output['auc_seed_curve'] - output['auc_memento_curve']
+    output['memento_seed_ratio'] = calculate_memento_seed_ratio(timemap_data)
+    output['mementos_per_seed'] = calculate_mementos_per_seed(timemap_data)
+    output['first_memento_datetime'] = get_first_memento_datetime(timemap_data)
+    output['last_memento_datetime'] = get_last_memento_datetime(timemap_data)
+    output["number_of_original_resources"] = len(urits)
+    output["number_of_mementos"] = calculate_number_of_mementos(timemap_data)
+    output['lifespan_secs'] = (get_last_memento_datetime(timemap_data) - get_first_memento_datetime(timemap_data)).total_seconds()
+    output['lifespan_mins'] = output['lifespan_secs'] / 60
+    output['lifespan_hours'] = output['lifespan_secs'] / 60 / 60
+    output['lifespan_days'] = output['lifespan_secs'] / 60 / 60 / 24
+    output['lifespan_weeks'] = output['lifespan_secs'] / 60 / 60 / 24 / 7
+    output['lifespan_years'] = output['lifespan_secs'] / 60 / 60 / 24 / 365   
+
+    with open(args.output_filename, 'w') as report_file:
+        json.dump(output, report_file, indent=4, default=dtconverter)
+
+    logger.info("Done with collection growth statistics, report saved to {}".format(args.output_filename))
+
+    if args.growthcurve_filename is not None:
+
+        logger.info("Beginning to render collection growth curve...")
+
+        draw_both_axes_pct_growth(
+            mdts_pct, urims_pct, urirs_pct,
+            args.growthcurve_filename
+        )
+
+        logger.info("Growth curve saved to {}".format(args.growthcurve_filename))
+    
 
 def print_usage():
 
@@ -414,7 +460,7 @@ supported_commands = {
     "image-data": report_image_data,
     "terms": report_ranked_terms,
     "entities": report_entities,
-    "seed-statistics": report_seedstats
-    # "growth-curve": report_growth_curve_stats
+    "seed-statistics": report_seedstats,
+    "growth": report_growth_curve_stats
 }
 
