@@ -225,43 +225,11 @@ def synthesize_warcs(args):
         logger.info("Output directory {} does not exist, creating...".format(args.output_directory))
         os.makedirs(args.output_directory)
 
+    from hypercane.synthesize.warcs import synthesize_warc
+
     # TODO: make this multithreaded
     for urim in urimdata.keys():
-        raw_urim = otmt.generate_raw_urim(urim)
-        resp = session.get(urim, stream=True)
-
-        headers_list = resp.raw.headers.items()
-
-        raw_resp = session.get(raw_urim, stream=True)
-
-        for link in resp.links:
-            if 'original' in link:
-                warc_target_uri = resp.links[link]['url']
-
-        http_headers = StatusAndHeaders('200 OK', 
-            headers_list, protocol='HTTP/1.0')
-
-        m = md5()
-        m.update(urim.encode('utf8'))
-        urlhash = m.hexdigest()
-
-        warc_headers_dict = {}
-        warc_headers_dict['WARC-Date'] = datetime.strptime(
-            resp.headers['Memento-Datetime'],
-            "%a, %d %b %Y %H:%M:%S GMT"
-        ).strftime('%Y-%d-%mT%H:%M:%SZ')
-
-        with open("{}/{}.warc.gz".format(args.output_directory, urlhash), 'wb') as output:
-            writer = WARCWriter(output, gzip=True)
-
-            record = writer.create_warc_record(
-                warc_target_uri, 'response', 
-                payload=raw_resp.raw, 
-                http_headers=http_headers,
-                warc_headers_dict=warc_headers_dict
-                )
-
-            writer.write_record(record)
+        synthesize_warc(urim, session, args.output_directory)
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
@@ -371,17 +339,7 @@ def synthesize_bpfree_files(args):
 
         for urim in urimdata.keys():
 
-            raw_urim = otmt.generate_raw_urim(urim)
-            r = session.get(raw_urim)
-
-            paragraphs = justext(
-                r.text, get_stoplist('English')
-            )
-
-            bpfree = ""
-
-            for paragraph in paragraphs:
-                bpfree += "{}\n".format(paragraph.text)
+            bpfree = get_boilerplate_free_content(urim, cache_storage=args.cache_storage)
 
             m = md5()
             m.update(urim.encode('utf8'))
@@ -391,7 +349,7 @@ def synthesize_bpfree_files(args):
             logger.info("writing out data for URI-M {}".format(urim))
             with open("{}/{}".format(
                 args.output_directory, newfilename), 'wb') as newfile:
-                newfile.write(bytes(bpfree, "utf8"))
+                newfile.write(bpfree)
 
             metadatafile.write("{}\t{}\n".format(urim, newfilename))
 
@@ -399,7 +357,7 @@ def synthesize_bpfree_files(args):
 
 def print_usage():
 
-    print("""'hc synthesize' is used to synthesize a web archive collection into other formats, like WARC, WAT, or a set of files in a directory
+    print("""'hc synthesize' is used to synthesize a web archive collection into other formats, like WARC, JSON, or a set of files in a directory
 
     Supported commands:
     * warcs - for generating a directory of WARCs
@@ -409,11 +367,11 @@ def print_usage():
 
     Examples:
 
-    hc synthesize warcs -i archiveit -ia 694 --depth 2 -o output-directory -cs mongodb://localhost/cache
+    hc synthesize warcs -i archiveit -a 694 --depth 2 -o output-directory -cs mongodb://localhost/cache
 
-    hc synthesize files -i timemaps -ia timemap-file.tsv -o output-directory -cs mongodb://localhost/cache
+    hc synthesize files -i timemaps -a timemap-file.tsv -o output-directory -cs mongodb://localhost/cache
 
-    hc synthesize raintale-story -i mementos -ia memento-file.tsv -o story.json -cs mongodb://localhost/cache
+    hc synthesize raintale-story -i mementos -a memento-file.tsv -o story.json -cs mongodb://localhost/cache
 
 """)
 
