@@ -500,6 +500,55 @@ def include_containing_pattern(args):
 
     start_containing_pattern(parser, args, True)
 
+def include_urir(args):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.containing_urir import filter_by_urir
+    from hypercane.utils import save_resource_data
+
+    parser = argparse.ArgumentParser(
+        description="Include only mementos with an original resource matching the given pattern.",
+        prog="hc filter include-only containing-url-pattern"
+    )
+
+    parser.add_argument('--url-pattern', '--urir-pattern', dest='urir_pattern',
+        help="The regular expression pattern of the URL to match (as Python regex)",
+        required=True
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting detection of mementos whose original resource URL matches pattern {}...".format(args.urir_pattern))
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
+
+    urims = list(urimdata.keys())
+
+    filtered_urims = filter_by_urir(urims, args.cache_storage, args.urir_pattern)
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Completed detection of mementos whose original resource URL matches pattern {}, output is in {}".format(
+        args.urir_pattern, args.output_filename
+    ))
+
 def include_near_datetime(args):
 
     import argparse
@@ -514,7 +563,7 @@ def include_near_datetime(args):
 
     parser = argparse.ArgumentParser(
         description="Include mementos whose memento-datetimes fall within the range of start-datetime and end-datetime.",
-        prog="hc filter include near-datetime"
+        prog="hc filter include-only near-datetime"
     )
 
     parser.add_argument('--start-datetime', '--lower-datetime',         
