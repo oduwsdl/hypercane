@@ -93,12 +93,12 @@ def add_default_args(parser):
 def add_input_args(parser):
 
     parser.add_argument('-i', '--it', '--input-type', 
-        help="the input type, one of mementos, timemaps, archiveit, original-resources, or storygraph",
+        help="the input type, one of mementos, timemaps, archiveit, or original-resources",
         dest="input_type", required=True
     )
 
     parser.add_argument('-a', '-ia', '--input-arguments', 
-        help="either a file containing a list of URIs, a storygraph service URI, or an Archive-It collection identifier",
+        help="either a file containing a list of URIs, or an Archive-It collection identifier",
         dest='input_arguments', required=False, default=None
     )
 
@@ -127,10 +127,6 @@ def test_input_args(args):
         if args.input_arguments is None:
             raise argparse.ArgumentTypeError(
                 "Error: input type archiveit requires an Archive-It collection identifier")
-    elif args.input_type == 'storygraph':
-        if args.input_arguments is None:
-            raise argparse.ArgumentTypeError(
-                "Error: input type storygraph requires a rank number argument")
 
     return args
 

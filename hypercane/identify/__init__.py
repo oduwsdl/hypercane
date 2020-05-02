@@ -21,8 +21,6 @@ from ..utils import process_input_for_cluster_and_rank
 
 module_logger = logging.getLogger('hypercane.identify')
 
-storygraph_url = "http://storygraph.cs.odu.edu/graphs/polar-media-consensus-graph"
-
 def extract_uris_from_input(input_string):
 
     uri_list = input_string.split(',')
@@ -46,62 +44,6 @@ def extract_uris_from_input(input_string):
 
     return uri_output_list
 
-def extract_storygraph_arguments_from_input(input_string):
-
-    rank = 1
-    year = datetime.now().year
-    month = datetime.now().month
-    date = datetime.now().day
-    hour = datetime.now().hour - 1 # in case there is nothing generated yet
-
-    if ';' in input_string:
-        rank, other = input_string.split(';')
-
-        if other.count('-') == 2:
-
-            year, month, rest = other.split('-')
-
-            if 'T' in rest:
-
-                date, rest = rest.split('T')
-
-                hour, minute, second = rest.split(':')
-
-            else:
-                date = rest
-
-        elif other.count('-') == 1:
-
-            year, rest = other.split('-')
-            
-        else:
-            raise argparse.ArgumentTypeError(
-                "Error: Storygraph input arguments are not formatted correctly."
-            )
-
-        if '-' in other:
-
-            items = other.split('-')
-
-            year = items[0]
-
-            if len(items) == 3:
-                month = items[1]
-
-        else:
-            year = other
-
-    else:
-        rank = input_string
-
-    storygraph_args = {}
-    storygraph_args['rank'] = int(rank)
-    storygraph_args['year'] = year
-    storygraph_args['month'] = month
-    storygraph_args['date'] = date
-
-    return storygraph_args
-    
 def extract_urims_from_TimeMap(timemap_json_text):
 
     urimlist = []
@@ -277,79 +219,6 @@ def find_or_create_mementos(urirs, session):
 
     return urims
 
-def get_uris_from_best_graph_via_storygraph_toolkit(session, storygraph_url, rank, year, graph_date):
-
-    from StoryGraphToolkit.SGData import getMaxGraphDataForDateRange
-
-    max_graph = getMaxGraphDataForDateRange(year, graph_date, graph_date, storygraph_url, dailyMaxGraphCount=1, threadCount=5)
-
-    return max_graph['max_graphs'][year + '-' + graph_date][0]['dets']['connected_comp_uris']
-
-
-def get_uris_from_storygraph(session, storygraph_url, rank, year, month, date, hour):
-
-    if storygraph_url[-1] == '/':
-        storygraph_url = storygraph_url[:-1]
-
-    if int(month / 10) == 0:
-        month = "0{}".format(month)
-    
-    if int(date / 10) == 0:
-        date = "0{}".format(date)
-
-    json_url = "{}/{}/{}/{}/graph{}.json".format(
-        storygraph_url, year, month, date, hour)
-
-    module_logger.info("downloading JSON from {}".format(json_url))
-
-    r = session.get(json_url)
-    jdata = r.json()
-    urirs = []
-
-    if rank > 0:
-
-        max_avg_degree = 0
-
-        for comp in jdata["connected-comps"]:
-            if comp["avg-degree"] > max_avg_degree:
-                max_avg_degree = comp["avg-degree"]
-
-        module_logger.info("maximum average degree: {}".format(max_avg_degree))
-
-        comp_nodes = []
-
-        for comp in jdata["connected-comps"]:
-            module_logger.info("comp['avg-degree']: {}".format(comp["avg-degree"]))
-            if math.isclose(comp["avg-degree"], max_avg_degree):
-                comp_nodes = comp["nodes"]
-                break
-
-        module_logger.info("number of component nodes: {}".format(len(comp_nodes)))
-
-        for i in range(0, len(jdata["nodes"])):
-            if i in comp["nodes"]:
-                module_logger.info("adding link from node {}".format(i))
-                link = jdata["nodes"][i]["link"]
-                module_logger.info("adding link {}".format(link))
-                urirs.append(link)
-
-
-    else:
-
-        connected_nodes = []
-
-        for comp in jdata["connected-comps"]:
-            connected_nodes.extend( comp["nodes"] )
-
-        for i in range(0, len(jdata["nodes"])):
-            if i not in connected_nodes:
-                module_logger.info("adding link from node {}".format(i))
-                link = jdata["nodes"][i]["link"]
-                module_logger.info("adding link {}".format(link))
-                urirs.append(link)
-
-    return urirs
-
 def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session):
 
     module_logger.info("discovering timemaps for input type: {}".format(input_type))
@@ -371,27 +240,6 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
             for item in link_storage.storage:
                 urits.append(item[0])
-
-    elif input_type == "storygraph":
-
-        storygraph_arguments = extract_storygraph_arguments_from_input(input_args)
-
-        urirs = get_uris_from_storygraph(session, storygraph_url, storygraph_arguments['rank'],
-            storygraph_arguments['year'], storygraph_arguments['month'], storygraph_arguments['date'],
-            storygraph_arguments['hour']
-        )
-
-        if crawl_depth > 1:
-            link_storage = StorageObject()
-            crawl_live_web_resources(link_storage, urirs, crawl_depth)
-
-            for item in link_storage.storage:
-                
-                if item not in urirs:
-                    urirs.append(item)
-
-        urims = find_or_create_mementos(urirs, session)
-        urits = extract_urts_from_urims(urims, session)
 
     elif input_type == "timemaps":
 
@@ -463,31 +311,6 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         
         output_urims = download_urits_and_extract_urims(urits, session)
 
-    elif input_type == "storygraph":
-
-        storygraph_arguments = extract_storygraph_arguments_from_input(input_args)
-
-        urirs = get_uris_from_best_graph_via_storygraph_toolkit(session, storygraph_url,
-            storygraph_arguments['rank'], storygraph_arguments['year'],
-            "{}-{}".format(storygraph_arguments['month'], storygraph_arguments['date'])
-        )        
-
-        # urirs = get_uris_from_storygraph(session, storygraph_url, storygraph_arguments['rank'],
-        #     storygraph_arguments['year'], storygraph_arguments['month'], storygraph_arguments['date'],
-        #     storygraph_arguments['hour']
-        # )
-
-        if crawl_depth > 1:
-            link_storage = StorageObject()
-            crawl_live_web_resources(link_storage, urirs, crawl_depth)
-
-            for item in link_storage.storage:
-                
-                if item not in urirs:
-                    urirs.append(item)
-
-        output_urims = find_or_create_mementos(urirs, session)
-
     elif input_type == "timemaps":
         urits = input_args
         
@@ -556,24 +379,6 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             for item in link_storage.storage:
                 output_urirs.append(item[1])
 
-    elif input_type == "storygraph":
-
-        storygraph_arguments = extract_storygraph_arguments_from_input(input_args)
-
-        output_urirs = get_uris_from_storygraph(session, storygraph_url, storygraph_arguments['rank'],
-            storygraph_arguments['year'], storygraph_arguments['month'], storygraph_arguments['date'],
-            storygraph_arguments['hour']
-        )
-
-        if crawl_depth > 1:
-            link_storage = StorageObject()
-            crawl_live_web_resources(link_storage, output_urirs, crawl_depth)
-
-            for item in link_storage.storage:
-                
-                if item not in output_urirs:
-                    output_urirs.append(item)
-
     elif input_type == "timemaps":
         urits = input_args
         urims = download_urits_and_extract_urims(urits, session)
@@ -627,7 +432,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     module_logger.info("processing input for type {}".format(input_type))
 
-    if input_type == 'archiveit' or input_type == 'storygraph':
+    if input_type == 'archiveit':
         input_data = input_arguments
         uridata = None
     else:
