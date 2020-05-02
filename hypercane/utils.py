@@ -299,6 +299,12 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         return bytes(bpfree, "utf8")
 
+def match_pattern(urim, cache_storage, compiled_pattern):
+
+    bpfree = get_boilerplate_free_content(urim, cache_storage=cache_storage)
+
+    return compiled_pattern.match(bpfree)
+
 def get_newspaper_publication_date(urim, cache_storage):
 
     import otmt

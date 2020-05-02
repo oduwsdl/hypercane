@@ -360,6 +360,47 @@ def include_highest_rank_per_cluster(args):
         args.output_filename
     ))
 
+def start_containing_pattern(parser, args, include):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import save_resource_data, get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.containing_pattern import filter_pattern
+
+    parser.add_argument('--pattern', dest='pattern_string',
+        help="The regular expression pattern to match (as Python regex)",
+        required=True
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting filter of mementos containing pattern...")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urims = list(urimdata.keys())
+
+    filtered_urims = filter_pattern(
+        urims, args.cache_storage, args.pattern, include
+    )
+
+    save_resource_data(
+        args.output_filename, urimdata, 'mementos', filtered_urims)
 
 def start_language_processing(parser, args):
 
@@ -446,6 +487,35 @@ def exclude_languages(args):
 
     logger.info("done, mementos not including the languages of {} are in {}".format(desired_languages, args.output_filename))
 
+def include_containing_pattern(args):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import save_resource_data
+
+    parser = argparse.ArgumentParser(
+        description="Include mementos containing the specified pattern after boilerplate removal.",
+        prog="hc filter include containing-pattern"
+    )
+
+    start_containing_pattern(parser, args, True)
+
+
+
+def exclude_containing_pattern(args):
+
+    import argparse
+    from hypercane.utils import save_resource_data
+
+    parser = argparse.ArgumentParser(
+        description="Exclude mementos containing the specified pattern after boilerplate removal.",
+        prog="hc filter include containing-pattern"
+    )
+
+    start_containing_pattern(parser, args, False)
+
+
 def print_usage():
 
     print("""'hc filter' is used to employ techniques to filter a web archive collection
@@ -496,9 +566,9 @@ def print_exclude_usage():
 
     Examples:
     
-    hc filter exclude language en,de -i archiveit=8788 -o ontopic-mementos.txt
+    hc filter exclude --lang en,de -i archiveit -a 8788 -o ontopic-mementos.txt
 
-    hc filter exclude rank ">1" -i mementos=file-with-scored-mementos.txt -o filtered-mementos.txt
+    hc filter exclude containing_pattern --pattern 'cheese' -i mementos -a mementofile.tsv -o mementos-with-cheese.tsv
     
 """)
 
@@ -506,15 +576,17 @@ include_criteria = {
     "languages": include_languages,
     "non-duplicates": include_nonduplicates,
     "on-topic": include_ontopic,
-    "rank": include_rank,
-    "highest-rank-per-cluster": include_highest_rank_per_cluster
+    # "rank": include_rank,
+    "highest-rank-per-cluster": include_highest_rank_per_cluster,
+    "containing-pattern": include_containing_pattern
 }
 
 exclude_criteria = {
     "languages": exclude_languages,
     "near-duplicates": exclude_nearduplicates,
     "off-topic": exclude_offtopic,
-    "rank": exclude_rank
+    # "rank": exclude_rank,
+    "containing-pattern": exclude_containing_pattern
 }
 
 
