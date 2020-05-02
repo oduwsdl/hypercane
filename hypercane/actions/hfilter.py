@@ -402,6 +402,8 @@ def start_containing_pattern(parser, args, include):
     save_resource_data(
         args.output_filename, urimdata, 'mementos', filtered_urims)
 
+    logger.info("done filtering mementos by pattern, output is in {}".format(args.output_filename))
+
 def start_language_processing(parser, args):
 
     from hypercane.actions import process_input_args, get_logger, \
@@ -490,9 +492,6 @@ def exclude_languages(args):
 def include_containing_pattern(args):
 
     import argparse
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
-    from hypercane.utils import save_resource_data
 
     parser = argparse.ArgumentParser(
         description="Include mementos containing the specified pattern after boilerplate removal.",
@@ -501,7 +500,71 @@ def include_containing_pattern(args):
 
     start_containing_pattern(parser, args, True)
 
+def include_near_datetime(args):
 
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.near_datetime import filter_by_memento_datetime
+    from hypercane.utils import save_resource_data
+    from datetime import datetime
+
+    parser = argparse.ArgumentParser(
+        description="Include mementos whose memento-datetimes fall within the range of start-datetime and end-datetime.",
+        prog="hc filter include near-datetime"
+    )
+
+    parser.add_argument('--start-datetime', '--lower-datetime',         
+        dest='lower_datetime',
+        help="The lower bound datetime in YYYY-mm-ddTHH:MM:SS format.",
+        required=True
+    )
+
+    parser.add_argument('--end-datetime', '--upper-datetime',
+        dest='upper_datetime',
+        help="The upper bound datetime in YYYY-mm-ddTHH:MM:SS format.",
+        required=True
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting filtering of mementos by memento-datetime...")
+
+    lower_datetime = datetime.strptime(
+        args.lower_datetime,
+        "%Y-%m-%dT%H:%M:%S"
+    )
+
+    upper_datetime = datetime.strptime(
+        args.upper_datetime,
+        "%Y-%m-%dT%H:%M:%S"
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urims = list(urimdata.keys())
+
+    filtered_urims = filter_by_memento_datetime(
+        urims, args.cache_storage, lower_datetime, upper_datetime)
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("done filtering mementos by memento-datetime, output is in {}".format(args.output_filename))
 
 def exclude_containing_pattern(args):
 
@@ -578,7 +641,8 @@ include_criteria = {
     "on-topic": include_ontopic,
     # "rank": include_rank,
     "highest-rank-per-cluster": include_highest_rank_per_cluster,
-    "containing-pattern": include_containing_pattern
+    "containing-pattern": include_containing_pattern,
+    "near-datetime": include_near_datetime
 }
 
 exclude_criteria = {
