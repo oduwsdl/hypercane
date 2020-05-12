@@ -107,6 +107,16 @@ def discover_mementos(args):
         type=lambda s: datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
     )
     
+    parser.add_argument('--timegates',
+        default=[
+            "https://timetravel.mementoweb.org/timegate/", 
+            "https://web.archive.org/web/"
+        ], required=False, dest='timegates',
+        help='(only for original resource input type)\n'
+        'use the given TimeGate endpoints to discover mementos',
+        type=lambda s: [i.strip() for i in s.split(',')]
+    )
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -125,7 +135,8 @@ def discover_mementos(args):
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type, 
-        accept_datetime=args.accept_datetime
+        accept_datetime=args.accept_datetime,
+        timegates=args.timegates
     )
 
     logger.info("discovered {} mementos, preparing to write the list to {}".format(

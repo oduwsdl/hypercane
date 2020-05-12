@@ -154,7 +154,7 @@ def list_seed_uris(collection_id, session):
     return aic.list_seed_uris()
 
 def find_or_create_mementos(urirs, session, accept_datetime=None, 
-    urigs=[
+    timegates=[
         "https://timetravel.mementoweb.org/timegate/", 
         "https://web.archive.org/web/"
     ]):
@@ -170,7 +170,7 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
     for urir in urirs:
         # check for URI-M first and just take it if it exists
 
-        for urig in urigs:
+        for urig in timegates:
 
             module_logger.info("checking if {} exists via {}".format(urir, urig))
             available = False
@@ -290,7 +290,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     return urits
 
-def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session, accept_datetime=None):
+def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session, accept_datetime=None, timegates=None):
     
     output_urims = []
 
@@ -365,7 +365,8 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         urirs = input_args
         output_urims = find_or_create_mementos(
-            urirs, session, accept_datetime=accept_datetime)
+            urirs, session, accept_datetime=accept_datetime,
+            timegates=timegates)
 
     else:
         raise argparse.ArgumentTypeError(
@@ -437,7 +438,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     return output_urirs
 
-def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function, accept_datetime=None):
+def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function, accept_datetime=None, timegates=None):
 
     uridata = {}
 
@@ -460,7 +461,8 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
             uridata = None
 
     output_uris = discovery_function(
-        input_type, input_data, crawl_depth, session,accept_datetime=accept_datetime)
+        input_type, input_data, crawl_depth, session,accept_datetime=accept_datetime,
+        timegates=timegates)
 
     module_logger.info("discovered {} URIs".format(len(output_uris)))
 
