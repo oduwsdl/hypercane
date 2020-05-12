@@ -153,45 +153,48 @@ def list_seed_uris(collection_id, session):
 
     return aic.list_seed_uris()
 
-def find_or_create_mementos(urirs, session):
-
-    # TODO: make TimeGate endpoint configurable
+def find_or_create_mementos(urirs, session, accept_datetime=None, 
+    urigs=[
+        "https://timetravel.mementoweb.org/timegate/", 
+        "https://web.archive.org/web/"
+    ]):
 
     urims = []
+
+    req_headers = {}
+
+    if accept_datetime is not None:
+        req_headers['accept-datetime'] = \
+            accept_datetime.strftime( "%a, %d %b %Y %H:%M:%S GMT" )
 
     for urir in urirs:
         # check for URI-M first and just take it if it exists
 
-        module_logger.info("checking if {} exists via LANL Memento Aggregator".format(urir))
-        available = True
+        for urig in urigs:
 
-        try:
-            r = session.get("http://timetravel.mementoweb.org/timegate/{}".format(urir))
-
-            if r.status_code != 200:
-                available = False
-
-        except RequestException:
+            module_logger.info("checking if {} exists via {}".format(urir, urig))
             available = False
 
-        if available is False:
-            # some web archives (e.g., UKWA) issue a 451 or otherwise do not expose holdings
-            module_logger.info("checking if {} exists at Internet Archive".format(urir))
-
-            available = True
+            urig = urig[:-1] if urig[-1] == '/' else urig
 
             try:
-                r = session.get("https://web.archive.org/web/{}".format(urir))
-                candidate_urim = r.url
 
+                urig = "{}/{}".format(urig, urir)
+
+                r = session.get(urig, headers=req_headers)
 
                 if r.status_code != 200:
+                    module_logger.info("got a status of {} for {} -- could not find a memento for {} via the Memento Aggregator".format(r.status_code, r.url, urir))
                     available = False
-
-                if 'memento-datetime' not in r.headers:
-                    available = False
+                else:
+                    if 'memento-datetime' in r.headers:
+                        available = True
+                    else:
+                        available = False
 
             except RequestException:
+                module_logger.exception(
+                    "Failed to find memento for {}".format(urir))
                 available = False
 
         if r.url[0:29] == "https://web.archive.org/save/":
@@ -219,7 +222,7 @@ def find_or_create_mementos(urirs, session):
 
     return urims
 
-def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session):
+def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session, **kwargs):
 
     module_logger.info("discovering timemaps for input type: {}".format(input_type))
     urits = []
@@ -287,13 +290,16 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     return urits
 
-def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session):
+def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session, accept_datetime=None):
     
     output_urims = []
 
     module_logger.info("discovering mementos for input type {}".format(input_type))
 
     if input_type == "archiveit":
+
+        if accept_datetime is not None:
+            module_logger.warning("ignoring accept-datetime for archiveit input type")
 
         collection_id = input_args
         seeds = list_seed_uris(collection_id, session)
@@ -312,6 +318,10 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         output_urims = download_urits_and_extract_urims(urits, session)
 
     elif input_type == "timemaps":
+
+        if accept_datetime is not None:
+            module_logger.warning("ignoring accept-datetime for timemaps input type")
+
         urits = input_args
         
         if crawl_depth > 1:
@@ -327,6 +337,9 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         output_urims = download_urits_and_extract_urims(urits, session)
 
     elif input_type == "mementos":
+
+        if accept_datetime is not None:
+            module_logger.warning("ignoring accept-datetime for mementos input type")
 
         output_urims = input_args
 
@@ -347,8 +360,12 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
     elif input_type == "original-resources":
 
+        if accept_datetime is not None:
+            module_logger.info("applying accept-datetime {} to discovery of mementos".format(accept_datetime))
+
         urirs = input_args
-        output_urims = find_or_create_mementos(urirs, session)
+        output_urims = find_or_create_mementos(
+            urirs, session, accept_datetime=accept_datetime)
 
     else:
         raise argparse.ArgumentTypeError(
@@ -357,7 +374,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
     return output_urims
 
-def discover_original_resources_by_input_type(input_type, input_args, crawl_depth, session):
+def discover_original_resources_by_input_type(input_type, input_args, crawl_depth, session, **kwargs):
     
     output_urirs = []
 
@@ -420,7 +437,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     return output_urirs
 
-def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function):
+def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function, accept_datetime=None):
 
     uridata = {}
 
@@ -443,8 +460,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
             uridata = None
 
     output_uris = discovery_function(
-        input_type, input_data,
-        crawl_depth, session)
+        input_type, input_data, crawl_depth, session,accept_datetime=accept_datetime)
 
     module_logger.info("discovered {} URIs".format(len(output_uris)))
 

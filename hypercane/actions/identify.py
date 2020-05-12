@@ -93,10 +93,19 @@ def discover_mementos(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
+    from datetime import datetime
+
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",
         prog="hc identify mementos"
         )
+
+    parser.add_argument('--accept-datetime', '--desired-datetime',
+        default=None, required=False, dest='accept_datetime',
+        help='(only for original resource input type)\n'
+        'discover mementos closest to this datetime in YYYY-mm-ddTHH:MM:SS format',
+        type=lambda s: datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
+    )
     
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -115,7 +124,8 @@ def discover_mementos(args):
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
-        session, discover_mementos_by_input_type
+        session, discover_mementos_by_input_type, 
+        accept_datetime=args.accept_datetime
     )
 
     logger.info("discovered {} mementos, preparing to write the list to {}".format(
