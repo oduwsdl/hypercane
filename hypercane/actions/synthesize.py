@@ -20,6 +20,102 @@ def process_input_args(args, parser):
 
     return args
 
+def combine_files(args):
+
+    import argparse
+    import json
+    import csv
+
+    from hypercane.actions import get_logger, calculate_loglevel, \
+        process_input_args
+
+    parser = argparse.ArgumentParser(
+        description="Combine the output from several Hypercane commands into one TSV file.",
+        prog="hc synthesize combine"
+    )
+
+    parser.add_argument('--append-files', dest='append_files',
+        help='the Hypercane files to append to the file specified by the -a command',
+        nargs='*'
+    )
+
+    args = process_input_args(args, parser)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting combination of files from input")
+
+    if args.input_type == 'archiveit':
+        msg = "Input type archiveit not yet implemented, choose mementos, timemaps, or orignal-resources instead"
+        logger.exception(msg)
+        raise NotImplementedError(msg)
+
+    allfiles = []
+    allfiles.append( args.input_arguments )
+    allfiles.extend( args.append_files )
+
+    fieldnames = []
+
+    for filename in allfiles:
+
+        with open(filename) as g:
+
+            csvreader = csv.reader(g, delimiter='\t')
+            fieldnames.extend( next(csvreader) )
+
+    logger.info("detected fieldnames: {}".format(fieldnames))
+
+    firstfield = None
+
+    for input_field in ['URI-M', 'URI-T', 'URI-R']:
+
+        input_field_count = fieldnames.count(input_field)
+
+        if input_field_count == len(allfiles):
+            if input_field_count > 0:
+                firstfield = input_field
+                break
+        else:
+            msg = "All input files must contain the same input type, either mementos, timemaps, or original-resources"
+            logger.critical(msg)
+            raise RuntimeError(msg)
+
+    output_fieldnames = list(set(fieldnames))
+    output_fieldnames.remove(firstfield)
+    output_fieldnames.insert(0, firstfield)
+
+    with open(args.output_filename, 'w') as f:
+
+        writer = csv.DictWriter(f, delimiter='\t', fieldnames=output_fieldnames)
+        writer.writeheader()
+
+        for filename in allfiles:
+
+            with open(filename) as g:
+
+                csvreader = csv.DictReader(g, delimiter='\t')
+                
+                for row in csvreader:
+                    
+                    outputrow = {}
+                    outputrow[firstfield] = row[firstfield]
+
+                    for fieldname in output_fieldnames:
+
+                        try:
+                            outputrow[fieldname] = row[fieldname]
+                        except KeyError:
+                            outputrow[fieldname] = None
+
+                    writer.writerow(outputrow)
+
+    logger.info("Writing new file to {}".format(args.output_filename))
+
+
 def raintale_story(args):
 
     import argparse
@@ -392,5 +488,6 @@ supported_commands = {
     "warcs": synthesize_warcs,
     "files": synthesize_files,
     "bpfree-files": synthesize_bpfree_files,
-    "raintale-story": raintale_story
+    "raintale-story": raintale_story,
+    "combine": combine_files
 }
