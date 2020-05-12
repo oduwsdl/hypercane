@@ -155,8 +155,6 @@ def report_metadatastats(args):
 
     logger.info("Done with collection metadata discovery run.")
 
-
-
 def report_image_data(args):
     
     import argparse

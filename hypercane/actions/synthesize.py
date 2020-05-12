@@ -69,7 +69,13 @@ def raintale_story(args):
         help='The number of top terms to select from the term data.',
         required=False, default=5
     )
-    
+
+    parser.add_argument('--extradata', dest='extra_data',
+        help='a JSON file containing extra data that will be included in the Raintale JSON, '
+        'multiple filenames may follow this argument, '
+        'the name of the file without the extension will be the JSON key', nargs='*'
+    )
+
     args = hypercane.actions.process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -172,7 +178,14 @@ def raintale_story(args):
 
         story_json['elements'].append(story_element)
 
-    logger.info("Writing Raintale JSOn out to {}".format(
+    for filename in args.extra_data:
+        with open(filename) as f:
+            edata = json.load(f)
+            fname = filename.rsplit('.', 1)[0]
+            story_json.setdefault('extra', {})
+            story_json['extra'][fname] = edata
+
+    logger.info("Writing Raintale JSON out to {}".format(
         args.output_filename
     ))
 
