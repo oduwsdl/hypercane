@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Raintale allows anyone to create stories from archived web pages (mementos).">
+  <meta name="author" content="Shawn M. Jones">
+  <meta name="image" content="https://raintale.readthedocs.io/en/latest/_images/raintale-logo.png">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@StormyArchives">
+  <meta name="twitter:creator" content="@shawnmjones">
+  <meta name="twitter:title" content="Hypercane - Intelligent Sampling of Web Archives">
+  <meta name="twitter:description" content="Hypercane allows anyone to intelligently sample from web archive collections.">
+  <meta name="twitter:image" content="https://raintale.readthedocs.io/en/latest/_images/raintale-logo.png">
+  <meta name="twitter:image:alt" content="Raintale logo">
+
+  <meta property="og:title" content="Raintale - What Story Will You Tell With Web Archives?">
+  <meta property="og:image" content="https://raintale.readthedocs.io/en/latest/_images/raintale-logo.png">
+  <meta property="og:description" content="Raintale allows anyone to create stories from archived web pages (mementos).">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="Raintale">
+  <meta property="og:image:alt" content="Raintale logo">
+
+  <title>Hypercane</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/simple-line-icons/css/simple-line-icons.css">
+
+  <!-- Plugin CSS -->
+  <link rel="stylesheet" href="device-mockups/device-mockups.min.css">
+
+  <!-- Custom styles for this template -->
+  <link href="css/new-age.min.css" rel="stylesheet">
+
+  <style>
+    header.masthead {
+    background: rgb(0,0,0);
+    background: linear-gradient(135deg, rgba(0,0,0,1) 25%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 75%);
+      /* background: linear-gradient(to top, rgb(0, 0, 0), rgb(0, 0, 0), rgb(0, 0, 238), rgb(85, 26, 139), rgb(0, 0, 0)) */
+    }
+
+    .darkerlink {
+      color: rgb(0, 0, 255);
+    }
+
+    section.cta2 {
+      position: relative;
+      /* padding: 250px 0; */
+      background-image: url(../img/bg-cta.jpg);
+      background-position: center;
+      background-size: cover;
+    }
+    section.cta2 .cta2-content {
+        position: relative;
+        z-index: 1;
+    }
+    section.cta2 .cta2-content h2 {
+        font-size: 50px;
+        /* max-width: 450px; */
+        margin-top: 0;
+        margin-bottom: 25px;
+        color: #fff;
+    }
+    @media (min-width: 768px) {
+        section.cta2 .cta2-content h2 {
+            font-size: 80px;
+        }
+    }
+    section.cta2 .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* background-color: rgba(0, 0, 0, 0.5); */
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+
+  </style>
+
+</head>
+
+<body id="page-top">
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand js-scroll-trigger" href="index.html">
+      <img src="img/hypercane-logo-alpha-40px.png">
+      &nbsp;&nbsp;
+      Hypercane</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="https://github.com/oduwsdl/hypercane">Source Code</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="https://hypercane.readthedocs.io/en/latest/">Documentation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link js-scroll-trigger" href="https://oduwsdl.github.io/dsa/">DSA Project</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <header class="masthead">
+    <div class="container h-100">
+      <div class="row h-100">
+        <div class="col-lg-5 my-auto">
+          <div class="header-content mx-auto">
+            <h1 class="mb-5">With Hypercane you can create a sample of documents from a large web archive collection.</h1>
+            <a href="https://hypercane.readthedocs.io/en/latest/" class="btn btn-outline btn-xl js-scroll-trigger">Get Started with Hypercane</a>
+          </div>
+        </div>
+        <div class="col-lg-7 my-auto">
+          <!-- TODO: think about what to put here -->
+          <!-- <div class="device-container">
+            <div class="device-mockup imac portrait portrait white">
+              <div class="device">
+                <div class="screen"> -->
+                  <!-- Demo image for screen mockup, you can put an image here, some HTML, an animation, video, or anything else! -->
+                  <img src="img/web-collection-sample.png" class="img-fluid" alt="">
+                <!-- </div>
+              </div>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-heading text-center">
+        <h2>Hypercane's Core Actions</h2>
+        <p class="text-muted">Hypercane's principle focus is sampling documents from a web archive collection.</p>
+        <hr>
+      </div>
+      <div class="row">
+        <div class="col-lg-12 my-auto"> 
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-pie-chart text-primary"></i>
+                  <h3>Sample</h3>
+                  <p class="text-muted">Input a list of memento URLs, TimeMap URLs, or live web resource URLs, then grow and reduce that list to produce an intelligent sample according to our predefined algorithms.</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-note text-primary"></i>
+                  <h3>Report</h3>
+                  <p class="text-muted">Extract simple reports from the collection of archived pages, like lists of entities, terms, metadata, and images.</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-chemistry text-primary"></i>
+                  <h3>Synthesize</h3>
+                  <p class="text-muted">Convert your list of URLs into input for <a class="darkerlink" href="https://oduwsdl.github.io/raintale">Raintale</a>, WARCs for <a class="darkerlink" href="https://archivesunleashed.org/aut/">Archives Unleashed Toolkit</a>, or other formats for further exploration outside of Hypercane.</p>
+                </div>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  <!-- <section class="cta"> -->
+  <section class="cta2">
+    <div class="cta2-content">
+      <div class="container">
+        <div class="row h-100">
+          <div class="col-md-12 my-auto">
+            <div class="header-content mx-auto">
+              <h2>What Gems Will You Discover In A Web Archive Collection?</h2>
+              <a href="https://hypercane.readthedocs.io/en/latest/" class="btn btn-outline btn-xl js-scroll-trigger">Let's Get Started!</a>
+            </div>
+          </div>
+          <!-- <div class="col-md-5 my-auto">
+            <div class="device-mockup imac portrait white">
+                <div class="device">
+                  <div class="screen">
+                    <!-- Demo image for screen mockup, you can put an image here, some HTML, an animation, video, or anything else! -->
+                    <!-- <img src="img/template_gallery/template-thumbnails4col-html.png" class="img-fluid" alt="">
+                  </div>
+                  <div class="button">
+                    <!-- You can hook the "home button" to some JavaScript events or just remove it -->
+                  <!-- </div>
+                </div>
+            </div>
+          </div> -->
+        </div>
+        <div class="row h-700">
+          <div class="col-md-8"></div>
+          <div class="col-md-4">
+          <p style="color: #ffffff;">Photo by <a href="https://unsplash.com/@erickzajac?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Erick Zajac</a> on <a href="https://unsplash.com/s/photos/library-books?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay"></div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-heading text-center">
+        <h2>Hypercane's Advanced Actions</h2>
+        <p class="text-muted">Hypercane was developed to ensure the most flexibility when selecting mementos from a collection. With Hypercane's advanced features, anyone can design their own sampling algorithms.</p>
+        <hr>
+      </div>
+      <div class="row">
+        <div class="col-lg-12 my-auto"> 
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-directions text-primary"></i>
+                  <h3>Identify</h3>
+                  <p class="text-muted">Convert a list of memento URLs, TimeMaps, or live web resource URLs into each another. Use the <a class="darkerlink" href="https://www.w3.org/blog/2016/08/memento-at-the-w3c/">Memento Protocol</a> to find memento URLs of corresponding live web resource URLs.</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-basket-loaded text-primary"></i>
+                  <h3>Filter</h3>
+                  <p class="text-muted">From your list of URLs, filter all whose content is off-topic, near duplicate, containing a given pattern, or more...</p>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="feature-item">
+                  <i class="icon-graph text-primary"></i>
+                  <h3>Cluster</h3>
+                  <p class="text-muted">Cluster your URLs based on content using a variety of clustering algorithms and features.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12 my-auto"> 
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="feature-item">
+                  <i class="icon-equalizer text-primary"></i>
+                  <h3>Score</h3>
+                  <p class="text-muted">Score your URLs based using various scoring functions based on features such as Memento Damage, site categorization, URL length, and BM25.</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="feature-item">
+                  <i class="icon-list text-primary"></i>
+                  <h3>Order</h3>
+                  <p class="text-muted">Order your URLs based on Memento-Datetime, Publication Date, their scores from the Score Action.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <section class="contact bg-light" id="contact">
+    <div class="container">
+      <div class="row">
+        <div class="col-xl-3 col-lg-2">
+            <img src="img/dsa-logo-monochrome-wb.png">
+        </div>
+        <div class="col-xl-9 col-lg-10">
+          <p>
+          Hypercane is a software package developed as part of <a class="darkerlink" href="https://oduwsdl.github.io/dsa/">the Dark and Stormy Archives (DSA) Project</a>.
+        </p>
+        <p>
+          Hypercane uses the DSA Project's <a class="darkerlink" href="https://mementoembed.readthedocs.io/en/latest/">MementoEmbed</a>, <a class="darkerlink" href="https://pypi.org/project/otmt/">OTMT</a>, and <a class="darkerlink" href="https://pypi.org/project/aiu/">AIU</a> software packages.
+        </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+
+      <div class="row">
+        <div class="col-xl-3 col-lg-2">
+            <img src="img/imls-logo.png">
+        </div>
+        <div class="col-xl-9 col-lg-10 text-light">
+            This work was funded in part by the Institute of Museum and Library Services (LG-71-15-0077-15).
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-12 col-lg-12">
+          <hr>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xl-3 col-lg-2">
+          <img src="img/odulogo.png"> 
+        </div>
+        <div class="col-xl-9 col-lg-10 text-light">
+          This web site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a> by the Old Dominion University Web Science and Digital Libraries Research Group 2019. <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"></a>
+        </div>
+      </div>
+
+
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Plugin JavaScript -->
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom scripts for this template -->
+  <script src="js/new-age.min.js"></script>
+
+</body>
+
+</html>
