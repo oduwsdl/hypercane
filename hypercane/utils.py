@@ -379,8 +379,14 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
             for row in csvreader:
 
                 rowdata = {}
-                urim = row[0]
-                urim_data[urim] = rowdata
+
+                try:
+                    urim = row[0]
+                    urim_data[urim] = rowdata
+
+                except IndexError:
+                    #we've reached the end, but there was an extra newline
+                    pass
 
     # module_logger.info("urimdata from file: {}".format(urim_data))
 
