@@ -116,7 +116,7 @@ def print_usage():
 
     Examples:
 
-    hc order pubdate-else-memento-datetime -i mementos -ia ranked_mementos.tsv -o ordered_mementos.tsv -cs mongodb://localhost/cache
+    hc order pubdate-else-memento-datetime -i mementos -ia scored_mementos.tsv -o ordered_mementos.tsv -cs mongodb://localhost/cache
     
 """)
 

@@ -12,11 +12,11 @@ def bm25_ranking(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.rank.bm25 import rank_by_bm25
+    from hypercane.score.bm25 import rank_by_bm25
 
     parser = argparse.ArgumentParser(
-        description="Rank the input using a query and the BM25 algorithm.",
-        prog="hc rank bm25"
+        description="Score the input using a query and the BM25 algorithm.",
+        prog="hc score bm25"
     )
 
     parser.add_argument('--query', dest='query',
@@ -34,7 +34,7 @@ def bm25_ranking(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Beginning the ranking by BM25")
+    logger.info("Beginning the scoring by BM25")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -42,12 +42,12 @@ def bm25_ranking(args):
     )
 
     urimdata = rank_by_bm25(
-        urimdata, session, args.query
+        urimdata, session, args.query, args.cache_storage
     )
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
-    logger.info("Finished ranking by BM25, output is at {}".format(args.output_filename))
+    logger.info("Finished scoring by BM25, output is at {}".format(args.output_filename))
 
 
 
@@ -63,31 +63,31 @@ def dsa1_ranking(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.rank.dsa1_ranking import rank_by_dsa1_score
+    from hypercane.score.dsa1_ranking import rank_by_dsa1_score
 
     parser = argparse.ArgumentParser(
-        description="Rank the input using the DSA1 scoring equation.",
-        prog="hc rank dsa1-ranking"
+        description="Score the input using the DSA1 scoring equation.",
+        prog="hc score dsa1-scoring"
     )
 
     parser.add_argument('--memento-damage-url', dest='memento_damage_url',
         default=None,
-        help="The URL of the Memento-Damage service to use for ranking."
+        help="The URL of the Memento-Damage service to use for scoring."
     )
 
     parser.add_argument('--damage-weight', dest='damage_weight',
         default=-0.40,
-        help="The weight for the Memento-Damage score in the ranking."
+        help="The weight for the Memento-Damage score in the scoring."
     )
 
     parser.add_argument('--category-weight', dest='category_weight',
         default=0.15,
-        help="The weight for the URI-R category score in the ranking."
+        help="The weight for the URI-R category score in the scoring."
     )
 
     parser.add_argument('--path-depth-weight', dest='path_depth_weight',
         default=0.45,
-        help="The weight for the URI-R path depth score in the ranking."
+        help="The weight for the URI-R path depth score in the scoring."
     )
 
     args = process_input_args(args, parser)
@@ -101,7 +101,7 @@ def dsa1_ranking(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Beginning the ranking by DSA1 scoring equation")
+    logger.info("Beginning the scoring by DSA1 scoring equation")
 
     if args.input_type == "mementos":
         urimdata = discover_resource_data_by_input_type(
@@ -110,7 +110,7 @@ def dsa1_ranking(args):
         )
     else:
         # TODO: derive URI-Ms from input type
-        raise NotImplementedError("Input type of {} not yet supported for ranking".format(
+        raise NotImplementedError("Input type of {} not yet supported for scoring".format(
             args.input_type))
 
     urimdata = rank_by_dsa1_score(
@@ -128,15 +128,15 @@ def dsa1_ranking(args):
 
 def print_usage():
 
-    print("""'hc rank' is used to employ techniques that rank the mementos in a web archive collection
+    print("""'hc score' is used to employ techniques that score the mementos in a web archive collection
 
     Supported commands:
-    * dsa1-ranking - rank the documents according to the scoring function of AlNoamany's Algorithm
-    * bm25 - rank documents according to the input query
+    * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm
+    * bm25 - score documents according to the input query
 
     Examples:
 
-    hc rank dsa1-ranking -i mementos -ia input_mementos.tsv -o ranked_mementos.tsv -cs mongodb://localhost/cache
+    hc score dsa1-scoring -i mementos -ia input_mementos.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache
     
 """)
 

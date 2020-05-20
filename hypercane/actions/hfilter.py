@@ -179,7 +179,7 @@ def extract_rank_key_from_input(urimdata):
     for urim in urimdata:
         foundkeys = []
         for key in urimdata[urim]:
-            if 'rank' in key.lower():
+            if 'score' in key.lower():
                 foundkeys.append(key)
 
         if len(foundkeys) > 0:
@@ -187,11 +187,11 @@ def extract_rank_key_from_input(urimdata):
                 rankkey = foundkeys[0]
             else:
                 raise ValueError(
-                    "Too many rank fields in the inputs."
+                    "Too many score fields in the inputs."
                 )
         else:
             raise ValueError(
-                "The input file does not contain rank information."
+                "The input file does not contain score information."
             )
 
     return rankkey
@@ -207,8 +207,8 @@ def include_rank(args):
     from hypercane.utils import save_resource_data
 
     parser = argparse.ArgumentParser(
-        description="Include only mementos containing a rank meeting the given criteria.",
-        prog="hc filter include-only rank"
+        description="Include only mementos containing a score meeting the given criteria.",
+        prog="hc filter include-only score"
     )
 
     parser.add_argument('--criteria', default=1, dest='criteria',
@@ -224,7 +224,7 @@ def include_rank(args):
         args.logfile
     )
 
-    logger.info("Starting detection of documents meeting the criteria for rank ...")
+    logger.info("Starting detection of documents meeting the criteria for score ...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -250,7 +250,7 @@ def include_rank(args):
     save_resource_data(
         args.output_filename, urimdata, 'mementos', filtered_urims)
 
-    logger.info("Done filtering mementos by rank, output is saved to {}".format(
+    logger.info("Done filtering mementos by score, output is saved to {}".format(
         args.output_filename
     ))
 
@@ -266,8 +266,8 @@ def exclude_rank(args):
     from hypercane.utils import save_resource_data
 
     parser = argparse.ArgumentParser(
-        description="Include only mementos containing a rank meeting the given criteria.",
-        prog="hc filter include-only rank"
+        description="Include only mementos containing a score meeting the given criteria.",
+        prog="hc filter include-only score"
     )
 
     parser.add_argument('--criteria', default=1, dest='criteria',
@@ -283,7 +283,7 @@ def exclude_rank(args):
         args.logfile
     )
 
-    logger.info("Starting detection of documents meeting the criteria for rank ...")
+    logger.info("Starting detection of documents meeting the criteria for score ...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -309,7 +309,7 @@ def exclude_rank(args):
     save_resource_data(
         args.output_filename, urimdata, 'mementos', filtered_urims)
 
-    logger.info("Done filtering mementos by rank, output is saved to {}".format(
+    logger.info("Done filtering mementos by scor, output is saved to {}".format(
         args.output_filename
     ))
 
@@ -325,8 +325,8 @@ def include_highest_rank_per_cluster(args):
     from hypercane.utils import save_resource_data
 
     parser = argparse.ArgumentParser(
-        description="Include only mementos with the highest rank from each cluster.",
-        prog="hc filter include-only highest-rank-per-cluster"
+        description="Include only mementos with the highest score from each cluster.",
+        prog="hc filter include-only highest-score-per-cluster"
     )
 
     args = process_input_args(args, parser)
@@ -338,7 +338,7 @@ def include_highest_rank_per_cluster(args):
         args.logfile
     )
 
-    logger.info("Starting detection of mementos with the highest rank in each cluster...")
+    logger.info("Starting detection of mementos with the highest score in each cluster...")
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -350,13 +350,13 @@ def include_highest_rank_per_cluster(args):
 
     rankkey = extract_rank_key_from_input(urimdata)
 
-    logger.info("using rank key {}".format(rankkey))
+    logger.info("using score key {}".format(rankkey))
 
     filtered_urims = return_highest_ranking_memento_per_cluster(urimdata, rankkey)
 
     save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
 
-    logger.info("Completed detection of mementos with the highest rank in each cluster, output is in {}".format(
+    logger.info("Completed detection of mementos with the highest score in each cluster, output is in {}".format(
         args.output_filename
     ))
 
@@ -653,16 +653,17 @@ def print_include_usage():
     print("""'hc filter include-only' is used to employ techniques to filter a web archive collection by including mementos that satisfy the given criteria
 
     Supported commands:
-    * on-topic - execute the Off-Topic Memento Toolkit to only include on-topic mementos
+    * languages - include mementos with the given languages (specified with --lang)
     * non-duplicates - employ Simhash to only include mementos that are not duplicates
-    * language - include mementos with the given languages (specified with --lang)
-    * rank - include mementos with the given rank value (requires output from hc rank)
+    * on-topic - execute the Off-Topic Memento Toolkit to only include on-topic mementos
+    * highest-rank-per-cluster - include only the highest ranking memento in each cluster, requires that the input contain clustered mementos
+    * containing-pattern - include only mementos that contain the given regular experession pattern
 
     Examples:
     
-    hc filter include-only language en,es -i archiveit=8788 -o ontopic-mementos.txt
+    hc filter include-only languages --lang en,es -i archiveit=8788 -o english-spanish-mementos.txt
 
-    hc filter include-only rank "=1" -i mementos=file-with-scored-mementos.txt -o filtered-mementos.txt
+    hc filter include-only on-topic -i timemaps -a uritfile.txt -o ontopic-mementos.txt
     
 """)
 
@@ -671,14 +672,14 @@ def print_exclude_usage():
     print("""'hc filter exclude' is used to employ techniques to filter a web archive collection by excluding mementos that satisfy the given criteria
 
     Supported commands:
+    * languages - exclude mementos with the given languages (specified with --lang)
     * off-topic - execute the Off-Topic Memento Toolkit to exclude off-topic mementos
     * near-duplicates - employ Simhash to exclude mementos that are near-duplicates
-    * language - exclude mementos with the given languages (specified with --lang)
-    * rank - include mementos with the given rank value (requires output from hc rank)
+    * containing-pattern - exclue mementos that contain the given regular experession pattern
 
     Examples:
     
-    hc filter exclude --lang en,de -i archiveit -a 8788 -o ontopic-mementos.txt
+    hc filter exclude languages --lang en,de -i archiveit -a 8788 -o nonenglish-nongerman-mementos.txt
 
     hc filter exclude containing_pattern --pattern 'cheese' -i mementos -a mementofile.tsv -o mementos-with-cheese.tsv
     
@@ -689,7 +690,7 @@ include_criteria = {
     "non-duplicates": include_nonduplicates,
     "on-topic": include_ontopic,
     # "rank": include_rank,
-    "highest-rank-per-cluster": include_highest_rank_per_cluster,
+    "highest-score-per-cluster": include_highest_rank_per_cluster,
     "containing-pattern": include_containing_pattern,
     "near-datetime": include_near_datetime
 }

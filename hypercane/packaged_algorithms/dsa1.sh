@@ -48,16 +48,16 @@ if [ ! -e ${working_directory}/sliced-and-clustered.tsv ]; then
     report_and_execute_command "hc cluster dbscan -i mementos -ia ${working_directory}/sliced.tsv -cs ${database_string} -o ${working_directory}/sliced-and-clustered.tsv --feature tf-simhash ${logging_arg}"
 fi
 
-if [ ! -e ${working_directory}/ranked.tsv ]; then
-    report_and_execute_command "hc rank dsa1-ranking -i mementos -ia ${working_directory}/sliced-and-clustered.tsv -cs ${database_string} -o ${working_directory}/ranked.tsv ${logging_arg} ${other_arguments}"
+if [ ! -e ${working_directory}/scored.tsv ]; then
+    report_and_execute_command "hc score dsa1-scoring -i mementos -ia ${working_directory}/sliced-and-clustered.tsv -cs ${database_string} -o ${working_directory}/scored.tsv ${logging_arg} ${other_arguments}"
 fi
 
-if [ ! -e ${working_directory}/highest-ranked.tsv ]; then
-    report_and_execute_command "hc filter include-only highest-rank-per-cluster -i mementos -ia ${working_directory}/ranked.tsv -cs ${database_string} -o ${working_directory}/highest-ranked.tsv ${logging_arg}"
+if [ ! -e ${working_directory}/highest-scored.tsv ]; then
+    report_and_execute_command "hc filter include-only highest-score-per-cluster -i mementos -ia ${working_directory}/scored.tsv -cs ${database_string} -o ${working_directory}/highest-scored.tsv ${logging_arg}"
 fi
 
 if [ ! -e ${working_directory}/ordered.tsv ]; then
-    report_and_execute_command "hc order pubdate-else-memento-datetime -i mementos -ia ${working_directory}/highest-ranked.tsv -cs ${database_string} -o ${working_directory}/ordered.tsv ${logging_arg}"
+    report_and_execute_command "hc order pubdate-else-memento-datetime -i mementos -ia ${working_directory}/highest-scored.tsv -cs ${database_string} -o ${working_directory}/ordered.tsv ${logging_arg}"
 fi
 
 report_and_execute_command "cp ${working_directory}/ordered.tsv ${output_filename}"

@@ -11,7 +11,7 @@ supported_actions = {
     "identify": "hypercane.actions.identify",
     "filter": "hypercane.actions.hfilter",
     "cluster": "hypercane.actions.cluster",
-    "rank": "hypercane.actions.rank",
+    "score": "hypercane.actions.score",
     "order": "hypercane.actions.order"
 }
 

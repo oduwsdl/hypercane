@@ -7,7 +7,7 @@ import tldextract
 
 from urllib.parse import urlparse
 
-module_logger = logging.getLogger('hypercane.rank.dsa1_ranking')
+module_logger = logging.getLogger('hypercane.score.dsa1_ranking')
 
 blog_sources = [
     'blogger.com',

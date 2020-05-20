@@ -474,6 +474,7 @@ def print_usage():
     * files - for generating a directory of mementos
     * bpfree-files - for generating a directory of boilerplate-free mementos
     * raintale-story - for generating a JSON file suitable as input for Raintale
+    * combine - combine the output from several Hypercane runs together
 
     Examples:
 
