@@ -174,7 +174,7 @@ def sample_with_dsa1(args):
 
     parser.add_argument('--memento-damage-url', dest='memento_damage_url',
         default=None,
-        help="The URL of the Memento-Damage service to use for ranking."
+        help="The URL of the Memento-Damage service to use for scoring."
     )
 
     algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
