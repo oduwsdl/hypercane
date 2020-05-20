@@ -155,9 +155,9 @@ def generate_sumgrams(urimlist, cache_storage):
     #     )
 
     params = {
-        "stanford_corenlp_server": False,
         "add_stopwords": ", ".join(added_stopwords),
-        "top_sumgram_count": 20
+        "top_sumgram_count": 20,
+        'sentence_tokenizer': 'regex'
     }
 
     sumgrams = get_top_sumgrams(doc_lst, params=params)
