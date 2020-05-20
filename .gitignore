@@ -115,3 +115,7 @@ venv.bak/
 *-test
 
 .DS_Store
+
+# from Jekyll site work
+_site
+.bundle

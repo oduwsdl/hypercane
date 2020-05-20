@@ -169,7 +169,8 @@ def raintale_story(args):
     parser.add_argument('--extradata', dest='extra_data',
         help='a JSON file containing extra data that will be included in the Raintale JSON, '
         'multiple filenames may follow this argument, '
-        'the name of the file without the extension will be the JSON key', nargs='*'
+        'the name of the file without the extension will be the JSON key', nargs='*',
+        default=[]
     )
 
     args = hypercane.actions.process_input_args(args, parser)
