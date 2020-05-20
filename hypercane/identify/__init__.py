@@ -6,6 +6,7 @@ import argparse
 import math
 import os
 import csv
+import requests
 
 from random import randint
 from datetime import datetime
@@ -181,7 +182,8 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
 
                 urig = "{}/{}".format(urig, urir)
 
-                r = session.get(urig, headers=req_headers)
+                # no caching for datetime negotiation
+                r = requests.get(urig, headers=req_headers)
 
                 if r.status_code != 200:
                     module_logger.info("got a status of {} for {} -- could not find a memento for {} via the Memento Aggregator".format(r.status_code, r.url, urir))
