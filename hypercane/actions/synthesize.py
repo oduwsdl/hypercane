@@ -244,10 +244,12 @@ def raintale_story(args):
                 tf.append( ( int(row['Frequency in Corpus']), row['Term'] ) )
 
             story_json.setdefault('metadata', {})
-            story_json['metadata']['terms'] = []
+            story_json['metadata']['terms'] = {}
 
             for term in sorted(tf, reverse=True)[0:args.term_count]:
-                story_json['metadata']['terms'].append(term[1])
+                # story_json['metadata']['terms'].append(term[1])
+                story_json['metadata'].setdefault('terms', {})
+                story_json['metadata']['terms'][term[1]] = term[0]
 
     if args.entitydata_filename is not None:
         import csv
@@ -255,16 +257,19 @@ def raintale_story(args):
             reader = csv.DictReader(f, delimiter='\t')
             tf = []
             for row in reader:
+                
                 try:
                     tf.append( ( float(row['Corpus TF-IDF']), row['Entity'] ) )
                 except TypeError:
                     logger.exception("row caused type error, skipping: {}".format(row))
 
             story_json.setdefault('metadata', {})
-            story_json['metadata']['entities'] = []
+            story_json['metadata']['entities'] = {}
 
             for entity in sorted(tf, reverse=True)[0:args.entity_count]:
-                story_json['metadata']['entities'].append(entity[1])
+                # story_json['metadata']['entities'].append(entity[1])
+                story_json['metadata'].setdefault('entities', {})
+                story_json['metadata']['entities'][entity[1]] = entity[0]
 
     for urim in urimdata.keys():
 
