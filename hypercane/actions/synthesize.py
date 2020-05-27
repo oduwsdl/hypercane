@@ -152,7 +152,7 @@ def raintale_story(args):
     )
 
     parser.add_argument('--entitydata', dest='entitydata_filename',
-        help='A file containing term data, as produced by hc report terms',
+        help='A file containing term data, as produced by hc report entities',
         required=False, default=None
     )
 

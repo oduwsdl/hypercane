@@ -20,7 +20,7 @@ def print_overall_usage():
     print("""hc (Hypercane) is a complex toolchain requiring a supported action and additional arguments
 
 For example:
-    hc sample dsa1 -i archiveit=8778 -o story-mementos.txt
+    hc sample dsa1 -i archiveit -a 8778 -o story-mementos.txt
 
     Supported actions:
 """)
