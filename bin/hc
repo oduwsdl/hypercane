@@ -59,9 +59,14 @@ if __name__ == '__main__':
                 # print("args: {}".format(sys.argv))
 
                 command = sys.argv[2]
-                criteria = sys.argv[3]
 
-                if command == 'include-only':
+                if command == '--help':
+
+                    actionmodule.print_usage()
+
+                elif command == 'include-only':
+
+                    criteria = sys.argv[3]
 
                     if criteria == '-h' or criteria == '--help':
 
@@ -70,6 +75,8 @@ if __name__ == '__main__':
                         actionmodule.include_criteria[criteria](sys.argv[4:])
 
                 elif command == 'exclude':
+
+                    criteria = sys.argv[3]
 
                     if criteria == '-h' or criteria == '--help':
                         actionmodule.print_exclude_usage()

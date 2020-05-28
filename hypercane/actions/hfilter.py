@@ -630,7 +630,7 @@ def exclude_containing_pattern(args):
 
 def print_usage():
 
-    print("""'hc filter' is used to employ techniques to filter a web archive collection
+    print("""'hc filter' filters a web archive collection by different criteria
 
     Supported commands:
     * include-only - include mementos from the input that satisfy the given criteria
@@ -638,19 +638,19 @@ def print_usage():
 
     Examples:
     
-    hc filter include-only language en,es -i archiveit -ia 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
+    hc filter include-only language --lang en,es -i archiveit -a 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
 
-    hc filter exclude off-topic -i timemaps -ia 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
+    hc filter exclude off-topic -i timemaps -a 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
 
-    hc filter exclude near-duplicates -i mementos -ia ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
+    hc filter exclude near-duplicates -i mementos -a ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
 
-    hc filter include-only rank "=1" -i mementos -ia file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
+    hc filter include-only rank "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
     
 """)
 
 def print_include_usage():
 
-    print("""'hc filter include-only' is used to employ techniques to filter a web archive collection by including mementos that satisfy the given criteria
+    print("""'hc filter include-only' filters a web archive collection by only including mementos that satisfy the given criteria
 
     Supported commands:
     * languages - include mementos with the given languages (specified with --lang)
@@ -669,7 +669,7 @@ def print_include_usage():
 
 def print_exclude_usage():
 
-    print("""'hc filter exclude' is used to employ techniques to filter a web archive collection by excluding mementos that satisfy the given criteria
+    print("""'hc filter exclude' filters a web archive collection by excluding mementos that satisfy the given criteria
 
     Supported commands:
     * languages - exclude mementos with the given languages (specified with --lang)
