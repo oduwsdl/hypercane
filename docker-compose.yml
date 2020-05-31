@@ -9,6 +9,8 @@ services:
         depends_on:
             - mongodb
         image: hypercane:dev
+        build: ./
+        command: bash
         restart: always
         volumes:
             - .:/hypercane-work
