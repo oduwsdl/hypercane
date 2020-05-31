@@ -7,7 +7,9 @@ What tool can we rely on to automate the selection of mementos for summarization
 
 Humans can choose mementos from a collection, but doing so is difficult if they are unfamiliar with the collection. In the appendix of the `preprint version <https://arxiv.org/abs/1905.11342>`_ of *Social Cards Probably Provide For Better Understanding of Web Archive Collections*, we detail how difficult it is to understand a web archive collection with the existing Archive-It interface. The issue is scale. Most web archive collections consist of thousands of documents. In that same work, we show that most collections contain insufficient metadata to assist users in making choices about which mementos to sample. Depending on the algorithm chosen, Hypercane takes into account `the structural features <http://doi.org/10.17605/OSF.IO/EV42P>`_ of the collection and the content of the collection's mementos to make its decisions.
 
-Hypercane is a command-line utility for sampling archived web pages (**mementos**) from a web archive collection. Hypercane leverages the `Memento Protocol <https://tools.ietf.org/html/rfc7089>`_ to discover resources in web archives so that a user can sample a subset of documents. With Hypercane a user can do things like search a subset of mementos, produce a sample for automated storytelling, or convert a set of meemnto URLs (URI-Ms) into WARCs for processing with other tools.
+.. image:: images/sampling-collections.png
+
+Hypercane is a command-line utility for sampling archived web pages (**mementos**) from a web archive collection. Hypercane leverages the `Memento Protocol <https://tools.ietf.org/html/rfc7089>`_ to discover resources in web archives so that a user can sample a subset of documents. With Hypercane a user can do things like search a subset of mementos, produce a sample for automated storytelling, or convert a set of memento URLs (URI-Ms) into WARCs for processing with other tools.
 
 The core actions of Hypercane are:
 
@@ -23,11 +25,11 @@ To create their own algorithms, Hypercane also supports the following advanced a
 * ``score`` - for scoring the documents from the input based on some scoring function
 * ``order`` - for ordering the documents in the input based on some feature
 
-Help for each command is available by typing ``--help`` after the command, like so:
+Hypercane is a research project and is rather volatile. These actions will remain stable, but additional options are being added all of the time. This documentation will not attempt to detail how every action can be used. Help for each command is available by typing ``--help`` after the command, like so:
 
 .. code-block:: text
 
-   # hc sample --help
+   # hc report --help
 
    'hc report' is used print reports about web archive collections
 
