@@ -5,6 +5,8 @@ Hypercane: Intelligent Samping of Web Archive Collections
 
 What tool can we rely on to automate the selection of mementos for summarizations and other purposes? Hypercane.
 
+Humans can choose mementos from a collection, but doing so is difficult if they are unfamiliar with the collection. In the appendix of the `preprint version <https://arxiv.org/abs/1905.11342>`_ of *Social Cards Probably Provide For Better Understanding of Web Archive Collections*, we detail how difficult it is to understand a web archive collection with the existing Archive-It interface. The issue is scale. Most web archive collections consist of thousands of documents. In that same work, we show that most collections contain insufficient metadata to assist users in making choices about which mementos to sample. Depending on the algorithm chosen, Hypercane takes into account `the structural features <http://doi.org/10.17605/OSF.IO/EV42P>`_ of the collection and the content of the collection's mementos to make its decisions.
+
 Hypercane is a command-line utility for sampling archived web pages (**mementos**) from a web archive collection. Hypercane leverages the `Memento Protocol <https://tools.ietf.org/html/rfc7089>`_ to discover resources in web archives so that a user can sample a subset of documents. With Hypercane a user can do things like search a subset of mementos, produce a sample for automated storytelling, or convert a set of meemnto URLs (URI-Ms) into WARCs for processing with other tools.
 
 The core actions of Hypercane are:
