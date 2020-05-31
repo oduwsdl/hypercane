@@ -1,4 +1,5 @@
-FROM python:3.7.3-stretch
+ARG     PYTAG=3.7.3-stretch
+￼FROM    python:${PYTAG}
 
 COPY requirements.txt /
 
