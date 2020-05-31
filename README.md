@@ -13,7 +13,7 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 1. Install [MongoDB](https://www.mongodb.com/download-center/community)
 2. Clone this repository
 3. Change into the cloned directory
-4. type `pip install .`
+4. Type `pip install .`
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
 
