@@ -20,7 +20,8 @@ The software is still volatile, so you will need to build your own docker image.
 
 1. Clone `this repository <https://github.com/oduwsdl/hypercane>`_
 2. Change into the cloned directory
-3. type ``docker build -t hypercane:dev .``
-4. run ``docker-compose run hypercane bash``
+3. run `docker-compose run hypercane`
 
+This may take a while to download and build necessary docker images.
+Once done, it will run the caching server and connect to the hypercane container.
 From that prompt, you'll be able to execute the ``hc`` command.
