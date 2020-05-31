@@ -25,7 +25,7 @@ To create their own algorithms, Hypercane also supports the following advanced a
 * ``score`` - for scoring the documents from the input based on some scoring function
 * ``order`` - for ordering the documents in the input based on some feature
 
-Hypercane is a research project and is rather volatile. These actions will remain stable, but additional options are being added all of the time. This documentation will not attempt to detail how every action can be used. Help for each command is available by typing ``--help`` after the command, like so:
+Hypercane is a research project and is rather volatile. These actions will remain stable, but additional options are being added all of the time. This documentation will not attempt to detail how every action can be used. Instead, this documentation will detail common recipes and other insights as this project progresses. Help for each command is available by typing ``--help`` after the command, like so:
 
 .. code-block:: text
 
