@@ -1,14 +1,11 @@
 ARG     PYTAG=3.7.3-stretch
 ￼FROM    python:${PYTAG}
 
-COPY requirements.txt /
-
-RUN pip install -r /requirements.txt
-
 WORKDIR /app
+COPY    requirements.txt ./
+RUN     pip install -r /requirements.txt
 
-COPY . /app
-
-RUN pip install .
+COPY    . ./
+RUN     pip install .
 
 WORKDIR /hypercane-work
