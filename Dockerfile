@@ -1,5 +1,5 @@
 ARG     PYTAG=3.7.3-stretch
-￼FROM    python:${PYTAG}
+FROM    python:${PYTAG}
 
 LABEL   org.opencontainers.image.title="Hypercane" \
         org.opencontainers.image.description="A framework of algorithms for sampling mementos from a collection" \
