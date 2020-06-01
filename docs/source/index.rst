@@ -42,7 +42,7 @@ Hypercane is a research project and is rather volatile. These actions will remai
    * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
 
    Examples:
-   
+
    hc report metadata -i archiveit -a 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
 
    hc report entities -i mementos -a memento-file.tsv -o entity-report.json
@@ -54,4 +54,4 @@ Hypercane is a research project and is rather volatile. These actions will remai
 
    installation
    license
-    
+

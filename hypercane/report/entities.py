@@ -44,7 +44,7 @@ def generate_entities(urimlist, cache_storage, entity_types):
                 corpus_entities.extend( document_entities )
 
                 for entity in list(set(document_entities)):
-                    document_frequency.setdefault(entity, 0)                    
+                    document_frequency.setdefault(entity, 0)
                     document_frequency[entity] += 1
 
             except Exception as exc:
@@ -66,7 +66,7 @@ def generate_entities(urimlist, cache_storage, entity_types):
     for entry in sorted(tf, reverse=True):
         entity = entry[1]
         returned_terms.append( (
-            entity, entry[0], float(entry[0])/float(len(tf)), 
+            entity, entry[0], float(entry[0])/float(len(tf)),
             document_frequency[entity], document_frequency[entity] / len(urimlist),
             entry[0] * (document_frequency[entity] / len(urimlist))
         ) )

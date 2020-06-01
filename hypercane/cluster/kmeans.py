@@ -4,7 +4,7 @@ module_logger = logging.getLogger('hypercane.cluster.kmeans')
 
 def cluster_by_memento_datetime(urimdata, cache_storage, k):
 
-    # Memento-Datetime values are not all Unique, but does it matter? 
+    # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
 
     from sklearn.cluster import KMeans
@@ -55,7 +55,7 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
         for index, label in enumerate(db.labels_):
 
             urim = clusters_to_urims[cluster][index]
-           
+
             if cluster is None:
                 urimdata[urim]['Cluster'] = "{}".format(label)
             else:

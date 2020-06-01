@@ -3,7 +3,7 @@ import logging
 module_logger = logging.getLogger('hypercane.report.seedstats')
 
 def calculate_domain_diversity(uri_list):
-    
+
     import tldextract
 
     domains = []
@@ -86,7 +86,7 @@ def most_frequent_seed_uri_path_depth(uri_list):
     return mf
 
 def calculate_top_level_path_percentage(uri_list):
-    
+
     depths = []
 
     for uri in uri_list:

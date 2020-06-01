@@ -37,7 +37,7 @@ def generate_sumgrams(urimlist, cache_storage):
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
                 # sys.exit(255)
-    
+
     now = datetime.now()
     current_year = now.year
     last_year = current_year - 1
@@ -99,7 +99,7 @@ def generate_sumgrams(urimlist, cache_storage):
 
     # add just the month to the stop words
     added_stopwords.extend(stopmonths)
-    
+
     stopmonths_short = [
         "jan",
         "feb",
@@ -193,8 +193,8 @@ def generate_sumgrams(urimlist, cache_storage):
                     break
 
             if addsumgram == True:
-                sf.append( 
-                    ( sumgram["term_freq"], sumgram["term_rate"], ngram ) 
+                sf.append(
+                    ( sumgram["term_freq"], sumgram["term_rate"], ngram )
                 )
 
         for entry in sorted(sf, reverse=True):

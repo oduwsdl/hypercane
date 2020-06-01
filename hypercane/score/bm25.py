@@ -4,7 +4,7 @@ from rank_bm25 import BM25Okapi
 module_logger = logging.getLogger('hypercane.score.bm25')
 
 def rank_by_bm25(urimdata, session, query, cache_storage):
-    
+
     import concurrent.futures
     from hypercane.utils import get_boilerplate_free_content
 

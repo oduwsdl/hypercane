@@ -2,7 +2,7 @@ import sys
 import logging
 
 module_logger = logging.getLogger('hypercane.report.terms')
-   
+
 def get_document_tokens(urim, cache_storage, ngram_length):
 
     from hypercane.utils import get_boilerplate_free_content
@@ -24,7 +24,7 @@ def get_document_tokens(urim, cache_storage, ngram_length):
     doc_tokens = [ w.translate(table) for w in doc_tokens ]
     doc_tokens = [ w for w in doc_tokens if len(w) > 0 ]
     doc_ngrams = ngrams(doc_tokens, ngram_length)
-    
+
     return list(doc_ngrams)
 
 def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
@@ -53,7 +53,7 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
 
                     full_ngram = " ".join(ngram)
 
-                    document_frequency.setdefault(full_ngram, 0)                    
+                    document_frequency.setdefault(full_ngram, 0)
                     document_frequency[full_ngram] += 1
 
             except Exception as exc:
@@ -78,7 +78,7 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
     for entry in sorted(tf, reverse=True):
         full_ngram = " ".join(entry[1])
         returned_terms.append( (
-            full_ngram, entry[0], float(entry[0])/float(len(tf)), 
+            full_ngram, entry[0], float(entry[0])/float(len(tf)),
             document_frequency[full_ngram], document_frequency[full_ngram] / len(urimlist),
             entry[0] * (document_frequency[full_ngram] / len(urimlist))
         ) )

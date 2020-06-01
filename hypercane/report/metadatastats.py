@@ -37,7 +37,7 @@ def get_pct_seeds_with_metadata(ait_metadata):
     seeds_with_metadata = []
 
     for seed in seed_metadata:
-       
+
         try:
 
             for entry in seed_metadata[seed]['collection_web_pages']:
@@ -45,14 +45,14 @@ def get_pct_seeds_with_metadata(ait_metadata):
                 for key in entry:
 
                     if key.lower() not in ignore_fields:
-                       
+
                        seeds_with_metadata.append(seed)
 
         except KeyError as e:
             print("error in cid {}, seed {} -- e: {}".format(cid, seed, e))
             pass
 
-    
+
     return len(set(seeds_with_metadata)) / seedcount
 
 def get_pct_seeds_with_specific_field(ait_metadata, fieldname):
@@ -64,7 +64,7 @@ def get_pct_seeds_with_specific_field(ait_metadata, fieldname):
     seeds_with_metadata = []
 
     for seed in seed_metadata:
-       
+
         try:
 
             for entry in seed_metadata[seed]['collection_web_pages']:
@@ -72,7 +72,7 @@ def get_pct_seeds_with_specific_field(ait_metadata, fieldname):
                 for key in entry:
 
                     if key.lower() not in ignore_fields:
-   
+
                         if key.lower() == fieldname:
 
                            seeds_with_metadata.append(seed)
@@ -81,10 +81,10 @@ def get_pct_seeds_with_specific_field(ait_metadata, fieldname):
             print("error in cid {}, seed {} -- e: {}".format(cid, seed, e))
             pass
 
-    
+
     return len(set(seeds_with_metadata)) / seedcount
-    
-   
+
+
 def get_pct_seeds_with_title(ait_metadata):
 
     return get_pct_seeds_with_specific_field(ait_metadata, 'title')
@@ -186,7 +186,7 @@ def get_metadata_compression_ratio(ait_metadata):
     out = io.BytesIO()
 
     with gzip.GzipFile(fileobj=out, mode='w') as fo:
-        fo.write(metadata_as_string.encode()) 
+        fo.write(metadata_as_string.encode())
 
     compressed_bytes = out.getvalue()
 

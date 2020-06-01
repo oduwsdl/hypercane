@@ -127,29 +127,29 @@ def cluster_by_dbscan(args):
     if args.feature == "raw-simhash":
         logger.info("Clustering URI-Ms by Raw Simhash")
         urimdata = cluster_by_simhash_distance(
-            urimdata, args.cache_storage, 
-            simhash_function=get_raw_simhash, 
-            min_samples=int(args.min_samples), 
+            urimdata, args.cache_storage,
+            simhash_function=get_raw_simhash,
+            min_samples=int(args.min_samples),
             eps=float(args.eps))
 
     elif args.feature == "tf-simhash":
         logger.info("Clustering URI-Ms by Term Frequency Simhash")
         urimdata = cluster_by_simhash_distance(
-            urimdata, args.cache_storage, 
-            simhash_function=get_tf_simhash, 
+            urimdata, args.cache_storage,
+            simhash_function=get_tf_simhash,
             min_samples=int(args.min_samples),
             eps=float(args.eps))
 
     elif args.feature == "memento-datetime":
         logger.info("Clustering URI-Ms by Memento-Datetime")
         urimdata = cluster_by_memento_datetime(
-            urimdata, args.cache_storage, 
+            urimdata, args.cache_storage,
             min_samples=int(args.min_samples),
             eps=float(args.eps))
 
     else:
         raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
-   
+
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
     logger.info("Clustering of collection via DBSCAN on feature {} is complete".format(args.feature))
@@ -187,7 +187,7 @@ def time_slice(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    
+
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
@@ -267,13 +267,13 @@ def print_usage():
     * dbscan - cluster the user-supplied feature using the DBSCAN algorithm
 
     Examples:
-    
+
     hc cluster time-slice -i mementos -ia novel-content.tsv -o mdt-slices.tsv -cs mongodb://localhost/cache
 
     hc cluster dbscan -i mementos -ia mdt-slices.tsv -o sliced-and-clustered.tsv --feature tf-simhash -cs mongodb://localhost/cache
 
     hc cluster lda -i archiveit -ia 8778 -o clustered.tsv -cs mongodb://localhost/cache
-    
+
 """)
 
 supported_commands = {

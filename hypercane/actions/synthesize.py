@@ -98,9 +98,9 @@ def combine_files(args):
             with open(filename) as g:
 
                 csvreader = csv.DictReader(g, delimiter='\t')
-                
+
                 for row in csvreader:
-                    
+
                     outputrow = {}
                     outputrow[firstfield] = row[firstfield]
 
@@ -208,7 +208,7 @@ def raintale_story(args):
 
                 if key != 'seed_metadata':
                     story_json['metadata'][key] = jdata[key]
-    
+
     if args.title is None:
         if args.collection_metadata_filename is None:
             logger.critical("Cannot continue, either supply a title with --title or a collection metadata file containing a title with --collection_metadata")
@@ -257,7 +257,7 @@ def raintale_story(args):
             reader = csv.DictReader(f, delimiter='\t')
             tf = []
             for row in reader:
-                
+
                 try:
                     tf.append( ( float(row['Corpus TF-IDF']), row['Entity'] ) )
                 except TypeError:
@@ -315,7 +315,7 @@ def synthesize_warcs(args):
         description="Discover the mementos in a web archive collection.",
         prog="hc synthesize files"
     )
-    
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -362,7 +362,7 @@ def synthesize_files(args):
         description="Save copies of mementos as files from a web archive collection.",
         prog="hc synthesize files"
     )
-    
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -424,7 +424,7 @@ def synthesize_bpfree_files(args):
         description="Save boilerplate-free copies of mementos as files from a web archive collection.",
         prog="hc synthesize bpfree-files"
     )
-    
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
