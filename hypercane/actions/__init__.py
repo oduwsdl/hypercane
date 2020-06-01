@@ -7,11 +7,11 @@ def get_logger(appname, loglevel, logfile):
     logger = logging.getLogger(appname)
 
     if logfile == sys.stdout:
-        logging.basicConfig( 
+        logging.basicConfig(
             format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
             level=loglevel)
     else:
-        logging.basicConfig( 
+        logging.basicConfig(
             format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
             level=loglevel,
             filename=logfile)
@@ -48,7 +48,7 @@ def generate_default_cache_storage():
     cache_storage = os.getenv('HC_CACHE_STORAGE')
 
     if cache_storage is not None:
-        
+
         for config in config_locations:
 
             if os.path.exists(config):
@@ -62,7 +62,7 @@ def generate_default_cache_storage():
         cache_storage = None
 
     return cache_storage
-    
+
 
 def add_default_args(parser):
 
@@ -85,19 +85,19 @@ def add_default_args(parser):
         help="The path to the MongoDB database to use as a cache."
     )
 
-    parser.add_argument('--version', action='version', 
+    parser.add_argument('--version', action='version',
         version="{}".format(__useragent__))
 
     return parser
 
 def add_input_args(parser):
 
-    parser.add_argument('-i', '--it', '--input-type', 
+    parser.add_argument('-i', '--it', '--input-type',
         help="the input type, one of mementos, timemaps, archiveit, or original-resources",
         dest="input_type", required=True
     )
 
-    parser.add_argument('-a', '-ia', '--input-arguments', 
+    parser.add_argument('-a', '-ia', '--input-arguments',
         help="either a file containing a list of URIs, or an Archive-It collection identifier",
         dest='input_arguments', required=False, default=None
     )

@@ -26,22 +26,22 @@ class StorageObject:
 def extract_href_string(href):
 
     if type(href) == list:
-  
+
         if len(href) > 0:
-  
+
             href = href[0]
-  
+
             if type(href) == list:
-  
+
                 if len(href) > 0:
-  
+
                      href = href[0]
 
     return href
 
 def return_urit_and_urir(link_headers):
 
-    header_links = parse_header_links(link_headers) 
+    header_links = parse_header_links(link_headers)
 
     for item in header_links:
 
@@ -92,10 +92,10 @@ class WaybackSpider(scrapy.Spider):
             self.link_storage.add( (urit, urir) )
 
             for sel in response.xpath('//a'):
-    
+
                 href = sel.xpath('@href').extract()
                 href = extract_href_string(href)
-    
+
                 if href is not None:
                     if href != "":
                         yield response.follow(href, self.parse)
@@ -111,7 +111,7 @@ def crawl_mementos(link_storage, urims, crawl_depth):
     # sys.exit()
 
     process = CrawlerProcess()
-        
+
     module_logger.info("custom_settings: {}".format(WaybackSpider.custom_settings))
 
     # TODO: Try this cache class https://pypi.org/project/scrapy-httpcache/
@@ -126,7 +126,7 @@ def crawl_mementos(link_storage, urims, crawl_depth):
 
     for uri in urims:
         o = urlparse(uri)
-        
+
         if o.netloc not in allowed_domains:
             allowed_domains.append(o.netloc)
 
@@ -169,7 +169,7 @@ class LiveWebSpider(scrapy.Spider):
 
 def crawl_live_web_resources(link_storage, urirs, crawl_depth):
     process = CrawlerProcess()
-        
+
     module_logger.info("custom_settings: {}".format(LiveWebSpider.custom_settings))
 
     LiveWebSpider.custom_settings = {

@@ -26,7 +26,7 @@ def extract_uris_from_input(input_string):
 
     uri_list = input_string.split(',')
     uri_output_list = []
-    
+
     for uri in uri_list:
         o = urlparse(uri)
         if o.scheme == 'http' or o.scheme == 'https':
@@ -144,7 +144,7 @@ def generate_archiveit_urits(cid, seed_uris):
             cid, urir
         )
 
-        urit_list.append(urit)  
+        urit_list.append(urit)
 
     return urit_list
 
@@ -154,9 +154,9 @@ def list_seed_uris(collection_id, session):
 
     return aic.list_seed_uris()
 
-def find_or_create_mementos(urirs, session, accept_datetime=None, 
+def find_or_create_mementos(urirs, session, accept_datetime=None,
     timegates=[
-        "https://timetravel.mementoweb.org/timegate/", 
+        "https://timetravel.mementoweb.org/timegate/",
         "https://web.archive.org/web/"
     ]):
 
@@ -200,7 +200,7 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
                 available = False
 
         if r.url[0:29] == "https://web.archive.org/save/":
-            available = False 
+            available = False
 
         if available is True:
             candidate_urim = r.url
@@ -211,7 +211,7 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
 
             module_logger.info("pushing {} into Internet Archive".format(urir))
             candidate_urim = archivenow.push(urir, "ia")[0]
-        
+
             if candidate_urim[0:5] == "Error" or candidate_urim[0:29] == "https://web.archive.org/save/":
                 # for now, skip if error
                 # TODO: try with other archives, we don't use archive.is because new mementos don't immediately have Memento headers
@@ -249,7 +249,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
     elif input_type == "timemaps":
 
         urits = input_args
-        
+
         if crawl_depth > 1:
             urims = download_urits_and_extract_urims(urits, session)
             link_storage = StorageObject()
@@ -267,7 +267,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
         for item in link_storage.storage:
             urits.append(item[0])
-        
+
     elif input_type == "original-resources":
 
         urirs = input_args
@@ -276,7 +276,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
         crawl_live_web_resources(link_storage, urirs, crawl_depth)
 
         for urir in link_storage.storage:
-            
+
             if urir not in urirs:
                 urirs.append(urir)
 
@@ -293,7 +293,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
     return urits
 
 def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session, accept_datetime=None, timegates=None):
-    
+
     output_urims = []
 
     module_logger.info("discovering mementos for input type {}".format(input_type))
@@ -316,7 +316,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
                 urits.append(item[0])
 
             urits = list(set(urits)) # in case of overlap
-        
+
         output_urims = download_urits_and_extract_urims(urits, session)
 
     elif input_type == "timemaps":
@@ -325,7 +325,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
             module_logger.warning("ignoring accept-datetime for timemaps input type")
 
         urits = input_args
-        
+
         if crawl_depth > 1:
             urims = download_urits_and_extract_urims(urits, session)
             link_storage = StorageObject()
@@ -358,7 +358,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
             urits = list(set(urits)) # in case of overlap
             output_urims = download_urits_and_extract_urims(urits, session)
 
-            module_logger.info("returning {} URI-Ms from crawl".format(len(output_urims)))             
+            module_logger.info("returning {} URI-Ms from crawl".format(len(output_urims)))
 
     elif input_type == "original-resources":
 
@@ -378,7 +378,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
     return output_urims
 
 def discover_original_resources_by_input_type(input_type, input_args, crawl_depth, session, **kwargs):
-    
+
     output_urirs = []
 
     module_logger.info("discovering mementos for input type {}".format(input_type))
@@ -419,7 +419,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
             if urir not in output_urirs:
                 output_urirs.append(urir)
-        
+
     elif input_type == "original-resources":
 
         output_urirs = input_args

@@ -17,10 +17,10 @@ from ..utils import get_web_session, get_boilerplate_free_content
 module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
-    
+
     def __init__(self, dbconn, session):
         """This class assumes session is an instance of CachedSession"""
-        
+
         self.dbconn = dbconn
         self.session = session
 
@@ -79,7 +79,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         )
         adapter = HTTPAdapter(max_retries=retry)
         futuressession.mount('http://', adapter)
-        futuressession.mount('https://', adapter)  
+        futuressession.mount('https://', adapter)
 
         futures = {}
 
@@ -119,7 +119,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                         # the content should be cached by the session
                         # we just need to keep track of the URI-Ms for this run
                         self.urimlist.append(uri)
-    
+
                 except Exception as e:
                     self.addMementoError(uri, repr(e))
 
@@ -134,8 +134,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         and headers={}.
         """
         self.error_collection.insert_one(
-            {   
-                "urim": urim, 
+            {
+                "urim": urim,
                 "error_information": errorinformation
             }
         )
@@ -159,7 +159,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         If no data was stored via `addMemento` for `urim`, then
         `CollectionModelNoSuchMementoException` is thrown.
         """
-        
+
         result = self.error_collection.find_one(
             { "urim": urim }
         )
@@ -244,7 +244,7 @@ def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics
     cm.addManyMementos(urims)
 
     # TOOD: what about document collections outside of web archives?
-    # Note: these algorithms only work for collections with TimeMaps, 
+    # Note: these algorithms only work for collections with TimeMaps,
     # so how would that work exactly?
 
     module_logger.info(

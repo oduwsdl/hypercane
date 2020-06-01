@@ -15,5 +15,5 @@ services:
         volumes:
             - .:/hypercane-work
         stdin_open: true
-        environment: 
+        environment:
             - HC_CACHE_STORAGE=mongodb://mongodb/csHC

@@ -76,7 +76,7 @@ def remove_offtopic(parser, args):
     urims = download_urits_and_extract_urims(urits, session)
 
     ontopic_mementos = detect_off_topic(
-        dbconn, session, urits, urims, args.timemap_measures, 
+        dbconn, session, urits, urims, args.timemap_measures,
         num_topics=args.num_topics)
 
     logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
@@ -91,7 +91,7 @@ def remove_offtopic(parser, args):
     logger.info("done with off-topic run, on-topic mementos are in {}".format(args.output_filename))
 
 def exclude_offtopic(args):
-    
+
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -160,7 +160,7 @@ def include_nonduplicates(args):
         description="Remove the near-duplicate documents from a collection.",
         prog="hc filter include-only non-duplicates"
     )
-    
+
     remove_near_duplicates(parser, args)
 
 def exclude_nearduplicates(args):
@@ -171,7 +171,7 @@ def exclude_nearduplicates(args):
         description="Remove the near-duplicate documents from a collection.",
         prog="hc filter exclude near-duplicates"
     )
-    
+
     remove_near_duplicates(parser, args)
 
 def extract_rank_key_from_input(urimdata):
@@ -411,7 +411,7 @@ def start_language_processing(parser, args):
     from hypercane.utils import get_web_session
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
-    
+
     parser.add_argument('--lang', '--languages', dest='languages',
         help="The list of languages to match, separated by commas.",
         required=True
@@ -442,7 +442,7 @@ def include_languages(args):
     import argparse
     from hypercane.hfilter.languages import filter_languages,language_included
     from hypercane.utils import save_resource_data
-    
+
     parser = argparse.ArgumentParser(
         description="Include only mementos containing the specified languages.",
         prog="hc filter include-only languages"
@@ -566,7 +566,7 @@ def include_near_datetime(args):
         prog="hc filter include-only near-datetime"
     )
 
-    parser.add_argument('--start-datetime', '--lower-datetime',         
+    parser.add_argument('--start-datetime', '--lower-datetime',
         dest='lower_datetime',
         help="The lower bound datetime in YYYY-mm-ddTHH:MM:SS format.",
         required=True
@@ -637,7 +637,7 @@ def print_usage():
     * exclude - exclude mementos from the input by the given criteria
 
     Examples:
-    
+
     hc filter include-only language --lang en,es -i archiveit -a 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
 
     hc filter exclude off-topic -i timemaps -a 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
@@ -645,7 +645,7 @@ def print_usage():
     hc filter exclude near-duplicates -i mementos -a ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
 
     hc filter include-only rank "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
-    
+
 """)
 
 def print_include_usage():
@@ -660,11 +660,11 @@ def print_include_usage():
     * containing-pattern - include only mementos that contain the given regular experession pattern
 
     Examples:
-    
+
     hc filter include-only languages --lang en,es -i archiveit=8788 -o english-spanish-mementos.txt
 
     hc filter include-only on-topic -i timemaps -a uritfile.txt -o ontopic-mementos.txt
-    
+
 """)
 
 def print_exclude_usage():
@@ -678,11 +678,11 @@ def print_exclude_usage():
     * containing-pattern - exclue mementos that contain the given regular experession pattern
 
     Examples:
-    
+
     hc filter exclude languages --lang en,de -i archiveit -a 8788 -o nonenglish-nongerman-mementos.txt
 
     hc filter exclude containing_pattern --pattern 'cheese' -i mementos -a mementofile.tsv -o mementos-with-cheese.tsv
-    
+
 """)
 
 include_criteria = {

@@ -15,7 +15,7 @@ def return_highest_ranking_memento_per_cluster(urimdata, rankkey):
     module_logger.info("urimdata: {}".format(urimdata))
 
     for cluster in cluster_assignments:
-        
+
         cluster_ranks = []
 
         for urim in cluster_assignments[cluster]:
