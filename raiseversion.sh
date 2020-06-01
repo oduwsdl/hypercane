@@ -7,4 +7,4 @@ DOC_FILE_NAME='docs/source/conf.py'
 
 # Update Hypercane version
 sed -i.bak "s/^__appversion__ = .*$/__appversion__ = '$VERSION_STRING'/g" $FILE_NAME
-sed -i.bak "s/^release = '.*'$/release = '$VERSION_STRING'/g" $DOC_FILE_NAME
+sed -i.bak "s/^release = u'.*'$/release = u'$VERSION_STRING'/g" $DOC_FILE_NAME
