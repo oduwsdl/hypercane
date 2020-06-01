@@ -22,6 +22,4 @@ The software is still volatile, so you will need to build your own docker image.
 2. Change into the cloned directory
 3. Run `docker-compose run hypercane`
 
-This may take a while to download and build necessary docker images.
-Once done, it will run the caching server and connect to the hypercane container.
-From that prompt, you'll be able to execute the ``hc`` command.
+This may take a while to download and build necessary docker images. Once done, it will run the caching server and connect to the hypercane container. From that prompt, you'll be able to execute the ``hc`` command.
