@@ -22,8 +22,9 @@ This grants access to the `hc` command which provides the functionality of Hyper
 The software is still volatile, so you will need to build your own docker image.
 
 1. Clone this repository
-2. type `docker build -t hypercane:dev .`
-3. run `docker-compose run hypercane bash`
+2. Run `docker-compose run hypercane hc --help`
+
+This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed.
 
 # Running Hypercane
 
@@ -51,5 +52,7 @@ To discover the list of commands associated with an action, use the `--help` com
 1. Build the software as specified in the **Installing Hypercane - Using Docker** subsection above
 2. Create a working directory for your project
 3. Copy `docker-compose.yml` into your working directory
-4. Type `docker-compose run hypercane bash`
+4. Type `docker-compose run hypercane`
 5. Run your desired commands, output will appear within your working directory
+6. When done, exit from the hypercane container by running `exit`
+7. To stop and remove all the services (such as the cache), run `docker-compose down`
