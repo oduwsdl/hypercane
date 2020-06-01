@@ -13,7 +13,7 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 1. Install [MongoDB](https://www.mongodb.com/download-center/community)
 2. Clone this repository
 3. Change into the cloned directory
-4. type `pip install .`
+4. Type `pip install .`
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
 
@@ -22,7 +22,7 @@ This grants access to the `hc` command which provides the functionality of Hyper
 The software is still volatile, so you will need to build your own docker image.
 
 1. Clone this repository
-2. run `docker-compose run hypercane hc --help`
+2. Run `docker-compose run hypercane hc --help`
 
 This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed.
 
