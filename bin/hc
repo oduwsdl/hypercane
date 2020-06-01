@@ -2,6 +2,7 @@
 
 import sys
 import importlib
+import errno
 
 # we defer imports for performance
 supported_actions = {
@@ -17,19 +18,20 @@ supported_actions = {
 
 def print_overall_usage():
 
-    print("""hc (Hypercane) is a complex toolchain requiring a supported action and additional arguments
+    print("""hc (Hypercane) is a framework for building algorithms for sampling mementos from a web archive collection. 
+It is a complex toolchain requiring a supported action and additional arguments.
 
 For example:
     hc sample dsa1 -i archiveit -a 8778 -o story-mementos.txt
 
-    Supported actions:
+This is the list of supported actions:
 """)
 
     for action in supported_actions:
         print("    * {}".format(action))
 
     print("""
-    For each of these actions, you can view additional help by typing --help after the action name, for example:
+For each of these actions, you can view additional help by typing --help after the action name, for example:
     hc sample --help
 """)
 
@@ -53,6 +55,7 @@ if __name__ == '__main__':
             except KeyError:
                 print("ERROR: unsupported action {}\n".format(action))
                 print_overall_usage()
+                sys.exit(errno.EINVAL)
 
             if action == 'filter':
 
@@ -114,6 +117,7 @@ if __name__ == '__main__':
             else:
                 print("ERROR: unsupported action {}\n".format(action))
                 print_overall_usage()
+                sys.exit(errno.EINVAL)
     
     else:
         print("ERROR: no action supplied\n")
