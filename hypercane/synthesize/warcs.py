@@ -53,7 +53,7 @@ def synthesize_warc(urim, session, output_directory):
             module_logger.warning("could not find this memento's memento-datetime, skipping {}".format(urim))
             return
 
-        http_headers = StatusAndHeaders('200 OK', 
+        http_headers = StatusAndHeaders('200 OK',
             headers_list, protocol='HTTP/1.0')
 
         module_logger.debug("mdt formatted by strptime and converted by strftime: {}".format(
@@ -71,8 +71,8 @@ def synthesize_warc(urim, session, output_directory):
             writer = WARCWriter(output, gzip=True)
 
             record = writer.create_warc_record(
-                warc_target_uri, 'response', 
-                payload=raw_response.raw, 
+                warc_target_uri, 'response',
+                payload=raw_response.raw,
                 http_headers=http_headers,
                 warc_headers_dict=warc_headers_dict
                 )
@@ -80,7 +80,7 @@ def synthesize_warc(urim, session, output_directory):
             writer.write_record(record)
 
     else:
-        
+
         module_logger.warning("non-200 status {}, not saving this URI to WARC: {}".format(resp.status_code, urim))
 
 

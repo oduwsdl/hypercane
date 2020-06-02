@@ -47,7 +47,7 @@ def generate_blank_metadata(urirs):
     return blank_metadata
 
 def discover_collection_metadata(args):
-    
+
     import argparse
 
     from hypercane.actions import process_input_args, get_logger, \
@@ -156,7 +156,7 @@ def report_metadatastats(args):
     logger.info("Done with collection metadata discovery run.")
 
 def report_image_data(args):
-    
+
     import argparse
 
     from hypercane.actions import process_input_args, get_logger, \
@@ -177,7 +177,7 @@ def report_image_data(args):
         prog="hc report image-data"
         )
 
-    parser.add_argument('--use-urirs', required=False, 
+    parser.add_argument('--use-urirs', required=False,
         dest='use_urirs', action='store_true',
         help="Regardless of headers, assume the input are URI-Rs and do not try to archive them."
     )
@@ -210,7 +210,7 @@ def report_image_data(args):
             args.input_type, output_type, args.input_arguments, args.crawl_depth,
             session, discover_mementos_by_input_type
         )
-    
+
     if args.output_format == 'json':
 
         metadata = {}
@@ -221,7 +221,7 @@ def report_image_data(args):
             json.dump(metadata, metadata_file, indent=4)
 
     elif args.output_format == 'jsonl':
-        output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)        
+        output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)
 
     logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
 
@@ -294,7 +294,7 @@ def report_ranked_terms(args):
 
             for term, frequency, probability, df, idf, tfidf in ranked_terms:
                 f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
-        
+
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
 
@@ -349,7 +349,7 @@ def report_entities(args):
 
         for term, frequency, probability, df, idf, tfidf in ranked_terms:
             f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
-        
+
 
     logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
 
@@ -400,7 +400,7 @@ def report_seedstats(args):
     output['path depth diversity'] = calculate_path_depth_diversity(urirs)
     output['most frequent path depth'] = most_frequent_seed_uri_path_depth(urirs)
     output['percentage of top-level URIs'] = calculate_top_level_path_percentage(urirs)
-    output['query string percentage'] = calculate_percentage_querystring(urirs)        
+    output['query string percentage'] = calculate_percentage_querystring(urirs)
 
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4)
@@ -464,7 +464,7 @@ def report_growth_curve_stats(args):
         mementos_list)
 
     output = {}
-    output['auc_memento_curve'] = auc(mdts_pct, urims_pct) 
+    output['auc_memento_curve'] = auc(mdts_pct, urims_pct)
     output['auc_seed_curve'] = auc(mdts_pct, urirs_pct)
     output['auc_memento_minus_diag'] = output['auc_memento_curve'] - 0.5
     output['auc_seed_minus_diag'] = output['auc_seed_curve'] - 0.5
@@ -480,7 +480,7 @@ def report_growth_curve_stats(args):
     output['lifespan_hours'] = output['lifespan_secs'] / 60 / 60
     output['lifespan_days'] = output['lifespan_secs'] / 60 / 60 / 24
     output['lifespan_weeks'] = output['lifespan_secs'] / 60 / 60 / 24 / 7
-    output['lifespan_years'] = output['lifespan_secs'] / 60 / 60 / 24 / 365   
+    output['lifespan_years'] = output['lifespan_secs'] / 60 / 60 / 24 / 365
 
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4, default=dtconverter)
@@ -497,7 +497,7 @@ def report_growth_curve_stats(args):
         )
 
         logger.info("Growth curve saved to {}".format(args.growthcurve_filename))
-    
+
 
 def print_usage():
 
@@ -512,13 +512,13 @@ def print_usage():
     * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
 
     Examples:
-    
+
     hc report metadata -i archiveit -a 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
 
     hc report entities -i mementos -a memento-file.tsv -o entity-report.json
 
     hc report seed-statistics -i original-resources -a urirs.tsv -o seedstats.json
-    
+
 """)
 
 supported_commands = {

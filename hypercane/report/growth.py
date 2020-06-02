@@ -13,7 +13,7 @@ cpu_count = multiprocessing.cpu_count()
 def convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct(mementos, enddate=None):
 
     logger = logging.getLogger(__name__)
-    
+
     mdts = []
     urims = []
     urirs = []
@@ -37,9 +37,9 @@ def convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct(mementos, enddate=
         urir = memento[2]
 
         if enddate:
-            
+
             if mdt < enddate:
-        
+
                 mdts.append(mdt)
 
                 if urim not in urims:
@@ -49,9 +49,9 @@ def convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct(mementos, enddate=
                 if urir not in urirs:
                     urirtotal += 1
                     urirs.append(urir)
-                    
+
         else:
-            
+
             mdts.append(mdt)
 
             if urim not in urims:
@@ -116,7 +116,7 @@ def convert_mementos_list_into_mdts_pct_urim_pct_and_urir_pct(mementos, enddate=
             urir = memento[2]
 
             if mdt < lastmdt:
-            
+
                 mdts_pct.append( (mdt - firstmdt).total_seconds() / total_seconds )
 
                 # if the urim has not been seen yet, then it is new, so increment
@@ -176,7 +176,7 @@ def calculate_number_of_mementos(timemap_data):
             totalcount += len(timemap_data[urit]['mementos']['list'])
         except KeyError:
             module_logger.exception("cannot incorporate mementos into total count from URI-T {}".format(urit))
-        
+
     return totalcount
 
 def calculate_memento_seed_ratio(timemap_data):
@@ -246,7 +246,7 @@ def calculate_number_of_mementos(timemap_data):
             totalcount += len(timemap_data[urit]['mementos']['list'])
         except KeyError:
             module_logger.exception("cannot incorporate mementos into total count from URI-T {}".format(urit))
-        
+
     return totalcount
 
 def get_first_memento_datetime(timemap_data):
@@ -312,7 +312,7 @@ def process_timemaps_for_mementos(urit_list, session):
                     "type": "exception",
                     "data": e
                 }
-                
+
                 working_uri_list.remove(urit)
 
             except TooManyRedirects as e:
@@ -380,17 +380,17 @@ def draw_both_axes_pct_growth(
     # thanks https://stackoverflow.com/questions/31357611/format-y-axis-as-percent
     xvals = ax.get_xticks()
     ax.set_xticklabels(['{:3.0f}%'.format(x*100) for x in xvals])
-    
+
     yvals = ax.get_yticks()
     ax.set_yticklabels(['{:3.0f}%'.format(y*100) for y in yvals])
-    
+
     for tick in ax.xaxis.get_major_ticks():
         tick.label.set_fontsize(16)
-        
+
     for tick in ax.yaxis.get_major_ticks():
         tick.label.set_fontsize(16)
 
     handles, labels = ax.get_legend_handles_labels()
     lgd = ax.legend(handles, labels, loc="upper left", fontsize=20)
-    
+
     plt.savefig(outputfile)

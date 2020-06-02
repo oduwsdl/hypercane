@@ -26,7 +26,7 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
 
     runtime_string = "{}".format(datetime.now()).replace(' ', 'T')
 
-    parser.add_argument('--working-directory', required=False, 
+    parser.add_argument('--working-directory', required=False,
         help="the directory to which this application should write output",
         default="/tmp/hypercane/working/{}".format(runtime_string),
         dest='working_directory')
@@ -66,7 +66,7 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
                 other_arglist.append( "--{} {}".format(
                     argname.replace('_', '-'), argvalue
                 ) )
-    
+
     other_args = '"' + " ".join(other_arglist) + '"'
 
     cp = subprocess.run(
@@ -116,7 +116,7 @@ def run_sample_with_dsa1(parser, args):
 
     runtime_string = "{}".format(datetime.now()).replace(' ', 'T')
 
-    parser.add_argument('--working-directory', required=False, 
+    parser.add_argument('--working-directory', required=False,
         help="the directory to which this application should write output",
         default="/tmp/hypercane/working/{}".format(runtime_string),
         dest='working_directory')
@@ -202,7 +202,7 @@ def sample_with_alnoamany(args):
     algorithm_script = "{}/../packaged_algorithms/dsa1.sh".format(
         os.path.dirname(os.path.realpath(__file__))
     )
-    
+
     # run_sample_with_dsa1(parser, args)
     run_sample_with(parser, args, "AlNoamany", algorithm_script)
 
@@ -221,7 +221,7 @@ def sample_with_filtered_random(args):
     )
 
     parser.add_argument('-k', required=False, help="the number of items to sample", default=28, dest='k')
-    
+
     run_sample_with(parser, args, "Filtered Random", algorithm_script)
 
 def sample_with_true_random_args(args):
@@ -246,7 +246,7 @@ def sample_with_true_random_args(args):
     return args
 
 def sample_with_true_random(args):
-    
+
     from hypercane.sample.true_random import select_true_random
     from hypercane.actions import get_logger, calculate_loglevel
     from hypercane.utils import get_web_session, save_resource_data
@@ -290,11 +290,11 @@ def print_usage():
     * filtered-random - filters off-topic mementos, filters near-duplicates, and then samples k of the remainder, randomly
 
     Examples:
-    
+
     hc sample true-random -i archiveit -ia 8788 -o seed-output-file.txt -n 10 -cs mongodb://localhost/cache
 
     hc sample dsa1 -i timemaps -ia timemaps.tsv -o dsa1-sample.tsv -cs mongodb://localhost/cache
-    
+
 """)
 
 supported_commands = {

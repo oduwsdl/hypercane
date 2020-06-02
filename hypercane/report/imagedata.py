@@ -24,10 +24,10 @@ def get_managed_session(cache_storage):
             'http': http_proxy,
             'https': https_proxy
         }
-       
+
     o = urlparse(cache_storage)
     if o.scheme == "mongodb":
-        # these requests-cache internals gymnastics are necessary 
+        # these requests-cache internals gymnastics are necessary
         # because it will not create a database with the desired name otherwise
         dbname = o.path.replace('/', '')
         dbconn = MongoClient(cache_storage)
@@ -96,8 +96,8 @@ def rank_images(imagedata):
                 ratio = float(imagedata[urim][image_urim]['ratio width/height'])
                 score = float(imagedata[urim][image_urim]['calculated score'])
 
-                N = imagedata[urim][image_urim]['N'] 
-                n = imagedata[urim][image_urim]['n'] 
+                N = imagedata[urim][image_urim]['N']
+                n = imagedata[urim][image_urim]['n']
 
                 if N == 0:
                     noverN = 0
@@ -118,7 +118,7 @@ def rank_images(imagedata):
                 if too_similar is False:
 
                     imageranking.append(
-                        ( 
+                        (
                             score,
                             pixelsize,
                             colorcount,

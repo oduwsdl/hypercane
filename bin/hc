@@ -18,7 +18,7 @@ supported_actions = {
 
 def print_overall_usage():
 
-    print("""hc (Hypercane) is a framework for building algorithms for sampling mementos from a web archive collection. 
+    print("""hc (Hypercane) is a framework for building algorithms for sampling mementos from a web archive collection.
 It is a complex toolchain requiring a supported action and additional arguments.
 
 For example:
@@ -90,7 +90,7 @@ if __name__ == '__main__':
                     print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
 
             elif action in supported_actions:
-                
+
                 commands = actionmodule.supported_commands
 
                 if len(sys.argv) > 2:
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                     # print("command: {}".format(command))
 
                     if command in commands:
-                        
+
                         actionmodule.supported_commands[command](
                             sys.argv[3:])
                     else:
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 print("ERROR: unsupported action {}\n".format(action))
                 print_overall_usage()
                 sys.exit(errno.EINVAL)
-    
+
     else:
         print("ERROR: no action supplied\n")
         print_overall_usage()

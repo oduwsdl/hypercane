@@ -20,7 +20,7 @@ from .version import __useragent__
 module_logger = logging.getLogger("hypercane.utils")
 
 def get_web_session(cache_storage=None):
-    
+
     proxies = None
 
     http_proxy = os.getenv('HTTP_PROXY')
@@ -33,10 +33,10 @@ def get_web_session(cache_storage=None):
         }
 
     if cache_storage is not None:
-        
+
         o = urlparse(cache_storage)
         if o.scheme == "mongodb":
-            # these requests-cache internals gymnastics are necessary 
+            # these requests-cache internals gymnastics are necessary
             # because it will not create a database with the desired name otherwise
             dbname = o.path.replace('/', '')
             dbconn = MongoClient(cache_storage)
@@ -56,7 +56,7 @@ def get_web_session(cache_storage=None):
     )
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('http://', adapter)
-    session.mount('https://', adapter) 
+    session.mount('https://', adapter)
 
     session.proxies = proxies
     session.headers.update({'User-Agent': __useragent__})
@@ -107,7 +107,7 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                     { "$set": { field: uri }},
                     upsert=True
                 )
-    
+
         return output_values
 
 def get_memento_datetime_and_timemap(urim, cache_storage):
@@ -136,7 +136,7 @@ def get_memento_datetime_and_timemap(urim, cache_storage):
             { "$set": { "memento-datetime": str(mdt), "timemap": str(urit) }},
             upsert=True
         )
-    
+
         return str(mdt), urit
 
 def get_language(urim, cache_storage):
@@ -151,7 +151,7 @@ def get_language(urim, cache_storage):
             { "urim": urim }
         )["language"]
     except (KeyError, TypeError):
-        
+
         content = get_boilerplate_free_content(
             urim, cache_storage=cache_storage, dbconn=dbconn
         ).decode('utf8')
@@ -163,7 +163,7 @@ def get_language(urim, cache_storage):
             { "$set": { "language": language }},
             upsert=True
         )
-    
+
         return language
 
 def get_raw_simhash(urim, cache_storage):
@@ -193,7 +193,7 @@ def get_raw_simhash(urim, cache_storage):
             { "$set": { "raw simhash": str(simhash) }},
             upsert=True
         )
-    
+
         return str(simhash)
 
 def get_tf_simhash(urim, cache_storage):
@@ -225,7 +225,7 @@ def get_tf_simhash(urim, cache_storage):
             { "$set": { "tf simhash": str(simhash) }},
             upsert=True
         )
-    
+
         return str(simhash)
 
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
@@ -235,7 +235,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
     if dbconn is None:
         dbconn = MongoClient(cache_storage)
-    
+
     if session is None:
         session = get_web_session(cache_storage)
 
@@ -331,7 +331,7 @@ def get_newspaper_publication_date(urim, cache_storage):
             pd = r.headers['memento-datetime']
         else:
             pd = pd.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            
+
         db.derivedvalues.update(
             { "urim": urim },
             { "$set": { "newspaper publication date": str(pd) } }
@@ -368,7 +368,7 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
                 # module_logger.info("rowdata now: {}".format(rowdata))
 
                 urim_data[urim] = rowdata
-            
+
     if len(urim_data) == 0:
         # assume we are just dealing with a list of URI-Ms
 
@@ -391,7 +391,7 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
     # module_logger.info("urimdata from file: {}".format(urim_data))
 
     return urim_data
-                
+
 def save_resource_data(output_filename, resource_data, output_type, urilist):
 
     output_type_keys = {
