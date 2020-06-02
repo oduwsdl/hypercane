@@ -389,11 +389,11 @@ def get_memento_uri_category(memento_uri, session):
 # Original code below
 #    base_ait_idx_end = memento_uri.find('http',10)
 #    original_uri = memento_uri[ base_ait_idx_end:]
-#    
+#
 #    o = urlparse(original_uri)
 #    hostname = o.hostname
 #    if hostname == None:
-#        return -1  
+#        return -1
 #    if  bool(re.search('.*twitter.*', hostname)) or bool(re.search('.*t.co.*', hostname)) or \
 #        bool(re.search('.*redd.it.*', hostname)) or bool(re.search('.*twitter.*', hostname)) or \
 #        bool(re.search('.*facebook.*', hostname)) or bool(re.search('.*fb.me.*', hostname)) or \
@@ -407,10 +407,10 @@ def get_memento_uri_category(memento_uri, session):
 #        bool(re.search('.*nytimes.*', hostname))or  bool(re.search('.*abc.*', hostname))or  \
 #        bool(re.search('.*foxnews.*', hostname)) or  bool(re.search('.*allvoices.*', hostname)) or \
 #        bool(re.search('.*huffingtonpost.*', hostname)) :
-#        return 0.7 
+#        return 0.7
 #    elif  bool(re.search('.*dailymotion.*', hostname)) or  \
 #        bool(re.search('.*youtube.*', hostname)) or \
-#        bool(re.search('.*youtu.be.*', hostname)): 
+#        bool(re.search('.*youtu.be.*', hostname)):
 #        return 0.7
 #    elif bool(re.search('.*wordpress.*', hostname)) or  bool(re.search('.*blog.*', hostname)):
 #        return 0.4

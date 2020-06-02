@@ -16,7 +16,7 @@ def discover_timemaps(args):
         description="Discover the timemaps in a web archive collection.",
         prog="hc identify timemaps"
         )
-    
+
     args = process_input_args(args, parser)
     output_type = 'timemaps'
 
@@ -57,7 +57,7 @@ def discover_original_resources(args):
         description="Discover the original resources in a web archive collection.",
         prog="hc identify original-resources"
         )
-    
+
     args = process_input_args(args, parser)
     output_type = 'original-resources'
 
@@ -106,10 +106,10 @@ def discover_mementos(args):
         'discover mementos closest to this datetime in YYYY-mm-ddTHH:MM:SS format',
         type=lambda s: datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
     )
-    
+
     parser.add_argument('--timegates',
         default=[
-            "https://timetravel.mementoweb.org/timegate/", 
+            "https://timetravel.mementoweb.org/timegate/",
             "https://web.archive.org/web/"
         ], required=False, dest='timegates',
         help='(only for original resource input type)\n'
@@ -134,7 +134,7 @@ def discover_mementos(args):
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
-        session, discover_mementos_by_input_type, 
+        session, discover_mementos_by_input_type,
         accept_datetime=args.accept_datetime,
         timegates=args.timegates
     )
@@ -156,13 +156,13 @@ def print_usage():
     * original-resources - for discovering the original resource URI-Rs
 
     Examples:
-    
+
     hc identify original-resources -i archiveit -ia 8788 -o seed-output-file.tsv -cs mongodb://localhost/cache
 
     hc identify timemaps -i archiveit -ia 8788 -o timemap-output-file.tsv -cs mongodb://localhost/cache
 
     hc identify mementos -i timemaps -ia timemap-input-file.tsv -o mementos.tsv -cs mongodb://localhost/cache
-    
+
 """)
 
 supported_commands = {

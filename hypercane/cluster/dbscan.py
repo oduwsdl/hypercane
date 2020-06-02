@@ -71,18 +71,18 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
         for index, label in enumerate(db.labels_):
 
             urim = clusters_to_urims[cluster][index]
-           
+
             if cluster is None:
                 urimdata[urim]['Cluster'] = "{}".format(label)
             else:
                  # preserve original cluster assignment
                 urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
-    
+
     return urimdata
 
 def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5):
 
-    # Memento-Datetime values are not all Unique, but does it matter? 
+    # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
 
     output_clusters = {}
@@ -124,11 +124,11 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
         for index, label in enumerate(db.labels_):
             urim = clusters_to_urims[cluster][index]
-            
+
             if cluster is None:
                 output_clusters[urim] = "{}".format(label)
             else:
                 # preserve original cluster assignment
                 output_clusters[urim] = "{}~~~{}".format(cluster, label)
-    
+
     return output_clusters

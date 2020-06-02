@@ -65,6 +65,6 @@ def execute_time_slice(urimdata, cache_storage):
                 # preserve original cluster assignment
                 urimdata[urim]['Cluster'] = "{}~~~{}".format( urimdata[ urim['Cluster'] ], i )
             else:
-                urimdata[urim]['Cluster'] = i        
+                urimdata[urim]['Cluster'] = i
 
     return urimdata
