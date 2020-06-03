@@ -31,7 +31,7 @@ Hypercane is a research project and is rather volatile. These actions will remai
 
    # hc report --help
 
-   'hc report' is used print reports about web archive collections
+   'hc report' is used to print reports about web archive collections
 
    Supported commands:
    * metadata - for discovering the metadata associated with seeds
