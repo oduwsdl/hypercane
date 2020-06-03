@@ -501,7 +501,7 @@ def report_growth_curve_stats(args):
 
 def print_usage():
 
-    print("""'hc report' is used print reports about web archive collections
+    print("""'hc report' is used to print reports about web archive collections
 
     Supported commands:
     * metadata - for discovering the metadata associated with seeds
