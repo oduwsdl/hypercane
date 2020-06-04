@@ -71,7 +71,7 @@ mccabe==0.6.1
 murmurhash==1.0.2
 networkx==2.4
 newspaper3k==0.2.8
-nltk==3.3
+nltk==3.4.5
 numpy==1.16.0
 otmt==1.0.1a0
 packaging==20.1
