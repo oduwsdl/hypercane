@@ -56,3 +56,7 @@ To discover the list of commands associated with an action, use the `--help` com
 5. Run your desired commands, output will appear within your working directory
 6. When done, exit from the hypercane container by running `exit`
 7. To stop and remove all the services (such as the cache), run `docker-compose down`
+
+# The Future of Hypercane
+
+We are working on additional sampling algorithms and options for the advanced actions. Please feel free to submit issues and pull requests at https://github.com/oduwsdl/hypercane
