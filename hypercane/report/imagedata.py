@@ -12,7 +12,9 @@ def get_managed_session(cache_storage):
     from requests_cache.backends import MongoCache
     from mementoembed.sessions import ManagedSession
     from hypercane.version import __useragent__
+    from urllib3.util.retry import Retry
     # from mementoembed.version import __useragent__
+    from requests.adapters import HTTPAdapter
 
     proxies = None
 
@@ -35,6 +37,21 @@ def get_managed_session(cache_storage):
         session.cache = MongoCache(connection=dbconn, db_name=dbname)
         session.proxies = proxies
         session.headers.update({'User-Agent': __useragent__})
+
+        retry = Retry(
+            total=10,
+            read=10,
+            connect=10,
+            backoff_factor=0.3,
+            status_forcelist=(500, 502, 504)
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+
+        session.proxies = proxies
+        session.headers.update({'User-Agent': __useragent__})
+
         return session
     else:
         raise RuntimeError("Caching is required for image analysis.")
@@ -69,6 +86,7 @@ def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
             # TODO: cache this information?
             imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
 
+            # pylint: disable=no-member
             writer.write(imagedata)
 
     return imagedata

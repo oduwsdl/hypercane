@@ -179,7 +179,7 @@ def report_image_data(args):
 
     parser.add_argument('--use-urirs', required=False,
         dest='use_urirs', action='store_true',
-        help="Regardless of headers, assume the input are URI-Rs and do not try to archive them."
+        help="Regardless of headers, assume the input are URI-Rs and do not try to archive or convert them to URI-Ms."
     )
 
     parser.add_argument('--output-format', required=False,
