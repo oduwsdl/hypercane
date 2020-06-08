@@ -84,7 +84,12 @@ def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
 
         for urim in uridata:
             # TODO: cache this information?
-            imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
+
+            try:
+                imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
+            except Exception:
+                module_logger.exception("failed to produce an image report for {}".format(urim))
+                continue
 
             # pylint: disable=no-member
             writer.write(imagedata)
