@@ -1,14 +1,9 @@
-import concurrent.futures
 import logging
-
-import numpy as np
-
-from datetime import datetime
-from sklearn.cluster import DBSCAN
+import traceback
 from distance import hamming
 
-from ..utils import get_raw_simhash, get_memento_http_metadata
-from ..hfilter.near_duplicates import NearDuplicateException
+from ..utils import get_raw_simhash
+from ..errors import errorstore
 
 module_logger = logging.getLogger('hypercane.cluster.dbscan')
 
@@ -16,6 +11,12 @@ def shdist(a, b, **oo):
     return hamming(a, b) / 64
 
 def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_raw_simhash, min_samples=2, eps=0.3):
+
+    import concurrent.futures
+    import numpy as np
+    from datetime import datetime
+    from sklearn.cluster import DBSCAN
+    from ..utils import get_memento_http_metadata
 
     # learn existing cluster assignments
     urim_to_cluster = {}
@@ -51,8 +52,7 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
-                # module_logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
-                raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
+                errorstore.add(urim, traceback.format_exc())
 
     # module_logger.info("urim_to_simhash: {}".format(urim_to_simhash))
 
@@ -82,6 +82,13 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
 def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5):
 
+    import concurrent.futures
+    import traceback
+    import numpy as np
+    from datetime import datetime
+    from sklearn.cluster import DBSCAN
+    from ..utils import get_memento_http_metadata
+
     # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
 
@@ -106,9 +113,15 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
         for future in concurrent.futures.as_completed(future_to_urim):
 
             urim = future_to_urim[future]
-            mdt = future.result()[0]
-            mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
-            urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+
+            try:
+                mdt = future.result()[0]
+                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                errorstore.add(urim, traceback.format_exc())
+
 
     for cluster in clusters_to_urims:
 

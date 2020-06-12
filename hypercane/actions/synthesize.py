@@ -310,6 +310,8 @@ def synthesize_warcs(args):
     from datetime import datetime
     import otmt
     from hashlib import md5
+    import traceback
+    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",
@@ -344,7 +346,11 @@ def synthesize_warcs(args):
 
     # TODO: make this multithreaded
     for urim in urimdata.keys():
-        synthesize_warc(urim, session, args.output_directory)
+        try:
+            synthesize_warc(urim, session, args.output_directory)
+        except Exception:
+            logger.exception("failed to generate WARC for URI-M {}".format(urim))
+            errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
@@ -357,6 +363,8 @@ def synthesize_files(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
     from hashlib import md5
+    import traceback
+    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Save copies of mementos as files from a web archive collection.",
@@ -391,20 +399,29 @@ def synthesize_files(args):
     with open("{}/metadata.tsv".format(args.output_directory), 'w') as metadatafile:
 
         for urim in urimdata.keys():
-            r = session.get(urim)
-            data = r.content
 
-            m = md5()
-            m.update(urim.encode('utf8'))
-            urlhash = m.hexdigest()
-            newfilename = urlhash + '.dat'
+            try:
 
-            logger.info("writing out data for URI-M {}".format(urim))
-            with open("{}/{}".format(
-                args.output_directory, newfilename), 'wb') as newfile:
-                newfile.write(data)
+                r = session.get(urim)
+                r.raise_for_status()
 
-            metadatafile.write("{}\t{}\n".format(urim, newfilename))
+                data = r.content
+
+                m = md5()
+                m.update(urim.encode('utf8'))
+                urlhash = m.hexdigest()
+                newfilename = urlhash + '.dat'
+
+                logger.info("writing out data for URI-M {}".format(urim))
+                with open("{}/{}".format(
+                    args.output_directory, newfilename), 'wb') as newfile:
+                    newfile.write(data)
+
+                metadatafile.write("{}\t{}\n".format(urim, newfilename))
+
+            except Exception as exc:
+                logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
+                errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
@@ -419,6 +436,8 @@ def synthesize_bpfree_files(args):
     from hashlib import md5
     import otmt
     from justext import justext, get_stoplist
+    import traceback
+    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Save boilerplate-free copies of mementos as files from a web archive collection.",
@@ -454,19 +473,25 @@ def synthesize_bpfree_files(args):
 
         for urim in urimdata.keys():
 
-            bpfree = get_boilerplate_free_content(urim, cache_storage=args.cache_storage)
+            try:
 
-            m = md5()
-            m.update(urim.encode('utf8'))
-            urlhash = m.hexdigest()
-            newfilename = urlhash + '.dat'
+                bpfree = get_boilerplate_free_content(urim, cache_storage=args.cache_storage)
 
-            logger.info("writing out data for URI-M {}".format(urim))
-            with open("{}/{}".format(
-                args.output_directory, newfilename), 'wb') as newfile:
-                newfile.write(bpfree)
+                m = md5()
+                m.update(urim.encode('utf8'))
+                urlhash = m.hexdigest()
+                newfilename = urlhash + '.dat'
 
-            metadatafile.write("{}\t{}\n".format(urim, newfilename))
+                logger.info("writing out data for URI-M {}".format(urim))
+                with open("{}/{}".format(
+                    args.output_directory, newfilename), 'wb') as newfile:
+                    newfile.write(bpfree)
+
+                metadatafile.write("{}\t{}\n".format(urim, newfilename))
+
+            except Exception as exc:
+                logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
+                errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of boilerplate-free files, output is at {}".format(args.output_directory))
 

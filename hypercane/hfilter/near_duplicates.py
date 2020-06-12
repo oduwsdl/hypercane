@@ -1,18 +1,15 @@
 import logging
+import traceback
 import concurrent.futures
-
 from datetime import datetime
-from simhash import Simhash
-
-from ..utils import get_memento_datetime_and_timemap, \
-    get_web_session, get_language, get_raw_simhash, get_tf_simhash
+from ..errors import errorstore
 
 module_logger = logging.getLogger('hypercane.hfilter.near_duplicates')
 
-class NearDuplicateException(Exception):
-    pass
-
 def filter_near_duplicates(urims, cache_storage):
+
+    from simhash import Simhash
+    from ..utils import get_memento_http_metadata, get_tf_simhash
 
     module_logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
@@ -37,14 +34,13 @@ def filter_near_duplicates(urims, cache_storage):
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
-                # module_logger.critical("failed to acquire Simhash for [{}] quitting...".format(urim))
-                # raise NearDuplicateException("Failed to acquire Simhash for [{}]".format(urim))
+                errorstore.add(urim, traceback.format_exc())
 
     comparison_structure = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        future_to_urim = { executor.submit(get_memento_datetime_and_timemap, urim, cache_storage): urim for urim in urims }
+        future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=["memento-datetime", "timemap"]): urim for urim in urims }
 
         for future in concurrent.futures.as_completed(future_to_urim):
             urim = future_to_urim[future]
@@ -62,7 +58,7 @@ def filter_near_duplicates(urims, cache_storage):
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                # raise NearDuplicateException("Failed to acquire Memento-Datetime and TimeMap for [{}]".format(urim))
+                errorstore.add(urim, traceback.format_exc())
 
     output_urims = []
 

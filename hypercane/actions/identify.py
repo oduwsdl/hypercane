@@ -1,8 +1,9 @@
 import sys
+import argparse
+
+from datetime import datetime
 
 def discover_timemaps(args):
-
-    import argparse
 
     from hypercane.actions import process_input_args, get_logger, \
         calculate_loglevel
@@ -43,8 +44,6 @@ def discover_timemaps(args):
 
 def discover_original_resources(args):
 
-    import argparse
-
     from hypercane.actions import process_input_args, get_logger, \
         calculate_loglevel
 
@@ -83,8 +82,6 @@ def discover_original_resources(args):
 
 def discover_mementos(args):
 
-    import argparse
-
     from hypercane.actions import process_input_args, get_logger, \
             calculate_loglevel
 
@@ -92,8 +89,6 @@ def discover_mementos(args):
 
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
-
-    from datetime import datetime
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",

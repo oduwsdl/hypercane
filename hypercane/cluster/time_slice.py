@@ -1,14 +1,15 @@
-import concurrent.futures
-import math
 import logging
-
-from datetime import datetime
-
-from ..utils import get_memento_http_metadata
 
 module_logger = logging.getLogger('hypercane.cluster.time_slice')
 
 def execute_time_slice(urimdata, cache_storage):
+
+    import concurrent.futures
+    import math
+    from datetime import datetime
+    from ..utils import get_memento_http_metadata
+    import traceback
+    from ..errors import errorstore
 
     mementos = []
 
@@ -20,9 +21,14 @@ def execute_time_slice(urimdata, cache_storage):
         for future in concurrent.futures.as_completed(future_to_urim):
 
             urim = future_to_urim[future]
-            mdt = future.result()[0]
-            mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
-            mementos.append( (mdt, urim) )
+
+            try:
+                mdt = future.result()[0]
+                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                mementos.append( (mdt, urim) )
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                errorstore.add(urim, traceback.format_exc())
 
     # calculate the number of slices 28 + math.log(len(mementos))
     number_of_slices = math.ceil(28 + math.log(len(mementos)))

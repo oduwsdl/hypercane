@@ -6,6 +6,7 @@ import argparse
 import math
 import os
 import csv
+import traceback
 import requests
 
 from random import randint
@@ -19,6 +20,7 @@ from urllib.parse import urlparse
 
 from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resources
 from ..utils import process_input_for_cluster_and_rank
+from ..errors import errorstore
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -87,6 +89,7 @@ def download_urits_and_extract_urims(uritlist, session):
                 except KeyError as e:
                     module_logger.exception(
                         "Skipping TimeMap {}, encountered problem extracting URI-Ms from TimeMap: {}".format(workinguri, repr(e)))
+                    errorstore.add(workinguri, traceback.format_exc())
 
                 urimlist.extend(urims)
 
@@ -118,14 +121,16 @@ def extract_urts_from_urims(urimlist, session):
 
             try:
                 r = futures[workinguri].result()
-            except RequestException:
-                pass
+                r.raise_for_status()
 
-            if r.status_code == 200:
                 urit = r.links['timemap']['url']
 
                 if urit not in urits:
                     urits.append(urit)
+
+            except Exception as e:
+                module_logger.exception("Error: {}, failed to process {} - skipping...".format(repr(e), workinguri))
+                errorstore.add(workinguri, traceback.format_exc())
 
             working_list.remove(workinguri)
             del futures[workinguri]
@@ -217,7 +222,7 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
                 # TODO: try with other archives, we don't use archive.is because new mementos don't immediately have Memento headers
                 # candidate_urim = archivenow.push(urir, "is")[0]
                 module_logger.warning("Failed to push {} into the Internet Archive, skipping...".format(urir))
-                continue
+                errorstore.add(urim, "Failed to create URI-M for {}".format(urir))
 
         module_logger.info("adding URI-M {}".format(candidate_urim))
         urims.append(candidate_urim)

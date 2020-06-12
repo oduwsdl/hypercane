@@ -1,7 +1,4 @@
 import logging
-import concurrent.futures
-
-from ..utils import get_language
 
 module_logger = logging.getLogger('hypercane.hfilter.languages')
 
@@ -21,6 +18,11 @@ def language_not_included(language, desired_languages):
 
 def filter_languages(input_urims, cache_storage, desired_languages, comparison_function):
 
+    import concurrent.futures
+    from ..utils import get_language
+    import traceback
+    from ..errors import errorstore
+
     filtered_urims = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -36,7 +38,8 @@ def filter_languages(input_urims, cache_storage, desired_languages, comparison_f
                     filtered_urims.append(urim)
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                module_logger.critical("failed to detect language for [{}], skipping...".format(urim))
+                errorstore.add(urim, traceback.format_exc())
+                
 
     return filtered_urims
 
