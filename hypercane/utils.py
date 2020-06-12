@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import csv
+import traceback
 
 from urllib.parse import urlparse
 from pymongo import MongoClient
@@ -16,6 +17,7 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 from .version import __useragent__
+from .errors import errorstore
 
 module_logger = logging.getLogger("hypercane.utils")
 
@@ -84,7 +86,9 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
         return output_values
 
     except (KeyError, TypeError):
+
         r = session.get(urim)
+        r.raise_for_status
 
         for field in metadata_fields:
 
@@ -109,35 +113,6 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                 )
 
         return output_values
-
-def get_memento_datetime_and_timemap(urim, cache_storage):
-
-    dbconn = MongoClient(cache_storage)
-    session = get_web_session(cache_storage)
-    db = dbconn.get_default_database()
-
-    # 1 if lang of urim in cache, return it
-    try:
-        return (
-            db.derivedvalues.find_one(
-                { "urim": urim }
-                )["memento-datetime"],
-            db.derivedvalues.find_one(
-                { "urim": urim }
-                )["timemap"]
-            )
-    except (KeyError, TypeError):
-        r = session.get(urim)
-        mdt = r.headers['memento-datetime']
-        urit = r.links["timemap"]["url"]
-
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "memento-datetime": str(mdt), "timemap": str(urit) }},
-            upsert=True
-        )
-
-        return str(mdt), urit
 
 def get_language(urim, cache_storage):
 
@@ -181,7 +156,9 @@ def get_raw_simhash(urim, cache_storage):
         )["raw simhash"]
     except (KeyError, TypeError):
         raw_urim = otmt.generate_raw_urim(urim)
+
         r = session.get(raw_urim)
+        r.raise_for_status()
 
         if 'text/html' not in r.headers['content-type']:
             raise Exception("Hypercane currently only operates with HTML resources, refusing to compute Simhash on {}".format(urim))
@@ -253,17 +230,10 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         module_logger.info("generating boilerplate free content for {}".format(urim))
         raw_urim = otmt.generate_raw_urim(urim)
 
-        try:
-            r = session.get(raw_urim)
-        except Exception:
-            module_logger.exception("failed to execute GET on {}".format(urim))
-            return bytes()
+        r = session.get(raw_urim)
+        r.raise_for_status()
 
-        try:
-            module_logger.info("content-type is {}".format(r.headers['content-type']))
-        except Exception:
-            module_logger.exception("could not determine content type for {}, returning zero bytes")
-            return bytes()
+        module_logger.info("content-type is {}".format(r.headers['content-type']))
 
         if 'text/html' not in r.headers['content-type']:
             module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
@@ -295,6 +265,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         except Exception:
             module_logger.exception("failed to extract boilerplate from {}, setting value to empty string".format(urim))
+            errorstore.add(urim, traceback.format_exc())
             return bytes()
 
         return bytes(bpfree, "utf8")
@@ -319,7 +290,9 @@ def get_newspaper_publication_date(urim, cache_storage):
         )["newspaper publication date"]
     except (KeyError, TypeError):
         raw_urim = otmt.generate_raw_urim(urim)
+
         r = session.get(raw_urim)
+        r.raise_for_status()
 
         article = Article(urim)
         article.download(r.text)

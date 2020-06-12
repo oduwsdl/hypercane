@@ -8,6 +8,8 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
     from datetime import datetime
     import concurrent.futures
     import re
+    import traceback
+    from ..errors import errorstore
 
     filtered_urims = []
 
@@ -28,5 +30,6 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
 
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
+                errorstore.add(urim, traceback.format_exc())
 
     return filtered_urims

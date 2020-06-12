@@ -1,4 +1,8 @@
 import logging
+import traceback
+import concurrent.futures
+from datetime import datetime
+from ..errors import errorstore
 
 module_logger = logging.getLogger('hypercane.cluster.kmeans')
 
@@ -9,8 +13,6 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
 
     from sklearn.cluster import KMeans
     import numpy as np
-    import concurrent.futures
-    from datetime import datetime
     from hypercane.utils import get_memento_http_metadata
 
     # learn existing cluster assignments
@@ -34,9 +36,14 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
         for future in concurrent.futures.as_completed(future_to_urim):
 
             urim = future_to_urim[future]
-            mdt = future.result()[0]
-            mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
-            urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+
+            try:
+                mdt = future.result()[0]
+                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                errorstore.add(urim, traceback.format_exc())
 
     km = KMeans(n_clusters=k)
 

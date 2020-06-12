@@ -8,6 +8,8 @@ def order_by_memento_datetime(urims, cache_storage):
     from ..utils import get_memento_http_metadata
     from datetime import datetime
     import concurrent.futures
+    import traceback
+    from ..errors import errorstore
 
     memento_datetime_to_urim = []
 
@@ -24,6 +26,7 @@ def order_by_memento_datetime(urims, cache_storage):
                 memento_datetime_to_urim.append( (datetime.timestamp(mdt), urim) )
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
+                errorstore.add(urim, traceback.format_exc())
 
     memento_datetime_to_urim.sort()
 
