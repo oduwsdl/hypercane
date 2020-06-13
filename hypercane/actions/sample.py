@@ -1,4 +1,5 @@
 import sys
+import hypercane.errors
 
 def run_sample_with(parser, args, algorithm_name, algorithm_script):
 
@@ -53,6 +54,9 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
     if type(args.logfile) != str:
         args.logfile = ""
 
+    if args.errorfilename is None:
+        args.errorfilename = ""
+
     other_arglist = []
 
     for argname, argvalue in vars(args).items():
@@ -62,7 +66,8 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
             'cache_storage',
             'working_directory',
             'output_filename',
-            'logfile'
+            'logfile',
+            'errorfilename'
         ]:
             if argvalue is not False:
                 other_arglist.append( "--{} {}".format(
@@ -83,6 +88,7 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
             args.working_directory,
             args.output_filename,
             args.logfile,
+            args.errorfilename,
             other_args
         ]
     )
@@ -264,6 +270,9 @@ def sample_with_true_random(args):
         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
         args.logfile
     )
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     session = get_web_session(cache_storage=args.cache_storage)
     output_type = 'mementos'

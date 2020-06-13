@@ -1,5 +1,6 @@
 import sys
 import logging
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.report.sumgrams')
 
@@ -36,7 +37,7 @@ def generate_sumgrams(urimlist, cache_storage):
 
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
-                # sys.exit(255)
+                hypercane.errors.errorstore.add( urim, traceback.format_exc() )
 
     now = datetime.now()
     current_year = now.year
