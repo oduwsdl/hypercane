@@ -265,14 +265,16 @@ def print_usage():
     Supported commands:
     * time-slice - slice the collection into buckets by Memento-Datetime, as in AlNoamany's Algorithm
     * dbscan - cluster the user-supplied feature using the DBSCAN algorithm
+    * lda - cluster the collection via LDA topic modeling
+    * kmeans - cluster the user-supplied feature using K-means clustering
 
     Examples:
 
-    hc cluster time-slice -i mementos -ia novel-content.tsv -o mdt-slices.tsv -cs mongodb://localhost/cache
+    hc cluster time-slice -i mementos -a novel-content.tsv -o mdt-slices.tsv -cs mongodb://localhost/cache
 
-    hc cluster dbscan -i mementos -ia mdt-slices.tsv -o sliced-and-clustered.tsv --feature tf-simhash -cs mongodb://localhost/cache
+    hc cluster dbscan -i mementos -a mdt-slices.tsv -o sliced-and-clustered.tsv --feature tf-simhash -cs mongodb://localhost/cache
 
-    hc cluster lda -i archiveit -ia 8778 -o clustered.tsv -cs mongodb://localhost/cache
+    hc cluster lda -i archiveit -a 8778 -o clustered.tsv -cs mongodb://localhost/cache
 
 """)
 
