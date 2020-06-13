@@ -8,7 +8,7 @@ def filter_by_memento_datetime(urims, cache_storage, lower_datetime, upper_datet
     from datetime import datetime
     import concurrent.futures
     import traceback
-    from ..errors import errorstore
+    import hypercane.errors
 
     filtered_urims = []
 
@@ -28,6 +28,6 @@ def filter_by_memento_datetime(urims, cache_storage, lower_datetime, upper_datet
 
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     return filtered_urims

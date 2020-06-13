@@ -1,4 +1,5 @@
 import logging
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.cluster.time_slice')
 
@@ -9,7 +10,6 @@ def execute_time_slice(urimdata, cache_storage):
     from datetime import datetime
     from ..utils import get_memento_http_metadata
     import traceback
-    from ..errors import errorstore
 
     mementos = []
 
@@ -28,7 +28,7 @@ def execute_time_slice(urimdata, cache_storage):
                 mementos.append( (mdt, urim) )
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     # calculate the number of slices 28 + math.log(len(mementos))
     number_of_slices = math.ceil(28 + math.log(len(mementos)))

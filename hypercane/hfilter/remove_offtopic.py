@@ -3,6 +3,7 @@ import otmt
 import lxml.etree
 import random
 import copy
+import traceback
 
 from justext import justext, get_stoplist
 from aiu import convert_LinkTimeMap_to_dict
@@ -13,6 +14,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from ..utils import get_web_session, get_boilerplate_free_content
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
 
@@ -192,7 +194,13 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             bpfree = get_boilerplate_free_content(urim, dbconn=self.dbconn, session=self.session)
             return bpfree
         except (lxml.etree.ParserError, lxml.etree.XMLSyntaxError) as e:
+            hypercane.errors.errorstore.add( urim, traceback.format_exc() )
             raise otmt.collectionmodel.CollectionModelBoilerPlateRemovalFailureException(repr(e))
+        except Exception:
+            module_logger.exception("failed to process URI-M, returning empty content for {}".format(urim))
+            module_logger.info("errorstore is of type {}".format(type(hypercane.errors.errorstore)))
+            hypercane.errors.errorstore.add( urim, traceback.format_exc() )
+            return bytes()
 
     def getMementoHeaders(self, urim):
         """Returns the headers associated with memento at `urim`.

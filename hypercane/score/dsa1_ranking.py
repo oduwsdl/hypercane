@@ -8,7 +8,7 @@ import traceback
 
 from urllib.parse import urlparse
 
-from ..errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.score.dsa1_ranking')
 
@@ -543,7 +543,7 @@ def rank_by_dsa1_score(urimdata, session, memento_damage_url=None, damage_weight
                 urim_to_score[urim] = future.result()
             except Exception as exc:
                 module_logger.exception("Error: {}, failed to compute score for {}, skipping...".format(repr(exc), urim))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     for urim in urim_to_score:
         urimdata[urim]['Rank---DSA1-Score'] = urim_to_score[urim]

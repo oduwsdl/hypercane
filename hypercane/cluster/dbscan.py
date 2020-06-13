@@ -3,7 +3,7 @@ import traceback
 from distance import hamming
 
 from ..utils import get_raw_simhash
-from ..errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.cluster.dbscan')
 
@@ -52,7 +52,7 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     # module_logger.info("urim_to_simhash: {}".format(urim_to_simhash))
 
@@ -120,7 +120,7 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
                 urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
 
     for cluster in clusters_to_urims:

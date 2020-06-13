@@ -48,6 +48,8 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
 
     logger.info("executing algorithm script from {}".format(algorithm_script))
 
+    logger.info("args: {}".format(args))
+
     if type(args.logfile) != str:
         args.logfile = ""
 
@@ -68,6 +70,8 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
                 ) )
 
     other_args = '"' + " ".join(other_arglist) + '"'
+
+    logger.info("using other arguments: {}".format(other_args))
 
     cp = subprocess.run(
         [

@@ -1,4 +1,5 @@
 import sys
+import hypercane.errors
 
 def process_input_args(args, parser):
 
@@ -17,6 +18,14 @@ def process_input_args(args, parser):
     args = parser.parse_args(args)
 
     args = test_input_args(args)
+
+    args = parser.parse_args(args)
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore = \
+            hypercane.errors.FileErrorStore(
+                args.errorfilename
+            )
 
     return args
 
@@ -311,7 +320,6 @@ def synthesize_warcs(args):
     import otmt
     from hashlib import md5
     import traceback
-    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Discover the mementos in a web archive collection.",
@@ -350,7 +358,7 @@ def synthesize_warcs(args):
             synthesize_warc(urim, session, args.output_directory)
         except Exception:
             logger.exception("failed to generate WARC for URI-M {}".format(urim))
-            errorstore.add(urim, traceback.format_exc())
+            hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
@@ -364,7 +372,6 @@ def synthesize_files(args):
         discover_mementos_by_input_type
     from hashlib import md5
     import traceback
-    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Save copies of mementos as files from a web archive collection.",
@@ -421,7 +428,7 @@ def synthesize_files(args):
 
             except Exception as exc:
                 logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of files, output is at {}".format(args.output_directory))
 
@@ -437,7 +444,6 @@ def synthesize_bpfree_files(args):
     import otmt
     from justext import justext, get_stoplist
     import traceback
-    from ..errors import errorstore
 
     parser = argparse.ArgumentParser(
         description="Save boilerplate-free copies of mementos as files from a web archive collection.",
@@ -491,7 +497,7 @@ def synthesize_bpfree_files(args):
 
             except Exception as exc:
                 logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     logger.info("Done generating directory of boilerplate-free files, output is at {}".format(args.output_directory))
 

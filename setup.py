@@ -43,7 +43,6 @@ setup(
         'jsonlines',
         'MementoEmbed',
         'otmt',
-        'Pattern',
         'pymongo',
         'rank_bm25',
         'requests',

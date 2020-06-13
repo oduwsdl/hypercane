@@ -1,4 +1,5 @@
 import logging
+import hypercane.errors
 
 module_logger = logging.getLogger("hypercane.hfilter.near_datetime")
 
@@ -9,7 +10,6 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
     import concurrent.futures
     import re
     import traceback
-    from ..errors import errorstore
 
     filtered_urims = []
 
@@ -30,6 +30,6 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
 
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     return filtered_urims

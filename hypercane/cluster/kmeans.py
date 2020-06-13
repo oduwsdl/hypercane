@@ -2,7 +2,7 @@ import logging
 import traceback
 import concurrent.futures
 from datetime import datetime
-from ..errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.cluster.kmeans')
 
@@ -43,7 +43,7 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
                 urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     km = KMeans(n_clusters=k)
 

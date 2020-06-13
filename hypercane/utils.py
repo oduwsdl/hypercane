@@ -17,7 +17,7 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 from .version import __useragent__
-from .errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger("hypercane.utils")
 
@@ -265,7 +265,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         except Exception:
             module_logger.exception("failed to extract boilerplate from {}, setting value to empty string".format(urim))
-            errorstore.add(urim, traceback.format_exc())
+            hypercane.errors.errorstore.add(urim, traceback.format_exc())
             return bytes()
 
         return bytes(bpfree, "utf8")

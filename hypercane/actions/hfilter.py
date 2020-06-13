@@ -1,5 +1,5 @@
 import sys
-
+import hypercane.errors
 
 def process_remove_offtopic_args(args, parser):
 
@@ -34,6 +34,11 @@ def process_remove_offtopic_args(args, parser):
     parser = add_default_args(parser)
 
     args = parser.parse_args(args)
+
+    # print("storing errors in errorfile named {}".format(args.errorfilename))
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     return args
 
