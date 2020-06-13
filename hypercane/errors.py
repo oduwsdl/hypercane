@@ -11,7 +11,7 @@ class FileErrorStore(ErrorStore):
     def __init__(self, filename):
         self.filename = filename
 
-        self.filehandle = open(self.filename)
+        self.filehandle = open(self.filename, 'w')
 
     def __del__(self):
         self.filehandle.close()
