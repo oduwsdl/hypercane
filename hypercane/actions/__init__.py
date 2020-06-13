@@ -87,7 +87,7 @@ def add_default_args(parser):
         help="The path to the MongoDB database to use as a cache."
     )
 
-    parser.add_argument('-e', '--errorfile', dest='errorfilename',
+    parser.add_argument('-e', '--errorfilename', dest='errorfilename',
         default=None,
         help="The path to filename that records URL processing failures"
     )
