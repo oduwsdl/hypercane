@@ -136,7 +136,7 @@ def print_usage():
 
     Examples:
 
-    hc score dsa1-scoring -i mementos -ia input_mementos.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache
+    hc score dsa1-scoring -i mementos -a input_mementos.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache
 
 """)
 
