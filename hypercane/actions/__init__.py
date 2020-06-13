@@ -147,9 +147,6 @@ def process_input_args(args, parser):
 
     args = test_input_args(args)
 
-    print("args.errorfilename is {}".format(args.errorfilename))
-    sys.exit(255)
-
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
