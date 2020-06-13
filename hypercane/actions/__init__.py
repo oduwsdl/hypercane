@@ -1,5 +1,7 @@
 import sys
 
+import hypercane.errors
+
 def get_logger(appname, loglevel, logfile):
 
     import logging
@@ -85,6 +87,11 @@ def add_default_args(parser):
         help="The path to the MongoDB database to use as a cache."
     )
 
+    parser.add_argument('-e', '--errorfile', dest='errorfilename',
+        default=None,
+        help="The path to filename that records URL processing failures"
+    )
+
     parser.add_argument('--version', action='version',
         version="{}".format(__useragent__))
 
@@ -139,5 +146,11 @@ def process_input_args(args, parser):
     args = parser.parse_args(args)
 
     args = test_input_args(args)
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore = \
+            hypercane.errors.FileErrorStore(
+                args.errorfilename
+            )
 
     return args
