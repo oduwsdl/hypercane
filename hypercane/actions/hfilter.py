@@ -318,7 +318,7 @@ def exclude_rank(args):
         args.output_filename
     ))
 
-def include_highest_rank_per_cluster(args):
+def include_highest_score_per_cluster(args):
 
     import argparse
     from hypercane.actions import process_input_args, get_logger, \
@@ -661,8 +661,10 @@ def print_include_usage():
     * languages - include mementos with the given languages (specified with --lang)
     * non-duplicates - employ Simhash to only include mementos that are not duplicates
     * on-topic - execute the Off-Topic Memento Toolkit to only include on-topic mementos
-    * highest-rank-per-cluster - include only the highest ranking memento in each cluster, requires that the input contain clustered mementos
+    * highest-score-per-cluster - include only the highest ranking memento in each cluster, requires that the input contain clustered mementos
     * containing-pattern - include only mementos that contain the given regular experession pattern
+    * near-datetime - include only mementos whose memento-datetime falls into the given range
+    * containing-url-pattern - include only mementos whose original resource URL matches the given regular expression pattern
 
     Examples:
 
@@ -695,9 +697,10 @@ include_criteria = {
     "non-duplicates": include_nonduplicates,
     "on-topic": include_ontopic,
     # "rank": include_rank,
-    "highest-score-per-cluster": include_highest_rank_per_cluster,
+    "highest-score-per-cluster": include_highest_score_per_cluster,
     "containing-pattern": include_containing_pattern,
-    "near-datetime": include_near_datetime
+    "near-datetime": include_near_datetime,
+    "containing-url-pattern": include_urir
 }
 
 exclude_criteria = {
