@@ -1,7 +1,7 @@
 import sys
 import logging
 import traceback
-from ..errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger("hypercane.order.dsa1_publication_alg")
 
@@ -26,7 +26,7 @@ def order_by_dsa1_publication_alg(urims, cache_storage):
                 publication_datetime_to_urim.append( (datetime.timestamp(pdt), urim) )
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine publication date for {}, skipping...".format(repr(exc), urim))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     publication_datetime_to_urim.sort()
 

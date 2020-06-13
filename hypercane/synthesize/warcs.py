@@ -1,4 +1,5 @@
 import logging
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.synthesize.warcs')
 
@@ -11,7 +12,6 @@ def synthesize_warc(urim, session, output_directory):
     from hashlib import md5
     from datetime import datetime
     import traceback
-    from ..errors import errorstore
 
     m = md5()
     m.update(urim.encode('utf8'))

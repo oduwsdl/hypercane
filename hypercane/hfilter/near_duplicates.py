@@ -2,7 +2,7 @@ import logging
 import traceback
 import concurrent.futures
 from datetime import datetime
-from ..errors import errorstore
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.near_duplicates')
 
@@ -34,7 +34,7 @@ def filter_near_duplicates(urims, cache_storage):
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, repr(exc)))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     comparison_structure = {}
 
@@ -58,7 +58,7 @@ def filter_near_duplicates(urims, cache_storage):
 
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     output_urims = []
 

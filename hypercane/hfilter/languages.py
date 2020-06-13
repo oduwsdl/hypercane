@@ -1,4 +1,5 @@
 import logging
+import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.languages')
 
@@ -21,7 +22,6 @@ def filter_languages(input_urims, cache_storage, desired_languages, comparison_f
     import concurrent.futures
     from ..utils import get_language
     import traceback
-    from ..errors import errorstore
 
     filtered_urims = []
 
@@ -38,7 +38,7 @@ def filter_languages(input_urims, cache_storage, desired_languages, comparison_f
                     filtered_urims.append(urim)
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, exc))
-                errorstore.add(urim, traceback.format_exc())
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
                 
 
     return filtered_urims
