@@ -152,11 +152,11 @@ def print_usage():
 
     Examples:
 
-    hc identify original-resources -i archiveit -ia 8788 -o seed-output-file.tsv -cs mongodb://localhost/cache
+    hc identify original-resources -i archiveit -a 8788 -o seed-output-file.tsv -cs mongodb://localhost/cache
 
-    hc identify timemaps -i archiveit -ia 8788 -o timemap-output-file.tsv -cs mongodb://localhost/cache
+    hc identify timemaps -i archiveit -a 8788 -o timemap-output-file.tsv -cs mongodb://localhost/cache
 
-    hc identify mementos -i timemaps -ia timemap-input-file.tsv -o mementos.tsv -cs mongodb://localhost/cache
+    hc identify mementos -i timemaps -a timemap-input-file.tsv -o mementos.tsv -cs mongodb://localhost/cache
 
 """)
 
