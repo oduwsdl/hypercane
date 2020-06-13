@@ -51,7 +51,7 @@ def bm25_ranking(args):
 
 
 
-def dsa1_ranking(args):
+def dsa1_scoring(args):
 
     import argparse
 
@@ -141,7 +141,7 @@ def print_usage():
 """)
 
 supported_commands = {
-    "dsa1-ranking": dsa1_ranking,
+    "dsa1-scoring": dsa1_scoring,
     "bm25": bm25_ranking
 }
 
