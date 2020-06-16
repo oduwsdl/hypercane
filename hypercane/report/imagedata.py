@@ -1,4 +1,7 @@
 import logging
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4)
 
 module_logger = logging.getLogger('hypercane.report.imagedata')
 
@@ -119,6 +122,11 @@ def rank_images(imagedata):
                 ratio = float(imagedata[urim][image_urim]['ratio width/height'])
                 score = float(imagedata[urim][image_urim]['calculated score'])
 
+                if 'metadata' in imagedata[urim][image_urim]['source']:
+                    in_metadata = 1
+                else:
+                    in_metadata = 0
+
                 N = imagedata[urim][image_urim]['N']
                 n = imagedata[urim][image_urim]['n']
 
@@ -142,6 +150,7 @@ def rank_images(imagedata):
 
                     imageranking.append(
                         (
+                            in_metadata,
                             score,
                             pixelsize,
                             colorcount,
