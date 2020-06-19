@@ -1,6 +1,7 @@
 import sys
 import logging
 import hypercane.errors
+import traceback
 
 module_logger = logging.getLogger('hypercane.report.sumgrams')
 
