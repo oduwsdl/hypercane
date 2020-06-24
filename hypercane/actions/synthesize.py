@@ -1,6 +1,10 @@
 import sys
 import hypercane.errors
 
+from pprint import PrettyPrinter
+
+pp = PrettyPrinter(indent=4)
+
 def process_input_args(args, parser):
 
     from hypercane.actions import add_input_args, \
@@ -18,8 +22,6 @@ def process_input_args(args, parser):
     args = parser.parse_args(args)
 
     args = test_input_args(args)
-
-    args = parser.parse_args(args)
 
     if args.errorfilename is not None:
         hypercane.errors.errorstore = \
@@ -322,7 +324,7 @@ def synthesize_warcs(args):
     import traceback
 
     parser = argparse.ArgumentParser(
-        description="Discover the mementos in a web archive collection.",
+        description="Create WARCs from the mementos in a web archive collection.",
         prog="hc synthesize files"
     )
 
