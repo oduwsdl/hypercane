@@ -249,6 +249,10 @@ def report_ranked_terms(args):
     parser.add_argument('--sumgrams', '--use-sumgrams', help="If specified, generate sumgrams rather than n-grams.",
         action='store_true', default=False, dest='use_sumgrams'
     )
+    
+    parser.add_argument('--added-stopwords', help="If specified, add stopwords from this file.",
+        dest='added_stopword_filename', default=None
+    )
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
@@ -268,11 +272,22 @@ def report_ranked_terms(args):
         session, discover_mementos_by_input_type
     )
 
+    added_stopwords = []
+
+    if args.added_stopword_filename is not None:
+        with open(args.added_stopword_filename) as f:
+            for line in f:
+                added_stopwords.append(line.strip())
+
     if args.use_sumgrams is True:
 
         from hypercane.report.sumgrams import generate_sumgrams
+        from hypercane import package_directory
 
-        ranked_terms = generate_sumgrams(list(urimdata.keys()), args.cache_storage)
+        ranked_terms = generate_sumgrams(
+            list(urimdata.keys()), args.cache_storage,
+            added_stopwords=added_stopwords
+            )
 
         with open(args.output_filename, 'w') as f:
 
@@ -286,7 +301,10 @@ def report_ranked_terms(args):
     else:
         from hypercane.report.terms import generate_ranked_terms
 
-        ranked_terms = generate_ranked_terms(list(urimdata.keys()), args.cache_storage, ngram_length=args.ngram_length)
+        ranked_terms = generate_ranked_terms(
+            list(urimdata.keys()), args.cache_storage, 
+            ngram_length=args.ngram_length,
+            added_stopwords=added_stopwords)
 
         with open(args.output_filename, 'w') as f:
 

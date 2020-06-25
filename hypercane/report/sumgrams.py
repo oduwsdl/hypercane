@@ -5,7 +5,7 @@ import traceback
 
 module_logger = logging.getLogger('hypercane.report.sumgrams')
 
-def generate_sumgrams(urimlist, cache_storage):
+def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
 
     import concurrent.futures
     import nltk
@@ -51,115 +51,115 @@ def generate_sumgrams(urimlist, cache_storage):
     # start with single terms before moving on to bigrams, etc.
 
     # TODO: load these from a file
-    added_stopwords = [
-        "associated press",
-        "com",
-        "donald trump",
-        "fox news",
-        "abc news",
-        "getty images",
-        "last month",
-        "last week",
-        "last year",
-        "pic",
-        "pinterest reddit",
-        "pm et",
-        "president donald",
-        "president donald trump",
-        "president trump",
-        "president trump's",
-        "print mail",
-        "reddit print",
-        "said statement",
-        "send whatsapp",
-        "sign up",
-        "trump administration",
-        "trump said",
-        "twitter",
-        "united states",
-        "washington post",
-        "white house",
-        "whatsapp pinterest",
-        "subscribe whatsapp",
-        "york times",
-        "privacy policy",
-        "terms use"
-    ]
+    # added_stopwords = [
+    #     "associated press",
+    #     "com",
+    #     "donald trump",
+    #     "fox news",
+    #     "abc news",
+    #     "getty images",
+    #     "last month",
+    #     "last week",
+    #     "last year",
+    #     "pic",
+    #     "pinterest reddit",
+    #     "pm et",
+    #     "president donald",
+    #     "president donald trump",
+    #     "president trump",
+    #     "president trump's",
+    #     "print mail",
+    #     "reddit print",
+    #     "said statement",
+    #     "send whatsapp",
+    #     "sign up",
+    #     "trump administration",
+    #     "trump said",
+    #     "twitter",
+    #     "united states",
+    #     "washington post",
+    #     "white house",
+    #     "whatsapp pinterest",
+    #     "subscribe whatsapp",
+    #     "york times",
+    #     "privacy policy",
+    #     "terms use"
+    # ]
 
-    added_stopwords.append( "{} read".format(last_year) )
-    added_stopwords.append( "{} read".format(current_year) )
+    # added_stopwords.append( "{} read".format(last_year) )
+    # added_stopwords.append( "{} read".format(current_year) )
 
-    stopmonths = [
-        "january",
-        "february",
-        "march",
-        "april",
-        "may",
-        "june",
-        "july",
-        "august",
-        "september",
-        "october",
-        "november",
-        "december"
-    ]
+    # stopmonths = [
+    #     "january",
+    #     "february",
+    #     "march",
+    #     "april",
+    #     "may",
+    #     "june",
+    #     "july",
+    #     "august",
+    #     "september",
+    #     "october",
+    #     "november",
+    #     "december"
+    # ]
 
-    # add just the month to the stop words
-    added_stopwords.extend(stopmonths)
+    # # add just the month to the stop words
+    # added_stopwords.extend(stopmonths)
 
-    stopmonths_short = [
-        "jan",
-        "feb",
-        "mar",
-        "apr",
-        "may",
-        "jun",
-        "jul",
-        "aug",
-        "sep",
-        "oct",
-        "nov",
-        "dec"
-    ]
+    # stopmonths_short = [
+    #     "jan",
+    #     "feb",
+    #     "mar",
+    #     "apr",
+    #     "may",
+    #     "jun",
+    #     "jul",
+    #     "aug",
+    #     "sep",
+    #     "oct",
+    #     "nov",
+    #     "dec"
+    # ]
 
-    added_stopwords.extend(stopmonths_short)
+    # added_stopwords.extend(stopmonths_short)
 
-    # add the day of the week, too
-    added_stopwords.extend([
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday",
-        "sunday"
-    ])
+    # # add the day of the week, too
+    # added_stopwords.extend([
+    #     "monday",
+    #     "tuesday",
+    #     "wednesday",
+    #     "thursday",
+    #     "friday",
+    #     "saturday",
+    #     "sunday"
+    # ])
 
-    added_stopwords.extend([
-        "mon",
-        "tue",
-        "wed",
-        "thu",
-        "fri",
-        "sat",
-        "sun"
-    ])
+    # added_stopwords.extend([
+    #     "mon",
+    #     "tue",
+    #     "wed",
+    #     "thu",
+    #     "fri",
+    #     "sat",
+    #     "sun"
+    # ])
 
-    # for i in range(1, 13):
-    #     added_stopwords.append(
-    #         datetime(current_year, i, current_date).strftime('%b %Y')
-    #     )
-    #     added_stopwords.append(
-    #         datetime(last_year, i, current_date).strftime('%b %Y')
-    #     )
+    # # for i in range(1, 13):
+    # #     added_stopwords.append(
+    # #         datetime(current_year, i, current_date).strftime('%b %Y')
+    # #     )
+    # #     added_stopwords.append(
+    # #         datetime(last_year, i, current_date).strftime('%b %Y')
+    # #     )
 
-    # for i in range(1, 13):
-    #     added_stopwords.append(
-    #         datetime(current_year, i, current_date).strftime('%B %Y')
-    #     )
-    #     added_stopwords.append(
-    #         datetime(last_year, i, current_date).strftime('%B %Y')
-    #     )
+    # # for i in range(1, 13):
+    # #     added_stopwords.append(
+    # #         datetime(current_year, i, current_date).strftime('%B %Y')
+    # #     )
+    # #     added_stopwords.append(
+    # #         datetime(last_year, i, current_date).strftime('%B %Y')
+    # #     )
 
     params = {
         "add_stopwords": ", ".join(added_stopwords),
