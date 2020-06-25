@@ -40,10 +40,10 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
                 hypercane.errors.errorstore.add( urim, traceback.format_exc() )
 
-    now = datetime.now()
-    current_year = now.year
-    last_year = current_year - 1
-    current_date = now.day
+    # now = datetime.now()
+    # current_year = now.year
+    # last_year = current_year - 1
+    # current_date = now.day
 
     # sumgram processes stop words at two levels:
     # 1. when the vocabulary is built
@@ -184,20 +184,20 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
 
             addsumgram = True
 
-            # workaround for sumgram expanding dates
-            for stopmonth in stopmonths:
-                module_logger.info("checking if long stopmonth {} in {}".format(stopmonth, ngram))
-                if stopmonth in ngram and str(current_year) in ngram:
-                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
-                    addsumgram = False
-                    break
+            # # workaround for sumgram expanding dates
+            # for stopmonth in stopmonths:
+            #     module_logger.info("checking if long stopmonth {} in {}".format(stopmonth, ngram))
+            #     if stopmonth in ngram and str(current_year) in ngram:
+            #         module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+            #         addsumgram = False
+            #         break
 
-            for stopmonth in stopmonths_short:
-                module_logger.info("checking if short stopmonth {} in {}".format(stopmonth, ngram))
-                if stopmonth in ngram and str(current_year) in ngram:
-                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
-                    addsumgram = False
-                    break
+            # for stopmonth in stopmonths_short:
+            #     module_logger.info("checking if short stopmonth {} in {}".format(stopmonth, ngram))
+            #     if stopmonth in ngram and str(current_year) in ngram:
+            #         module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+            #         addsumgram = False
+            #         break
 
             if addsumgram == True:
                 sf.append(
