@@ -40,126 +40,38 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
                 hypercane.errors.errorstore.add( urim, traceback.format_exc() )
 
-    # now = datetime.now()
-    # current_year = now.year
-    # last_year = current_year - 1
-    # current_date = now.day
+    now = datetime.now()
+    current_year = now.year
 
-    # sumgram processes stop words at two levels:
-    # 1. when the vocabulary is built
-    # 2. stopwords are applied when finding sumgrams
-    # start with single terms before moving on to bigrams, etc.
+    stopmonths = [
+        "january",
+        "february",
+        "march",
+        "april",
+        "may",
+        "june",
+        "july",
+        "august",
+        "september",
+        "october",
+        "november",
+        "december"
+    ]
 
-    # TODO: load these from a file
-    # added_stopwords = [
-    #     "associated press",
-    #     "com",
-    #     "donald trump",
-    #     "fox news",
-    #     "abc news",
-    #     "getty images",
-    #     "last month",
-    #     "last week",
-    #     "last year",
-    #     "pic",
-    #     "pinterest reddit",
-    #     "pm et",
-    #     "president donald",
-    #     "president donald trump",
-    #     "president trump",
-    #     "president trump's",
-    #     "print mail",
-    #     "reddit print",
-    #     "said statement",
-    #     "send whatsapp",
-    #     "sign up",
-    #     "trump administration",
-    #     "trump said",
-    #     "twitter",
-    #     "united states",
-    #     "washington post",
-    #     "white house",
-    #     "whatsapp pinterest",
-    #     "subscribe whatsapp",
-    #     "york times",
-    #     "privacy policy",
-    #     "terms use"
-    # ]
-
-    # added_stopwords.append( "{} read".format(last_year) )
-    # added_stopwords.append( "{} read".format(current_year) )
-
-    # stopmonths = [
-    #     "january",
-    #     "february",
-    #     "march",
-    #     "april",
-    #     "may",
-    #     "june",
-    #     "july",
-    #     "august",
-    #     "september",
-    #     "october",
-    #     "november",
-    #     "december"
-    # ]
-
-    # # add just the month to the stop words
-    # added_stopwords.extend(stopmonths)
-
-    # stopmonths_short = [
-    #     "jan",
-    #     "feb",
-    #     "mar",
-    #     "apr",
-    #     "may",
-    #     "jun",
-    #     "jul",
-    #     "aug",
-    #     "sep",
-    #     "oct",
-    #     "nov",
-    #     "dec"
-    # ]
-
-    # added_stopwords.extend(stopmonths_short)
-
-    # # add the day of the week, too
-    # added_stopwords.extend([
-    #     "monday",
-    #     "tuesday",
-    #     "wednesday",
-    #     "thursday",
-    #     "friday",
-    #     "saturday",
-    #     "sunday"
-    # ])
-
-    # added_stopwords.extend([
-    #     "mon",
-    #     "tue",
-    #     "wed",
-    #     "thu",
-    #     "fri",
-    #     "sat",
-    #     "sun"
-    # ])
-
-    # # for i in range(1, 13):
-    # #     added_stopwords.append(
-    # #         datetime(current_year, i, current_date).strftime('%b %Y')
-    # #     )
-    # #     added_stopwords.append(
-    # #         datetime(last_year, i, current_date).strftime('%b %Y')
-    # #     )
-
-    # # for i in range(1, 13):
-    # #     added_stopwords.append(
-    # #         datetime(current_year, i, current_date).strftime('%B %Y')
-    # #     )
-    # #     added_stopwords.append(
-    # #         datetime(last_year, i, current_date).strftime('%B %Y')
-    # #     )
+    stopmonths_short = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec"
+    ]
 
     params = {
         "add_stopwords": ", ".join(added_stopwords),
@@ -184,20 +96,20 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
 
             addsumgram = True
 
-            # # workaround for sumgram expanding dates
-            # for stopmonth in stopmonths:
-            #     module_logger.info("checking if long stopmonth {} in {}".format(stopmonth, ngram))
-            #     if stopmonth in ngram and str(current_year) in ngram:
-            #         module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
-            #         addsumgram = False
-            #         break
+            # workaround for sumgram expanding dates
+            for stopmonth in stopmonths:
+                module_logger.info("checking if long stopmonth {} in {}".format(stopmonth, ngram))
+                if stopmonth in ngram and str(current_year) in ngram:
+                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+                    addsumgram = False
+                    break
 
-            # for stopmonth in stopmonths_short:
-            #     module_logger.info("checking if short stopmonth {} in {}".format(stopmonth, ngram))
-            #     if stopmonth in ngram and str(current_year) in ngram:
-            #         module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
-            #         addsumgram = False
-            #         break
+            for stopmonth in stopmonths_short:
+                module_logger.info("checking if short stopmonth {} in {}".format(stopmonth, ngram))
+                if stopmonth in ngram and str(current_year) in ngram:
+                    module_logger.info("detected {} and {} in {}".format(stopmonth, current_year, ngram))
+                    addsumgram = False
+                    break
 
             if addsumgram == True:
                 sf.append(
