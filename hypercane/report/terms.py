@@ -3,7 +3,7 @@ import logging
 
 module_logger = logging.getLogger('hypercane.report.terms')
 
-def get_document_tokens(urim, cache_storage, ngram_length):
+def get_document_tokens(urim, cache_storage, ngram_length, added_stopwords=[]):
 
     from hypercane.utils import get_boilerplate_free_content
     from nltk.corpus import stopwords
@@ -12,6 +12,7 @@ def get_document_tokens(urim, cache_storage, ngram_length):
 
     # TODO: stoplist based on language of the document
     stoplist = list(set(stopwords.words('english')))
+    stoplist.extend(added_stopwords)
     punctuation = [ i for i in string.punctuation ]
     additional_stopchars = [ '’', '‘', '“', '”', '•', '·', '—', '–', '›', '»']
     stop_numbers = [ str(i) for i in range(0, 11) ]
@@ -27,7 +28,7 @@ def get_document_tokens(urim, cache_storage, ngram_length):
 
     return list(doc_ngrams)
 
-def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
+def generate_ranked_terms(urimlist, cache_storage, ngram_length=1, added_stopwords=[]):
 
     import concurrent.futures
     import nltk
@@ -38,7 +39,7 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1):
     # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length): urim for urim in urimlist }
+        future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length, added_stopwords=added_stopwords): urim for urim in urimlist }
 
         for future in concurrent.futures.as_completed(future_to_urim):
 
