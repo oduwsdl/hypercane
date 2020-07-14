@@ -3,7 +3,7 @@ import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.cluster.time_slice')
 
-def execute_time_slice(urimdata, cache_storage):
+def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
     import concurrent.futures
     import math
@@ -30,8 +30,9 @@ def execute_time_slice(urimdata, cache_storage):
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
-    # calculate the number of slices 28 + math.log(len(mementos))
-    number_of_slices = math.ceil(28 + math.log(len(mementos)))
+    if number_of_slices is None:
+        # calculate the number of slices 28 + math.log(len(mementos))
+        number_of_slices = math.ceil(28 + math.log(len(mementos)))
 
     module_logger.info("The collection will be divided into {} slices".format(number_of_slices))
 

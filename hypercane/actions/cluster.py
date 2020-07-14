@@ -174,6 +174,11 @@ def time_slice(args):
         prog="hc cluster time-slice"
     )
 
+    parser.add_argument('-k', dest='k',
+        default=None, type=int,
+        help='The number of clusters to create.'
+    )
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -187,7 +192,6 @@ def time_slice(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
         session, discover_mementos_by_input_type
@@ -195,7 +199,8 @@ def time_slice(args):
 
     logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
 
-    urimdata_with_slices = execute_time_slice(urimdata, args.cache_storage)
+    urimdata_with_slices = execute_time_slice(
+        urimdata, args.cache_storage, number_of_slices=args.k)
 
     # we use urimdata and urimdata_with_slices because they should match, if they don't we will detect an error
     save_resource_data(args.output_filename, urimdata_with_slices, 'mementos', list(urimdata.keys()))
