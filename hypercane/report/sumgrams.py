@@ -73,6 +73,8 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
         "dec"
     ]
 
+    module_logger.info("setting up parameters for sumgram with {} stop words".format(len(added_stopwords)))
+
     params = {
         "add_stopwords": ", ".join(added_stopwords),
         "top_sumgram_count": 20,

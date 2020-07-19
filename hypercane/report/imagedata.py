@@ -112,7 +112,7 @@ def rank_images(imagedata):
             module_logger.debug("image data: {}".format(imagedata[urim][image_urim]))
 
             if imagedata[urim][image_urim] is None:
-                module_logger.warning("no data found for image at {} -- skipping...")
+                module_logger.warning("no data found for image at {} -- skipping...".format(image_urim))
                 continue
 
             if 'colorcount' in imagedata[urim][image_urim]:
