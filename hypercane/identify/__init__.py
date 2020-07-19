@@ -17,10 +17,13 @@ from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict
 from requests_futures.sessions import FuturesSession
 from requests.exceptions import RequestException
 from urllib.parse import urlparse
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resources
 from ..utils import process_input_for_cluster_and_rank
 import hypercane.errors
+from hypercane.version import __useragent__
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -173,6 +176,15 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
         req_headers['accept-datetime'] = \
             accept_datetime.strftime( "%a, %d %b %Y %H:%M:%S GMT" )
 
+    retry = Retry(
+        total=10,
+        read=10,
+        connect=10,
+        backoff_factor=0.3,
+        status_forcelist=(500, 502, 504)
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+
     for urir in urirs:
         # check for URI-M first and just take it if it exists
 
@@ -188,10 +200,17 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
                 urig = "{}/{}".format(urig, urir)
 
                 # no caching for datetime negotiation
-                r = requests.get(urig, headers=req_headers)
+                dt_neg_session = requests.Session()
+                dt_neg_session.mount('http://', adapter)
+                dt_neg_session.mount('https://', adapter)
+                dt_neg_session.headers.update({'user-agent': __useragent__})
+
+                r = dt_neg_session.get(urig, headers=req_headers)
 
                 if r.status_code != 200:
-                    module_logger.info("got a status of {} for {} -- could not find a memento for {} via the Memento Aggregator".format(r.status_code, r.url, urir))
+                    module_logger.info(
+                        "got a status of {} for {} -- could not find a memento for {} via {}".format(
+                            r.status_code, r.url, urir, urig))
                     available = False
                 else:
                     if 'memento-datetime' in r.headers:
@@ -207,15 +226,26 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
         if r.url[0:29] == "https://web.archive.org/save/":
             available = False
 
+        # module_logger.info("a candidate memento for {} was found: {}".format(urir, available))
+
         if available is True:
             candidate_urim = r.url
+            module_logger.info("adding available URI-M {}".format(candidate_urim))
+            urims.append(candidate_urim)
         else:
             numsecs = randint(3, 10)
             module_logger.info("sleeping {} seconds before pushing into web archive...".format(numsecs))
             time.sleep(numsecs)
 
             module_logger.info("pushing {} into Internet Archive".format(urir))
-            candidate_urim = archivenow.push(urir, "ia")[0]
+            create_memento_session = requests.Session()
+            create_memento_session.mount('http://', adapter)
+            create_memento_session.mount('https://', adapter)
+            create_memento_session.headers.update({'user-agent': __useragent__})
+
+            candidate_urim = archivenow.push(urir, "ia", session=create_memento_session)[0]
+
+            module_logger.info("received candidate URI-M {} from the Internet Archive".format(candidate_urim))
 
             if candidate_urim[0:5] == "Error" or candidate_urim[0:29] == "https://web.archive.org/save/":
                 # for now, skip if error
@@ -223,9 +253,9 @@ def find_or_create_mementos(urirs, session, accept_datetime=None,
                 # candidate_urim = archivenow.push(urir, "is")[0]
                 module_logger.warning("Failed to push {} into the Internet Archive, skipping...".format(urir))
                 hypercane.errors.errorstore.add(urir, "Failed to create URI-M for {}".format(urir))
-
-        module_logger.info("adding URI-M {}".format(candidate_urim))
-        urims.append(candidate_urim)
+            else:
+                module_logger.info("adding newly minted URI-M {}".format(candidate_urim))
+                urims.append(candidate_urim)
 
     return urims
 

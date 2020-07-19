@@ -342,6 +342,8 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
 
                 urim_data[urim] = rowdata
 
+    module_logger.info("read in {} URIs from file {} for input type {}".format(len(urim_data), filename, input_type_field))
+
     if len(urim_data) == 0:
         # assume we are just dealing with a list of URI-Ms
 
@@ -355,6 +357,11 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
 
                 try:
                     urim = row[0]
+
+                    # in case we have a TSV file of just headers
+                    if urim == input_type_field:
+                        break
+
                     urim_data[urim] = rowdata
 
                 except IndexError:
