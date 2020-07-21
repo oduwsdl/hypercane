@@ -53,6 +53,7 @@ setup(
         'sumgram==0.0.16',
         'warcio'
     ],
+    setup_requires=['nltk', 'spacy'],
     scripts=[
         'bin/hc'
     ],
