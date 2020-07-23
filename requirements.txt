@@ -1,7 +1,7 @@
 aiu==0.1.1a4
 alabaster==0.7.12
 appnope==0.1.0
-archivenow==2019.7.27.2.35.46
+archivenow==2020.7.18.12.19.44
 astroid==2.3.3
 attrs==19.3.0
 Automat==0.8.0
