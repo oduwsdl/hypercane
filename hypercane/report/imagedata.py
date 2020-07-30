@@ -70,8 +70,13 @@ def generate_image_data(urimdata, cache_storage):
     module_logger.info("generating image data with MementoEmbed libraries...")
 
     for urim in urimdata:
-        # TODO: cache this information?
-        imagedata[urim] = generate_images_and_scores(urim, managed_session)
+
+        try:
+            # TODO: cache this information?
+            imagedata[urim] = generate_images_and_scores(urim, managed_session)
+        except Exception:
+            module_logger.exception("failed to produce an image report, skipping {} ...".format(urim))
+            continue
 
     return imagedata
 
