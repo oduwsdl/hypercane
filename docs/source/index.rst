@@ -49,6 +49,13 @@ Hypercane is a research project and is rather volatile. These actions will remai
 
    hc report seed-statistics -i original-resources -a urirs.tsv -o seedstats.json
 
+This documentation is not yet complete. To see what Hypercane can do, please read the following blog posts:
+
+* `Hypercane Part 1: Intelligent Sampling of Web Archive Collections <https://ws-dl.blogspot.com/2020/06/2020-06-03-hypercane-part-1-intelligent.html>`_
+* `Hypercane Part 2: Synthesizing Output For Other Tools <https://ws-dl.blogspot.com/2020/06/2020-06-10-hypercane-part-2.html>`_
+* `Hypercane Part 3: Building Your Own Algorithms <https://ws-dl.blogspot.com/2020/06/2020-06-17-hypercane-part-3-building.html>`_
+
+
 .. toctree::
    :maxdepth: 2
 
