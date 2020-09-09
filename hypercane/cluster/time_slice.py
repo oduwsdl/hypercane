@@ -32,7 +32,12 @@ def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
     if number_of_slices is None:
         # calculate the number of slices 28 + math.log(len(mementos))
-        number_of_slices = math.ceil(28 + math.log(len(mementos)))
+
+        if len(mementos) > 767:
+            number_of_slices = math.ceil(28 + math.log(len(mementos)))
+        else:
+            # modification for smaller collections
+            number_of_slices = math.ceil( math.sqrt( len(mementos) ) )
 
     module_logger.info("The collection will be divided into {} slices".format(number_of_slices))
 
