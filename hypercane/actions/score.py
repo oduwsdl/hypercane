@@ -125,6 +125,59 @@ def dsa1_scoring(args):
 
     logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
 
+def image_count_scoring(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.image_count import score_by_image_count
+
+    parser = argparse.ArgumentParser(
+        description="Score the input using the number of images detected in each memento.",
+        prog="hc score image-count"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by image count")
+
+    if args.input_type == "mementos":
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for scoring".format(
+            args.input_type))
+
+    logger.info("using session {}".format(session))
+    logger.info("using cache storage: {}".format(args.cache_storage))
+
+    urimdata = score_by_image_count(
+        urimdata, session
+    )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished scoring by image count, output is at {}".format(args.output_filename))
+
 
 def print_usage():
 
@@ -133,6 +186,7 @@ def print_usage():
     Supported commands:
     * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm
     * bm25 - score documents according to the input query
+    * image-count - score by the number of images in each document
 
     Examples:
 
@@ -142,6 +196,7 @@ def print_usage():
 
 supported_commands = {
     "dsa1-scoring": dsa1_scoring,
-    "bm25": bm25_ranking
+    "bm25": bm25_ranking,
+    "image-count": image_count_scoring,
 }
 
