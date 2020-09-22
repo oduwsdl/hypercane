@@ -1,6 +1,8 @@
 import logging
+import traceback
+import hypercane.errors
 
-module_logger = logging.getLogger('hypercane.cluster.dbscan')
+module_logger = logging.getLogger('hypercane.cluster.lda')
 
 def cluster_with_lda(urimdata, cache_storage, num_topics):
 
@@ -28,13 +30,20 @@ def cluster_with_lda(urimdata, cache_storage, num_topics):
 
     text_corpus = []
     urimlist = sorted(list(urimdata.keys()))
+    urimlist_noerrors = []
 
     module_logger.info("acquiring boilerplate-free content from {} URI-Ms...".format(len(urimlist)))
     # 1. get boilerplate free content
     for urim in urimlist:
-        text_corpus.append(
-            str(get_boilerplate_free_content(urim, cache_storage=cache_storage))
-        )
+        module_logger.info("getting boilerplate-free content from URI-M: {}".format(urim))
+        try:
+            text_corpus.append(
+                str(get_boilerplate_free_content(urim, cache_storage=cache_storage))
+            )
+            urimlist_noerrors.append(urim)
+        except Exception as exc:
+            module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
+            hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     module_logger.info("acquiring stop words for English...")
     # TODO: 2. determine the language of the content
@@ -71,10 +80,14 @@ def cluster_with_lda(urimdata, cache_storage, num_topics):
     module_logger.info("acquiring the clusters from LDA model")
     # 9. acquire the clusters
     new_clusters = {}
+
+    module_logger.info("size of corpus: {}".format(len(corpus)))
+    module_logger.info("size of urimlist: {}".format(len(urimlist)))
+
     for j in range(0, len(corpus)):
         cluster = max([ (i[1], i[0]) for i in lda.get_document_topics( corpus[j] )])[1]
-        module_logger.info("cluster for document {} is {}".format(j, cluster))
-        urim = urimlist[j]
+        urim = urimlist_noerrors[j]
+        module_logger.info("cluster for document {} is {}".format(urim, cluster))
         new_clusters[urim] = cluster
 
     module_logger.info("assigning clusters to URI-Ms from input data")
