@@ -80,7 +80,7 @@ def run_sample_with(parser, args, algorithm_name, algorithm_script):
 
     cp = subprocess.run(
         [
-            "/bin/sh",
+            "/bin/bash",
             algorithm_script,
             args.input_type,
             args.input_arguments,
@@ -154,7 +154,7 @@ def run_sample_with_dsa1(parser, args):
 
     cp = subprocess.run(
         [
-            "/bin/sh",
+            "/bin/bash",
             algorithm_script,
             args.input_type,
             args.input_arguments,
