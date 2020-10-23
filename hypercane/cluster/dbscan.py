@@ -62,7 +62,12 @@ def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_ra
 
         for urim in clusters_to_urims[cluster]:
             module_logger.info("examining URI-M {}".format(urim))
-            simhash_list.append(urim_to_simhash[urim])
+
+            try:
+                simhash_list.append(urim_to_simhash[urim])
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
         X = np.matrix(simhash_list)
 

@@ -11,7 +11,6 @@ def generate_sumgrams(urimlist, cache_storage, added_stopwords=[]):
     import nltk
     from sumgram.sumgram import get_top_sumgrams
     from hypercane.utils import get_boilerplate_free_content
-    from otmt import generate_raw_urim
     from datetime import datetime
     from string import punctuation
 
