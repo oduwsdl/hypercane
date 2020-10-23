@@ -4,6 +4,8 @@ import lxml.etree
 import random
 import copy
 import traceback
+import pprint
+import time
 
 from justext import justext, get_stoplist
 from aiu import convert_LinkTimeMap_to_dict
@@ -17,6 +19,7 @@ from ..utils import get_web_session, get_boilerplate_free_content
 import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
+pp = pprint.PrettyPrinter(indent=4)
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
@@ -54,8 +57,13 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
     def addMemento(self, urim):
         try:
-            self.session.get(urim)
-            raw_urim = otmt.generate_raw_urim(urim)
+            r = self.session.get(urim)
+
+            if len(r.history) == 0:
+                raw_urim = otmt.generate_raw_urim(urim)
+            else:
+                raw_urim = otmt.generate_raw_urim(r.url)
+
             self.session.get(raw_urim)
             self.urimlist.append(urim)
         except (ConnectionError, TooManyRedirects, RequestException) as e:
@@ -84,15 +92,18 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         futuressession.mount('https://', adapter)
 
         futures = {}
+        raw_futures = {}
 
         working_urim_list = []
+        
+        raw_urims = []
 
         for uri in urims:
 
-            raw_urim = otmt.generate_raw_urim(uri)
+            # raw_urim = otmt.generate_raw_urim(uri)
             working_urim_list.append(uri)
             futures[uri] = futuressession.get(uri)
-            futures[raw_urim] = futuressession.get(raw_urim)
+            # futures[raw_urim] = futuressession.get(raw_urim)
 
         working_starting_size = len(working_urim_list)
 
@@ -108,13 +119,21 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
             if futures[uri].done():
 
-                module_logger.debug("uri {} is done, processing...".format(uri))
+                module_logger.debug("URI-M {} is done, processing...".format(uri))
 
                 if len(working_urim_list) % 100 == 0:
                     module_logger.info("{}/{} mementos left to process".format(len(working_urim_list), working_starting_size))
 
                 try:
                     r = futures[uri].result()
+
+                    if len(r.history) == 0:
+                        raw_urim = otmt.generate_raw_urim(uri)
+                    else:
+                        raw_urim = otmt.generate_raw_urim(r.url)
+
+                    raw_urims.append( raw_urim )
+
                     if 'memento-datetime' not in r.headers:
                         self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
                     else:
@@ -127,6 +146,68 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
                 working_urim_list.remove(uri)
                 del futures[uri]
+
+        module_logger.info("done adding {} mementos, now adding corresponding {} raw mementos...".format( len(urims), len(raw_urims) ))
+
+        working_raw_urim_list = []
+
+        for raw_urim in list(set(raw_urims)):
+
+            working_raw_urim_list.append(raw_urim)
+            raw_futures[raw_urim] = futuressession.get(raw_urim)
+
+        working_rawurims_starting_size = len(working_raw_urim_list)
+
+        # for raw_urim in uri_generator(working_raw_urim_list):
+
+        while len(working_raw_urim_list) > 0:
+
+            raw_urim = random.choice(working_raw_urim_list)
+
+            module_logger.debug("fetching results for raw URI-M {}".format(raw_urim))
+            # module_logger.debug("are the keys the same as the working list: {}".format( set(working_raw_urim_list) == set(list(raw_futures.keys())) ) )
+            module_logger.debug("raw mementos working list size: {}".format(len(working_raw_urim_list)))
+            module_logger.debug("raw mementos futures keys size: {}".format(len(raw_futures)))
+
+            # try:
+            #     raw_futures[raw_urim]
+            # except KeyError:
+            #     module_logger.error("{} is not in futures".format(raw_urim))
+            #     module_logger.error("is it: {}".format( raw_urim in raw_futures ))
+            #     module_logger.error("")
+            #     module_logger.error("working list follows:")
+            #     module_logger.error(pp.pformat(working_raw_urim_list))
+            #     module_logger.error("")
+            #     module_logger.error("raw_futures keys follows:")
+            #     module_logger.error(pp.pformat(list(raw_futures.keys())))
+                
+
+            if raw_futures[raw_urim].done():
+                module_logger.debug("raw URI-M {} is done, processing...".format(raw_urim))
+
+                if len(working_raw_urim_list) % 100 == 0:
+                    module_logger.info("{}/{} raw mementos left to process".format(len(working_raw_urim_list), working_rawurims_starting_size))
+
+                try:
+                    r = raw_futures[raw_urim].result()
+
+                    if 'memento-datetime' not in r.headers:
+                        self.addMementoError(uri, "raw URI-M {} does not produce a memento".format(raw_urim))
+                    else:
+                        # the content should be cached by the session
+                        # we just need to keep track of the raw URI-Ms for this run
+                        self.urimlist.append(raw_urim)
+
+                except Exception as e:
+                    self.addMementoError(raw_urim, repr(e))
+
+                # module_logger.debug("removing {} from working raw URI-M list and raw futures keys".format(raw_urim))
+                working_raw_urim_list.remove(raw_urim)
+                del raw_futures[raw_urim]
+                # module_logger.debug("raw URI-M {} in working raw URI-M list still? {}".format( raw_urim, raw_urim in working_raw_urim_list ))
+                time.sleep(1)
+                # module_logger.debug("raw URI-M {} in working raw URI-M list still? {}".format( raw_urim, raw_urim in working_raw_urim_list ))
+                # module_logger.debug("raw URI-M {} in raw futures keys still? {}".format( raw_urim, raw_urim in raw_futures ))
 
 
     def addMementoError(self, urim, errorinformation):

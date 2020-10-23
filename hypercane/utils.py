@@ -155,15 +155,21 @@ def get_raw_simhash(urim, cache_storage):
             { "urim": urim }
         )["raw simhash"]
     except (KeyError, TypeError):
-        raw_urim = otmt.generate_raw_urim(urim)
 
-        r = session.get(raw_urim)
-        r.raise_for_status()
+        r = session.get(urim)
 
-        if 'text/html' not in r.headers['content-type']:
+        if len(r.history) == 0:
+            raw_urim = otmt.generate_raw_urim(urim)
+        else:
+            raw_urim = otmt.generate_raw_urim(r.url)
+
+        r2 = session.get(raw_urim)
+        r2.raise_for_status()
+
+        if 'text/html' not in r2.headers['content-type']:
             raise Exception("Hypercane currently only operates with HTML resources, refusing to compute Simhash on {}".format(urim))
 
-        simhash = Simhash(r.text).value
+        simhash = Simhash(r2.text).value
 
         db.derivedvalues.update(
             { "urim": urim },
@@ -228,14 +234,20 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
     except (KeyError, TypeError):
 
         module_logger.info("generating boilerplate free content for {}".format(urim))
-        raw_urim = otmt.generate_raw_urim(urim)
 
-        r = session.get(raw_urim)
-        r.raise_for_status()
+        r = session.get(urim)
 
-        module_logger.info("content-type is {}".format(r.headers['content-type']))
+        if len(r.history) == 0:
+            raw_urim = otmt.generate_raw_urim(urim)
+        else:
+            raw_urim = otmt.generate_raw_urim(r.url)
 
-        if 'text/html' not in r.headers['content-type']:
+        r2 = session.get(raw_urim)
+        r2.raise_for_status()
+
+        module_logger.info("content-type is {}".format(r2.headers['content-type']))
+
+        if 'text/html' not in r2.headers['content-type']:
             module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
             return bytes()
 
@@ -253,7 +265,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         extractor = extractors.ArticleExtractor()
 
         try:
-            bpfree = extractor.get_content(r.text)
+            bpfree = extractor.get_content(r2.text)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
