@@ -11,8 +11,8 @@ def return_highest_ranking_memento_per_cluster(urimdata, rankkey):
         cluster = urimdata[urim]['Cluster']
         cluster_assignments.setdefault(cluster, []).append(urim)
 
-    module_logger.info("cluster_assignments: {}".format(cluster_assignments))
-    module_logger.info("urimdata: {}".format(urimdata))
+    module_logger.debug("cluster_assignments: {}".format(cluster_assignments))
+    module_logger.debug("urimdata: {}".format(urimdata))
 
     for cluster in cluster_assignments:
 

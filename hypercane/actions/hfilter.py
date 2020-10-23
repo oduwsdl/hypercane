@@ -318,6 +318,55 @@ def exclude_rank(args):
         args.output_filename
     ))
 
+def include_largest_clusters(args):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.hfilter.largest_cluster import return_largest_clusters
+    from hypercane.utils import save_resource_data
+
+    parser = argparse.ArgumentParser(
+        description="Include only mementos from the largest clusters. Input must contain cluster information. If two clusters have the same size, the first listed in the input is returned.",
+        prog="hc filter include-only largest-cluster"
+    )
+
+    parser.add_argument('--cluster-count', default=1, dest='cluster_count',
+        help="The number of clusters' worth of mementos to returned, sorted descending by cluster size."
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting detection of mementos in the largest cluster...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: add a note about no crawling for this filter
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
+
+    filtered_urims = return_largest_clusters(urimdata, int(args.cluster_count))
+
+    logger.info("returning largest cluster with {} mementos".format(len(filtered_urims)))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Completed detection of mementos in the largest cluster, output is in {}".format(
+        args.output_filename
+    ))
+
 def include_highest_score_per_cluster(args):
 
     import argparse
@@ -665,6 +714,7 @@ def print_include_usage():
     * containing-pattern - include only mementos that contain the given regular experession pattern
     * near-datetime - include only mementos whose memento-datetime falls into the given range
     * containing-url-pattern - include only mementos whose original resource URL matches the given regular expression pattern
+    * largest-clusters - include only the mementos from the largest cluster, requires that input contain clustered mementos
 
     Examples:
 
@@ -700,7 +750,8 @@ include_criteria = {
     "highest-score-per-cluster": include_highest_score_per_cluster,
     "containing-pattern": include_containing_pattern,
     "near-datetime": include_near_datetime,
-    "containing-url-pattern": include_urir
+    "containing-url-pattern": include_urir,
+    "largest-clusters": include_largest_clusters
 }
 
 exclude_criteria = {
