@@ -4,7 +4,7 @@ import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.cluster.lda')
 
-def cluster_with_lda(urimdata, cache_storage, num_topics):
+def cluster_with_lda(urimdata, cache_storage, num_topics, iterations, passes):
 
     from gensim.models import LdaModel
     from gensim import corpora
@@ -75,7 +75,7 @@ def cluster_with_lda(urimdata, cache_storage, num_topics):
     module_logger.info("creating the LDA model from the corpus")
     # 8. create the LDA Model
     id2word = dictionary
-    lda = LdaModel(corpus, id2word=id2word, num_topics=10, chunksize=1)
+    lda = LdaModel(corpus, id2word=id2word, num_topics=num_topics, chunksize=1, iterations=iterations, passes=passes)
 
     module_logger.info("acquiring the clusters from LDA model")
     # 9. acquire the clusters
@@ -85,6 +85,11 @@ def cluster_with_lda(urimdata, cache_storage, num_topics):
     module_logger.info("size of urimlist: {}".format(len(urimlist)))
 
     for j in range(0, len(corpus)):
+        
+        module_logger.info("topics: {}".format(lda.get_document_topics( corpus[j] )))
+        # cluster = "---".join(
+        #     str(i[0]) for i in lda.get_document_topics(corpus[j])
+        # )
         cluster = max([ (i[1], i[0]) for i in lda.get_document_topics( corpus[j] )])[1]
         urim = urimlist_noerrors[j]
         module_logger.info("cluster for document {} is {}".format(urim, cluster))
