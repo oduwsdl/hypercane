@@ -229,8 +229,18 @@ def cluster_by_lda(args):
     # TODO: add argument for top scoring cluster (default) or all of them
 
     parser.add_argument('--num_topics', dest='num_topics',
-        default=20, required=False,
+        default=20, required=False, type=int,
         help='The number of topics to cluster.'
+    )
+
+    parser.add_argument('--num_passes', dest='num_passes',
+        default=2, required=False, type=int,
+        help='The number of passes through the corpus during training. This corresponds to the Gensim LDA setting of the same name. See: https://radimrehurek.com/gensim/auto_examples/tutorials/run_lda.html'
+    )
+
+    parser.add_argument('--num_iterations', dest='num_iterations',
+        default=50, required=False, type=int,
+        help='The number of iterations through each document during training. This corresponds to the Gensim LDA setting of the same name. See: https://radimrehurek.com/gensim/auto_examples/tutorials/run_lda.html'
     )
 
     args = process_input_args(args, parser)
@@ -253,7 +263,7 @@ def cluster_by_lda(args):
 
     logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
 
-    urimdata_with_slices = cluster_with_lda(urimdata, args.cache_storage, args.num_topics)
+    urimdata_with_slices = cluster_with_lda(urimdata, args.cache_storage, args.num_topics, args.num_iterations, args.num_passes)
 
     logger.info(urimdata_with_slices)
 
