@@ -76,17 +76,17 @@ def dsa1_scoring(args):
     )
 
     parser.add_argument('--damage-weight', dest='damage_weight',
-        default=-0.40,
+        default=-0.40, type=float,
         help="The weight for the Memento-Damage score in the scoring."
     )
 
     parser.add_argument('--category-weight', dest='category_weight',
-        default=0.15,
+        default=0.15, type=float,
         help="The weight for the URI-R category score in the scoring."
     )
 
     parser.add_argument('--path-depth-weight', dest='path_depth_weight',
-        default=0.45,
+        default=0.45, type=float,
         help="The weight for the URI-R path depth score in the scoring."
     )
 
