@@ -90,7 +90,7 @@ def cluster_by_dbscan(args):
     )
 
     parser.add_argument('--feature', dest='feature',
-        default='simhash',
+        default='tf-simhash',
         help='The feature in which to cluster the documents.'
     )
 
@@ -152,7 +152,7 @@ def cluster_by_dbscan(args):
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
-    logger.info("Clustering of collection via DBSCAN on feature {} is complete".format(args.feature))
+    logger.info("Clustering of collection via DBSCAN on feature {} is complete, output is in {}".format(args.feature, args.output_filename))
 
 
 def time_slice(args):
