@@ -178,6 +178,56 @@ def image_count_scoring(args):
 
     logger.info("Finished scoring by image count, output is at {}".format(args.output_filename))
 
+# def textrank_scoring(args):
+
+#     import argparse
+
+#     from hypercane.actions import process_input_args, get_logger, \
+#         calculate_loglevel
+
+#     from hypercane.utils import get_web_session, save_resource_data
+
+#     from hypercane.identify import discover_resource_data_by_input_type, \
+#         discover_mementos_by_input_type
+
+#     from hypercane.score.textrank import score_by_textrank
+
+#     parser = argparse.ArgumentParser(
+#         description="Score the input using the Gensim TextRank algorithm.",
+#         prog="hc score image-count"
+#     )
+
+#     args = process_input_args(args, parser)
+#     output_type = 'mementos'
+
+#     logger = get_logger(
+#         __name__,
+#         calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+#         args.logfile
+#     )
+
+#     session = get_web_session(cache_storage=args.cache_storage)
+
+#     logger.info("Beginning the scoring by image count")
+
+#     if args.input_type == "mementos":
+#         urimdata = discover_resource_data_by_input_type(
+#             args.input_type, output_type, args.input_arguments, args.crawl_depth,
+#             session, discover_mementos_by_input_type
+#         )
+#     else:
+#         # TODO: derive URI-Ms from input type
+#         raise NotImplementedError("Input type of {} not yet supported for scoring".format(
+#             args.input_type))
+
+#     logger.info("using session {}".format(session))
+#     logger.info("using cache storage: {}".format(args.cache_storage))
+
+#     urimdata = score_by_textrank(urimdata, args.cache_storage)
+
+#     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+#     logger.info("done scoring by Textrank, output is at: {}".format(args.output_filename))
 
 def print_usage():
 
@@ -198,5 +248,6 @@ supported_commands = {
     "dsa1-scoring": dsa1_scoring,
     "bm25": bm25_ranking,
     "image-count": image_count_scoring,
+    # "textrank": textrank_scoring
 }
 

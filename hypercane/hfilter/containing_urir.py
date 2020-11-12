@@ -23,7 +23,7 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
 
             try:
                 urim = future_to_urim[future]
-                urir = future_to_urim.result()
+                urir = future.result()[0]
 
                 if compiled_pattern.match(urir) is not None:
                     filtered_urims.append(urim)
