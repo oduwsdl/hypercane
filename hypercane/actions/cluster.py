@@ -1,5 +1,3 @@
-import sys
-
 class HypercaneClusterInputException(Exception):
     pass
 
@@ -42,7 +40,7 @@ def cluster_by_kmeans(args):
         args.logfile
     )
 
-    logger.info("Beginning the clustering of the collection by dbscan...")
+    logger.info("Beginning the clustering of the collection by K-means with feature {}...".format(args.feature))
 
     session = get_web_session(cache_storage=args.cache_storage)
 
@@ -265,13 +263,102 @@ def cluster_by_lda(args):
 
     urimdata_with_slices = cluster_with_lda(urimdata, args.cache_storage, args.num_topics, args.num_iterations, args.num_passes)
 
-    logger.info(urimdata_with_slices)
-
     # we use urimdata and urimdata_with_slices because they should match, if they don't we will detect an error
     save_resource_data(args.output_filename, urimdata_with_slices, 'mementos', list(urimdata.keys()))
 
     logger.info("finished clustering with LDA, output is available at {}".format(args.output_filename))
 
+def cluster_by_domain_name(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.cluster.domain import cluster_by_domain_name
+
+    parser = argparse.ArgumentParser(
+        description="Cluster the input based on domain name.",
+        prog="hc cluster domainname"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Beginning domain name clustering of collection...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
+
+    urimdata_with_clusters = cluster_by_domain_name(urimdata, args.cache_storage)
+
+    # we use urimdata and urimdata_with_clusters because they should match, if they don't we will detect an error
+    save_resource_data(args.output_filename, urimdata_with_clusters, 'mementos', list(urimdata.keys()))
+
+    logger.info("finished clustering by domain name, output is available at {}".format(args.output_filename))
+
+def cluster_by_urir(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.cluster.original_resource import cluster_by_urir
+
+    parser = argparse.ArgumentParser(
+        description="Cluster the input based on domain name.",
+        prog="hc cluster domainname"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Beginning original resource URI clustering of collection...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("There were {} mementos discovered in the input".format(len(urimdata)))
+
+    urimdata_with_clusters = cluster_by_urir(urimdata, args.cache_storage)
+
+    # we use urimdata and urimdata_with_clusters because they should match, if they don't we will detect an error
+    save_resource_data(args.output_filename, urimdata_with_clusters, 'mementos', list(urimdata.keys()))
+
+    logger.info("finished clustering by original resource URI, output is available at {}".format(args.output_filename))
 
 def print_usage():
 
@@ -282,6 +369,7 @@ def print_usage():
     * dbscan - cluster the user-supplied feature using the DBSCAN algorithm
     * lda - cluster the collection via LDA topic modeling
     * kmeans - cluster the user-supplied feature using K-means clustering
+    * domainname - cluster the URI-Ms by domainname
 
     Examples:
 
@@ -298,6 +386,8 @@ supported_commands = {
     "dbscan": cluster_by_dbscan,
     "lda": cluster_by_lda,
     "kmeans": cluster_by_kmeans,
-    "k-means": cluster_by_kmeans
+    "k-means": cluster_by_kmeans,
+    "domainname": cluster_by_domain_name,
+    "original-resource": cluster_by_urir
 }
 

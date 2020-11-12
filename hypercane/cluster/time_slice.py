@@ -11,6 +11,20 @@ def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
     from ..utils import get_memento_http_metadata
     import traceback
 
+    # learn existing cluster assignments
+    urim_to_cluster = {}
+    clusters_to_urims = {}
+    for urim in urimdata:
+
+        try:
+            clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+            urim_to_cluster[urim] = urimdata[urim]['Cluster']
+        except KeyError:
+            clusters_to_urims.setdefault( None, [] ).append(urim)
+            urim_to_cluster[urim] = None
+    
+    module_logger.info("stored existing clusters for {} URI-Ms".format(len(urim_to_cluster)))
+
     mementos = []
 
     # extract the memento datetimes
@@ -75,7 +89,8 @@ def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
             if 'Cluster' in urimdata[urim]:
                 # preserve original cluster assignment
-                urimdata[urim]['Cluster'] = "{}~~~{}".format( urimdata[ urim['Cluster'] ], i )
+                existing_cluster = urim_to_cluster[urim]
+                urimdata[urim]['Cluster'] = "{}~~~{}".format( existing_cluster, i )
             else:
                 urimdata[urim]['Cluster'] = i
 
