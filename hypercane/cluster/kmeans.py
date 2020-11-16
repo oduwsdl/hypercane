@@ -57,7 +57,20 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
 
         X = np.matrix(mdt_list)
 
-        db = km.fit(X.T)
+        try:
+            db = km.fit(X.T)
+        except ValueError as e:
+            module_logger.exception("Issue with fitting cluster, assigning all to same cluster")
+            label = 99999 # something obscenely high that we hopefully will never hit
+
+            for urim in clusters_to_urims[cluster]:
+                if cluster is None:
+                    urimdata[urim]['Cluster'] = "{}".format(label)
+                else:
+                    # preserve original cluster assignment
+                    urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
+
+            continue
 
         for index, label in enumerate(db.labels_):
 
