@@ -17,7 +17,7 @@ botocore==1.13.50
 Brotli==1.0.4
 bs4==0.0.1
 cairocffi==1.1.0
-CairoSVG==2.3.0
+CairoSVG==2.5.1
 catalogue==1.0.0
 certifi==2019.11.28
 cffi==1.13.2
