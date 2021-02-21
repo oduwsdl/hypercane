@@ -21,7 +21,7 @@ from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 
 from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resources
-from ..utils import process_input_for_cluster_and_rank
+from ..utils import process_input_for_cluster_and_rank, get_memento_http_metadata
 import hypercane.errors
 from hypercane.version import __useragent__
 
@@ -445,15 +445,23 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     elif input_type == "mementos":
         urims = input_args
-        link_storage = StorageObject()
-        crawl_mementos(link_storage, urims, crawl_depth)
 
-        for item in link_storage.storage:
+        for urim in urims:
+            module_logger.debug("seeking for URI-R for URI-M {}".format(urim))
+            urir = get_memento_http_metadata(urim, session.cache_storage, 
+                metadata_fields=['original'])[0]
+            output_urirs.append(urir)
 
-            urir = item[1]
+        if crawl_depth > 1:
+            link_storage = StorageObject()
+            crawl_mementos(link_storage, urims, crawl_depth)
 
-            if urir not in output_urirs:
-                output_urirs.append(urir)
+            for item in link_storage.storage:
+
+                urir = item[1]
+
+                if urir not in output_urirs:
+                    output_urirs.append(urir)
 
     elif input_type == "original-resources":
 
