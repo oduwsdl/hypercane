@@ -131,6 +131,7 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             else:
 
+                r = mr.response
                 uri = r.links[field]["url"]
                 output_values.append( uri )
                 db.derivedvalues.update(
@@ -263,29 +264,6 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         module_logger.info("generating boilerplate free content for {}".format(urim))
 
         r = session.get(urim)
-
-        # if len(r.history) == 0:
-        #     raw_urim = otmt.generate_raw_urim(urim)
-        # else:
-        #     raw_urim = otmt.generate_raw_urim(r.url)
-
-        # r2 = session.get(raw_urim)
-        # r2.raise_for_status()
-
-        # module_logger.info("content-type is {}".format(r2.headers['content-type']))
-
-        # if 'text/html' not in r2.headers['content-type']:
-        #     module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
-        #     return bytes()
-
-        # paragraphs = justext(
-        #     r.text, get_stoplist('English')
-        # )
-
-        # bpfree = ""
-
-        # for paragraph in paragraphs:
-        #     bpfree += "{}\n".format(paragraph.text)
 
         module_logger.debug("attempting to extract boilerplate free content from {}".format(urim))
 
