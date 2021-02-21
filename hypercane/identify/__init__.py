@@ -297,11 +297,22 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     elif input_type == "mementos":
         urims = input_args
-        link_storage = StorageObject()
-        crawl_mementos(link_storage, urims, crawl_depth)
 
-        for item in link_storage.storage:
-            urits.append(item[0])
+        for urim in urims:
+
+            module_logger.debug("seeking for URI-R for URI-M {}".format(urim))
+            urit = get_memento_http_metadata(urim, session.cache_storage, 
+                metadata_fields=['timemap'])[0]
+
+            urits.append(urit)
+
+        if crawl_depth > 1:
+
+            link_storage = StorageObject()
+            crawl_mementos(link_storage, urims, crawl_depth)
+
+            for item in link_storage.storage:
+                urits.append(item[0])
 
     elif input_type == "original-resources":
 
