@@ -46,6 +46,7 @@ def get_web_session(cache_storage=None):
             dbconn = MongoClient(cache_storage)
             session = CachedSession(backend='mongodb')
             session.cache = MongoCache(connection=dbconn, db_name=dbname)
+            session.cache_storage = cache_storage
         else:
             session = CachedSession(cache_name=cache_storage, extension='')
     else:
@@ -92,11 +93,14 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
         r = session.get(urim)
         r.raise_for_status
 
+        mr = memento_resource_factory(urim, session)
+
         for field in metadata_fields:
 
             if field == 'memento-datetime':
 
-                mdt = r.headers['memento-datetime']
+                # mdt = r.headers['memento-datetime']
+                mdt = mr.memento_datetime
                 output_values.append( mdt )
                 db.derivedvalues.update(
                     { "urim": urim },
@@ -106,11 +110,22 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             elif field == 'original':
 
-                urir = get_original_uri_from_response(r)
+                # urir = get_original_uri_from_response(r)
+                urir = mr.original_uri
                 output_values.append( urir )
                 db.derivedvalues.update(
                     { "urim": urim },
                     { "$set": { "original": urir }},
+                    upsert=True
+                )
+
+            elif field == 'timegate':
+
+                urig = mr.timegate
+                output_values.append( urig )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "timegate": urir }},
                     upsert=True
                 )
 
