@@ -15,6 +15,8 @@ from simhash import Simhash
 from newspaper import Article
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from mementoembed.mementoresource import memento_resource_factory, \
+    get_original_uri_from_response
 
 from .version import __useragent__
 import hypercane.errors
@@ -99,6 +101,16 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                 db.derivedvalues.update(
                     { "urim": urim },
                     { "$set": { "memento-datetime": str(mdt) }},
+                    upsert=True
+                )
+
+            elif field == 'original':
+
+                urir = get_original_uri_from_response(r)
+                output_values.append( urir )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "original": urir }},
                     upsert=True
                 )
 
@@ -237,19 +249,19 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         r = session.get(urim)
 
-        if len(r.history) == 0:
-            raw_urim = otmt.generate_raw_urim(urim)
-        else:
-            raw_urim = otmt.generate_raw_urim(r.url)
+        # if len(r.history) == 0:
+        #     raw_urim = otmt.generate_raw_urim(urim)
+        # else:
+        #     raw_urim = otmt.generate_raw_urim(r.url)
 
-        r2 = session.get(raw_urim)
-        r2.raise_for_status()
+        # r2 = session.get(raw_urim)
+        # r2.raise_for_status()
 
-        module_logger.info("content-type is {}".format(r2.headers['content-type']))
+        # module_logger.info("content-type is {}".format(r2.headers['content-type']))
 
-        if 'text/html' not in r2.headers['content-type']:
-            module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
-            return bytes()
+        # if 'text/html' not in r2.headers['content-type']:
+        #     module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
+        #     return bytes()
 
         # paragraphs = justext(
         #     r.text, get_stoplist('English')
@@ -265,7 +277,8 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         extractor = extractors.ArticleExtractor()
 
         try:
-            bpfree = extractor.get_content(r2.text)
+            mr = memento_resource_factory(urim, session)
+            bpfree = extractor.get_content(mr.raw_content)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
