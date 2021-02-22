@@ -15,6 +15,8 @@ from simhash import Simhash
 from newspaper import Article
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from mementoembed.mementoresource import memento_resource_factory, \
+    get_original_uri_from_response
 
 from .version import __useragent__
 import hypercane.errors
@@ -44,6 +46,7 @@ def get_web_session(cache_storage=None):
             dbconn = MongoClient(cache_storage)
             session = CachedSession(backend='mongodb')
             session.cache = MongoCache(connection=dbconn, db_name=dbname)
+            session.cache_storage = cache_storage
         else:
             session = CachedSession(cache_name=cache_storage, extension='')
     else:
@@ -90,11 +93,14 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
         r = session.get(urim)
         r.raise_for_status
 
+        mr = memento_resource_factory(urim, session)
+
         for field in metadata_fields:
 
             if field == 'memento-datetime':
 
-                mdt = r.headers['memento-datetime']
+                # mdt = r.headers['memento-datetime']
+                mdt = mr.memento_datetime
                 output_values.append( mdt )
                 db.derivedvalues.update(
                     { "urim": urim },
@@ -102,8 +108,30 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                     upsert=True
                 )
 
+            elif field == 'original':
+
+                # urir = get_original_uri_from_response(r)
+                urir = mr.original_uri
+                output_values.append( urir )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "original": urir }},
+                    upsert=True
+                )
+
+            elif field == 'timegate':
+
+                urig = mr.timegate
+                output_values.append( urig )
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "timegate": urir }},
+                    upsert=True
+                )
+
             else:
 
+                r = mr.response
                 uri = r.links[field]["url"]
                 output_values.append( uri )
                 db.derivedvalues.update(
@@ -237,35 +265,13 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
         r = session.get(urim)
 
-        if len(r.history) == 0:
-            raw_urim = otmt.generate_raw_urim(urim)
-        else:
-            raw_urim = otmt.generate_raw_urim(r.url)
-
-        r2 = session.get(raw_urim)
-        r2.raise_for_status()
-
-        module_logger.info("content-type is {}".format(r2.headers['content-type']))
-
-        if 'text/html' not in r2.headers['content-type']:
-            module_logger.warning("we can only remove boilerplate from HTML, returning zero bytes")
-            return bytes()
-
-        # paragraphs = justext(
-        #     r.text, get_stoplist('English')
-        # )
-
-        # bpfree = ""
-
-        # for paragraph in paragraphs:
-        #     bpfree += "{}\n".format(paragraph.text)
-
         module_logger.debug("attempting to extract boilerplate free content from {}".format(urim))
 
         extractor = extractors.ArticleExtractor()
 
         try:
-            bpfree = extractor.get_content(r2.text)
+            mr = memento_resource_factory(urim, session)
+            bpfree = extractor.get_content(mr.raw_content)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
