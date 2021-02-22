@@ -6,6 +6,8 @@ pp = pprint.PrettyPrinter(indent=4)
 module_logger = logging.getLogger('hypercane.report.imagedata')
 
 def get_managed_session(cache_storage):
+    # TODO: replace calls from this with get_web_session after 
+    # verifying that they both do the same thing now
 
     import os
     from urllib.parse import urlparse
