@@ -480,9 +480,16 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
         nlac = NLACollection(collection_id, session=session)
 
-        output_urirs = nlac.list_seed_uris()
+        candidate_urirs = nlac.list_seed_uris()
+        output_urirs = []
 
         # sometimes seeds do not contain proper URIs
+        for urir in candidate_urirs:
+
+            if urir[0:4] != 'http':
+                urir = urir[urir.find('/http') + 1:]
+
+            output_urirs.append(urir)
 
         if crawl_depth > 1:
             module_logger.warning(
