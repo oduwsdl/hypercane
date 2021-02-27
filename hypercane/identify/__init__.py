@@ -379,7 +379,15 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         nlac = NLACollection(collection_id, session=session)
 
-        output_urims = nlac.list_memento_urims()
+        candidate_urims = nlac.list_memento_urims()
+        output_urims = []
+
+        # sometimes the NLA JSON returns extra \n characters around the URI-M
+
+        for urim in candidate_urims:
+
+            urim = urim.strip()
+            output_urims.append(urim)
 
         if crawl_depth > 1:
             module_logger.warning(
@@ -473,6 +481,8 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
         nlac = NLACollection(collection_id, session=session)
 
         output_urirs = nlac.list_seed_uris()
+
+        # sometimes seeds do not contain proper URIs
 
         if crawl_depth > 1:
             module_logger.warning(
