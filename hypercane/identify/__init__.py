@@ -13,7 +13,7 @@ from random import randint
 from datetime import datetime
 from archivenow import archivenow
 from copy import deepcopy
-from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict
+from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict, NLACollection
 from requests_futures.sessions import FuturesSession
 from requests.exceptions import RequestException
 from urllib.parse import urlparse
@@ -377,7 +377,13 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         collection_id = input_args
         module_logger.info("NLA collection identifier: {}".format(collection_id))
 
-        raise NotImplementedError("Memento discovery not yet supported for NLA collections")
+        nlac = NLACollection(collection_id, session=session)
+
+        output_urims = nlac.list_memento_urims()
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
 
     elif input_type == "timemaps":
 
@@ -464,7 +470,13 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
         collection_id = input_args
         module_logger.info("NLA collection identifier: {}".format(collection_id))
 
-        raise NotImplementedError("Original resource discovery not yet supported for NLA collections")
+        nlac = NLACollection(collection_id, session=session)
+
+        output_urirs = nlac.list_seed_uris()
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
 
     elif input_type == "timemaps":
         urits = input_args
