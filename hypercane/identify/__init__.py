@@ -266,7 +266,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     if input_type == "archiveit":
         collection_id = input_args
-        module_logger.info("Collection identifier: {}".format(collection_id))
+        module_logger.info("Archive-It collection identifier: {}".format(collection_id))
         seeds = list_seed_uris(collection_id, session)
         urits = generate_archiveit_urits(collection_id, seeds)
         module_logger.info("discovered {} URI-Ts prior to deeper crawling".format(
@@ -280,6 +280,13 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
             for item in link_storage.storage:
                 urits.append(item[0])
+
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        raise NotImplementedError("TimeMap discovery not yet supported for NLA collections")
 
     elif input_type == "timemaps":
 
@@ -365,6 +372,13 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         output_urims = download_urits_and_extract_urims(urits, session)
 
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        raise NotImplementedError("Memento discovery not yet supported for NLA collections")
+
     elif input_type == "timemaps":
 
         if accept_datetime is not None:
@@ -445,6 +459,13 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             for item in link_storage.storage:
                 output_urirs.append(item[1])
 
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        raise NotImplementedError("Original resource discovery not yet supported for NLA collections")
+
     elif input_type == "timemaps":
         urits = input_args
         urims = download_urits_and_extract_urims(urits, session)
@@ -506,7 +527,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     module_logger.info("processing input for type {}".format(input_type))
 
-    if input_type == 'archiveit':
+    if input_type == 'archiveit' or input_type == 'nla':
         input_data = input_arguments
         uridata = None
     else:
