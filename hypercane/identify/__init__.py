@@ -489,6 +489,9 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             if urir[0:4] != 'http':
                 urir = urir[urir.find('/http') + 1:]
 
+                if urir[0:4] != 'http':
+                    urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
             output_urirs.append(urir)
 
         if crawl_depth > 1:
