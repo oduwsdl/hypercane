@@ -293,7 +293,10 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
         collection_id = input_args
         module_logger.info("NLA collection identifier: {}".format(collection_id))
 
-        raise NotImplementedError("TimeMap discovery not yet supported for NLA collections")
+        raise NotImplementedError(
+            "TimeMap discovery not supported for NLA collections, "
+            "NLA collections are built from individual mementos, not TimeMaps"
+            )
 
     elif input_type == "timemaps":
 
