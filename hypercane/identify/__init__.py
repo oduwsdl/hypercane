@@ -13,7 +13,7 @@ from random import randint
 from datetime import datetime
 from archivenow import archivenow
 from copy import deepcopy
-from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict
+from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict, NLACollection
 from requests_futures.sessions import FuturesSession
 from requests.exceptions import RequestException
 from urllib.parse import urlparse
@@ -162,6 +162,13 @@ def list_seed_uris(collection_id, session):
 
     return aic.list_seed_uris()
 
+def generate_subcollection(subcollection_list):
+    while len(list(set(subcollection_list))) > 0:
+        module_logger.info('subcollection_list size: {}'.format(len(subcollection_list)))
+        next_subcollection = subcollection_list[0]
+        module_logger.info('returning next collection id {}'.format(next_subcollection))            
+        yield next_subcollection
+
 def find_or_create_mementos(urirs, session, accept_datetime=None,
     timegates=[
         "https://timetravel.mementoweb.org/timegate/",
@@ -266,7 +273,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     if input_type == "archiveit":
         collection_id = input_args
-        module_logger.info("Collection identifier: {}".format(collection_id))
+        module_logger.info("Archive-It collection identifier: {}".format(collection_id))
         seeds = list_seed_uris(collection_id, session)
         urits = generate_archiveit_urits(collection_id, seeds)
         module_logger.info("discovered {} URI-Ts prior to deeper crawling".format(
@@ -280,6 +287,16 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
             for item in link_storage.storage:
                 urits.append(item[0])
+
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        raise NotImplementedError(
+            "TimeMap discovery not supported for NLA collections, "
+            "NLA collections are built from individual mementos, not TimeMaps"
+            )
 
     elif input_type == "timemaps":
 
@@ -365,6 +382,31 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         output_urims = download_urits_and_extract_urims(urits, session)
 
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        nlac = NLACollection(collection_id, session=session)
+
+        subcollections = nlac.get_subcollections()
+        candidate_urims = [urim.strip for urim in nlac.list_memento_urims()]
+        output_urims = candidate_urims
+
+        module_logger.info("initial subcollections: {}".format(subcollections))
+
+        for subcollection_id in generate_subcollection(subcollections):
+            nlac = NLACollection(subcollection_id, session=session)
+            subcollections.extend(nlac.get_subcollections())
+            # sometimes the NLA JSON returns extra \n characters around the URI-M
+            output_urims.extend( [urim.strip for urim in nlac.list_memento_urims()] )
+            module_logger.info("extended subcollections: {}".format(subcollections))
+            subcollections.remove(subcollection_id)
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
+
     elif input_type == "timemaps":
 
         if accept_datetime is not None:
@@ -445,6 +487,40 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             for item in link_storage.storage:
                 output_urirs.append(item[1])
 
+    elif input_type == "nla":
+
+        collection_id = input_args
+        module_logger.info("NLA collection identifier: {}".format(collection_id))
+
+        nlac = NLACollection(collection_id, session=session)
+
+        subcollections = nlac.get_subcollections()
+        
+        output_urirs = []
+
+        for subcollection_id in generate_subcollection(subcollections):
+            nlac = NLACollection(subcollection_id, session=session)
+            subcollections.extend(nlac.get_subcollections())
+            candidate_urirs = nlac.list_seed_uris()    
+
+            # sometimes seeds do not contain proper URIs
+            for urir in candidate_urirs:
+
+                if urir[0:4] != 'http':
+                    urir = urir[urir.find('/http') + 1:]
+
+                    if urir[0:4] != 'http':
+                        urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
+                output_urirs.append(urir)
+
+            module_logger.info("extended subcollections: {}".format(subcollections))
+            subcollections.remove(subcollection_id)
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
+
     elif input_type == "timemaps":
         urits = input_args
         urims = download_urits_and_extract_urims(urits, session)
@@ -506,7 +582,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     module_logger.info("processing input for type {}".format(input_type))
 
-    if input_type == 'archiveit':
+    if input_type == 'archiveit' or input_type == 'nla':
         input_data = input_arguments
         uridata = None
     else:
