@@ -162,6 +162,13 @@ def list_seed_uris(collection_id, session):
 
     return aic.list_seed_uris()
 
+def generate_subcollection(subcollection_list):
+    while len(list(set(subcollection_list))) > 0:
+        module_logger.info('subcollection_list size: {}'.format(len(subcollection_list)))
+        next_subcollection = subcollection_list[0]
+        module_logger.info('returning next collection id {}'.format(next_subcollection))            
+        yield next_subcollection
+
 def find_or_create_mementos(urirs, session, accept_datetime=None,
     timegates=[
         "https://timetravel.mementoweb.org/timegate/",
@@ -385,22 +392,13 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         module_logger.info("initial subcollections: {}".format(subcollections))
 
-        def generate_subcollection(subcollection_list):
-            while len(subcollection_list) > 0:
-                module_logger.info('subcollection_list size: {}'.format(len(subcollection_list)))
-                next_subcollection = subcollection_list[0]
-                module_logger.info('returning next collection id {}'.format(next_subcollection))            
-                yield next_subcollection
-
         for subcollection_id in generate_subcollection(subcollections):
             nlac = NLACollection(subcollection_id, session=session)
             subcollections.extend(nlac.get_subcollections())
+            # sometimes the NLA JSON returns extra \n characters around the URI-M
             output_urims.extend( [urim.strip for urim in nlac.list_memento_urims()] )
             module_logger.info("extended subcollections: {}".format(subcollections))
             subcollections.remove(subcollection_id)
-            
-
-        # sometimes the NLA JSON returns extra \n characters around the URI-M
 
         if crawl_depth > 1:
             module_logger.warning(
@@ -493,19 +491,28 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
         nlac = NLACollection(collection_id, session=session)
 
-        candidate_urirs = nlac.list_seed_uris()
+        subcollections = nlac.get_subcollections()
+        
         output_urirs = []
 
-        # sometimes seeds do not contain proper URIs
-        for urir in candidate_urirs:
+        for subcollection_id in generate_subcollection(subcollections):
+            nlac = NLACollection(subcollection_id, session=session)
+            subcollections.extend(nlac.get_subcollections())
+            candidate_urirs = nlac.list_seed_uris()    
 
-            if urir[0:4] != 'http':
-                urir = urir[urir.find('/http') + 1:]
+            # sometimes seeds do not contain proper URIs
+            for urir in candidate_urirs:
 
                 if urir[0:4] != 'http':
-                    urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+                    urir = urir[urir.find('/http') + 1:]
 
-            output_urirs.append(urir)
+                    if urir[0:4] != 'http':
+                        urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
+                output_urirs.append(urir)
+
+            module_logger.info("extended subcollections: {}".format(subcollections))
+            subcollections.remove(subcollection_id)
 
         if crawl_depth > 1:
             module_logger.warning(
