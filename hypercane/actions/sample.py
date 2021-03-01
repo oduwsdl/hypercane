@@ -284,7 +284,8 @@ def sample_with_true_random(args):
         session, discover_mementos_by_input_type
     )
 
-    logger.info("Executing select true random algorithm")
+    logger.info("Executing select true random algorithm to select {} from {} URI-Ms".format(
+        int(args.sample_count), len(urimdata.keys())))
     sampled_urims = select_true_random(list(urimdata.keys()), int(args.sample_count))
 
     logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
