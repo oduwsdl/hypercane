@@ -390,7 +390,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
         nlac = NLACollection(collection_id, session=session)
 
         subcollections = nlac.get_subcollections()
-        candidate_urims = [urim.strip for urim in nlac.list_memento_urims()]
+        candidate_urims = [urim.strip() for urim in nlac.list_memento_urims()]
         output_urims = candidate_urims
 
         module_logger.info("initial subcollections: {}".format(subcollections))
@@ -399,7 +399,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
             nlac = NLACollection(subcollection_id, session=session)
             subcollections.extend(nlac.get_subcollections())
             # sometimes the NLA JSON returns extra \n characters around the URI-M
-            output_urims.extend( [urim.strip for urim in nlac.list_memento_urims()] )
+            output_urims.extend( [urim.strip() for urim in nlac.list_memento_urims()] )
             module_logger.info("extended subcollections: {}".format(subcollections))
             subcollections.remove(subcollection_id)
 

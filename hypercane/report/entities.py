@@ -9,6 +9,8 @@ def get_document_entities(urim, cache_storage, entity_types):
     from nltk.corpus import stopwords
     from hypercane.utils import get_boilerplate_free_content
 
+    module_logger.info("starting entity extraction process for {}".format(urim))
+
     content = get_boilerplate_free_content(urim, cache_storage=cache_storage)
 
     nlp = spacy.load("en_core_web_sm")
