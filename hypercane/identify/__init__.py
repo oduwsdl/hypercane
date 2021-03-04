@@ -24,6 +24,7 @@ from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resource
 from ..utils import process_input_for_cluster_and_rank, get_memento_http_metadata
 import hypercane.errors
 from hypercane.version import __useragent__
+from mementoembed.mementoresource import MementoURINotAtArchiveFailure
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -535,9 +536,13 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
         for urim in urims:
             module_logger.debug("seeking for URI-R for URI-M {}".format(urim))
-            urir = get_memento_http_metadata(urim, session.cache_storage, 
-                metadata_fields=['original'])[0]
-            output_urirs.append(urir)
+
+            try:
+                urir = get_memento_http_metadata(urim, session.cache_storage, 
+                    metadata_fields=['original'])[0]
+                output_urirs.append(urir)
+            except MementoURINotAtArchiveFailure:
+                module_logger.exception("Could not discover original resource for {} , skipping...".format(urim))
 
         if crawl_depth > 1:
             link_storage = StorageObject()

@@ -7,13 +7,59 @@ def dtconverter(o):
     if isinstance(o, datetime):
         return o.__str__()
 
-def generate_collection_metadata(collection_id, session):
+def generate_collection_metadata(archive_name, collection_id, session):
 
-    from aiu import ArchiveItCollection
+    if archive_name == 'archiveit':
 
-    aic = ArchiveItCollection(collection_id, session=session)
+        from aiu import ArchiveItCollection
 
-    return aic.return_all_metadata_dict()
+        aic = ArchiveItCollection(collection_id, session=session)
+
+        return aic.return_all_metadata_dict()
+
+    elif archive_name == 'nla':
+
+        from aiu import NLACollection
+        from urllib.parse import unquote
+
+        nlac = NLACollection(collection_id, session=session)
+
+        metadata_dict = generate_blank_metadata([])
+        
+
+        metadata_dict['id'] = collection_id
+        metadata_dict['name'] = nlac.get_collection_name()
+        metadata_dict['exists'] = nlac.does_exist()
+        metadata_dict['uri'] = unquote(nlac.get_collection_uri())
+        metadata_dict['collected_by'] = nlac.get_collectedby()
+        del metadata_dict['collected_by_uri']
+        metadata_dict['archived_since'] = nlac.get_archived_since()
+        metadata_dict['archived_until'] = nlac.get_archived_until()
+        del metadata_dict['private']
+        del metadata_dict['optional']
+        metadata_dict['subcollections'] = nlac.get_subcollections()
+        metadata_dict['supercollections'] = nlac.get_breadcrumbs()
+        metadata_dict['subject'] = nlac.get_subject()
+        metadata_dict['memento_list'] = [ i.strip() for i in nlac.list_memento_urims() ]
+
+        del metadata_dict['seed_metadata'] # Archive-It like seeds
+        metadata_dict['seed_list'] = [] # NLA seeds
+        
+        for urir in nlac.list_seed_uris():
+
+            if urir[0:4] != 'http':
+                urir = urir[urir.find('/http') + 1:]
+
+                if urir[0:4] != 'http':
+                    urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
+            metadata_dict['seed_list'].append(urir)
+
+        return metadata_dict
+
+    else:
+        raise NotImplementedError("Collection Metadata Only Available for collections of type 'archiveit' and 'nla'")
+        
 
 def generate_blank_metadata(urirs):
 
@@ -78,8 +124,8 @@ def discover_collection_metadata(args):
 
     logger.info("Starting collection metadata discovery run.")
 
-    if args.input_type == 'archiveit':
-        metadata = generate_collection_metadata(args.input_arguments, session)
+    if args.input_type == 'archiveit' or args.input_type == 'nla':
+        metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
     else:
         logger.warning("Metadata reports are only supported for Archive-It collections, proceeding to create JSON output for URI-Rs.")
 
@@ -92,7 +138,7 @@ def discover_collection_metadata(args):
     with open(args.output_filename, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=4)
 
-    logger.info("Done with collection metadata discovery run.")
+    logger.info("Done with collection metadata discovery run, output is in {}.".format(args.output_filename))
 
 def report_metadatastats(args):
 
