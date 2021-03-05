@@ -238,7 +238,6 @@ def raintale_story(args):
             if 'name' in jdata:
                 story_json['title'] = story_json['title'] + ': ' + jdata['name']
 
-
     story_json['elements'] = []
 
     if args.imagedata_filename is not None:

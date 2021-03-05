@@ -64,6 +64,7 @@ def get_managed_session(cache_storage):
 def generate_image_data(urimdata, cache_storage):
 
     from mementoembed.imageselection import generate_images_and_scores, scores_for_image
+    from mementoembed.mementoresource import memento_resource_factory
 
     managed_session = get_managed_session(cache_storage)
 
@@ -75,7 +76,8 @@ def generate_image_data(urimdata, cache_storage):
 
         try:
             # TODO: cache this information?
-            imagedata[urim] = generate_images_and_scores(urim, managed_session)
+            mr = memento_resource_factory(urim, managed_session)
+            imagedata[urim] = generate_images_and_scores(mr.im_urim, managed_session)
         except Exception:
             module_logger.exception("failed to produce an image report, skipping {} ...".format(urim))
             continue
@@ -85,6 +87,7 @@ def generate_image_data(urimdata, cache_storage):
 def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
 
     from mementoembed.imageselection import generate_images_and_scores, scores_for_image
+    from mementoembed.mementoresource import memento_resource_factory
     import jsonlines
 
     managed_session = get_managed_session(cache_storage)
@@ -96,7 +99,8 @@ def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
             # TODO: cache this information?
 
             try:
-                imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
+                mr = memento_resource_factory(urim, managed_session)
+                imagedata = { "uri": urim, "imagedata": generate_images_and_scores(mr.im_urim, managed_session) }
             except Exception:
                 module_logger.exception("failed to produce an image report for {}".format(urim))
                 continue
