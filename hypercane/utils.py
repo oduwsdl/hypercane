@@ -4,6 +4,7 @@ import logging
 import csv
 import traceback
 
+from datetime import datetime
 from urllib.parse import urlparse
 from pymongo import MongoClient
 from requests import Session
@@ -76,15 +77,33 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
     output_values = []
 
-    # 1 if lang of urim in cache, return it
+    # if memento metadata in cache, return it
     try:
 
         for field in metadata_fields:
 
-            output_values.append(
-                db.derivedvalues.find_one(
+            if field == 'memento-datetime':
+
+                mdt = db.derivedvalues.find_one(
                     { "urim": urim }
-                )[field] )
+                )['memento-datetime']
+
+                try:
+                    mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                except ValueError:
+                    # sometimes, when returned from MongoDB, the memento-datetime comes back in a different format
+                    mdt = datetime.strptime(mdt, "%Y-%m-%d %H:%M:%S")
+
+                module_logger.info("returning cached memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
+
+                output_values.append( mdt )
+
+            else:
+
+                output_values.append(
+                    db.derivedvalues.find_one(
+                        { "urim": urim }
+                    )[field] )
 
         return output_values
 
@@ -101,6 +120,15 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
                 # mdt = r.headers['memento-datetime']
                 mdt = mr.memento_datetime
+
+                try:
+                    mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                except ValueError:
+                    # sometimes, when returned from MongoDB, the memento-datetime comes back in a different format
+                    mdt = datetime.strptime(mdt, "%Y-%m-%d %H:%M:%S")
+
+                module_logger.info("returning memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
+
                 output_values.append( mdt )
                 db.derivedvalues.update(
                     { "urim": urim },
