@@ -119,3 +119,6 @@ venv.bak/
 # from Jekyll site work
 _site
 .bundle
+
+# hand testing of Hypercane
+hypercane-hand-testing/
