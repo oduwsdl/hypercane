@@ -5,6 +5,8 @@ module_logger = logging.getLogger('hypercane.cluster.time_slice')
 
 def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
+    module_logger.info("cache_storage is {}".format(cache_storage))
+
     import concurrent.futures
     import math
     from datetime import datetime
@@ -38,7 +40,12 @@ def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
             try:
                 mdt = future.result()[0]
-                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                module_logger.info("retrieved memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
+                try:
+                    mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                except ValueError:
+                    # sometimes, when returned from MongoDB, the memento-datetime comes back in a different format
+                    mdt = datetime.strptime(mdt, "%Y-%m-%d %H:%M:%S")
                 mementos.append( (mdt, urim) )
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
