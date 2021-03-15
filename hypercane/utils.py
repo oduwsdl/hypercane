@@ -465,3 +465,50 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
                             row[key] = None
 
                 writer.writerow(row)
+
+def create_html_metadata_kv_pairs(urim, session):
+
+    from bs4 import BeautifulSoup
+
+    r = session.get(urim)
+
+    soup = BeautifulSoup(r.text, 'html5lib')
+
+    meta_tags = soup.find_all('meta')
+
+    meta_kv_pairs = {}
+
+    for meta in meta_tags:
+
+        value_attrib = None
+        key_attrib = None
+
+        for ivalueattrib in ['content', 'value', 'href']:
+            module_logger.info("VALUE: looking for {} in {}".format(ivalueattrib, meta))
+
+            if ivalueattrib in meta.attrs:
+                value_attrib = ivalueattrib
+                break
+
+        module_logger.info("value_attrib is now {}".format(value_attrib))
+
+        for ikeyattrib in ['property', 'name']:
+            module_logger.info("KEY: looking for {} in {}".format(ikeyattrib, meta))
+
+            if ikeyattrib in meta.attrs:
+                key_attrib = ikeyattrib
+                break
+
+        module_logger.info("key_attrib is now {}".format(key_attrib))
+
+        if value_attrib is None:
+            module_logger.info("value is none, skipping...")
+            continue
+
+        if key_attrib is None:
+            module_logger.info("key is none, skipping...")
+            continue
+
+        meta_kv_pairs[ meta[key_attrib] ] = meta[value_attrib]
+
+    return meta_kv_pairs

@@ -236,19 +236,6 @@ def parse_data_for_mementos_list(timemap_data):
 
     return mementos
 
-def calculate_number_of_mementos(timemap_data):
-
-    totalcount = 0
-
-    for urit in timemap_data:
-
-        try:
-            totalcount += len(timemap_data[urit]['mementos']['list'])
-        except KeyError:
-            module_logger.exception("cannot incorporate mementos into total count from URI-T {}".format(urit))
-
-    return totalcount
-
 def get_first_memento_datetime(timemap_data):
 
     datetimes = get_datetimes_list(timemap_data)
