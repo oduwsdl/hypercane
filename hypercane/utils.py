@@ -484,29 +484,29 @@ def create_html_metadata_kv_pairs(urim, session):
         key_attrib = None
 
         for ivalueattrib in ['content', 'value', 'href']:
-            module_logger.info("VALUE: looking for {} in {}".format(ivalueattrib, meta))
+            module_logger.debug("VALUE: looking for {} in {}".format(ivalueattrib, meta))
 
             if ivalueattrib in meta.attrs:
                 value_attrib = ivalueattrib
                 break
 
-        module_logger.info("value_attrib is now {}".format(value_attrib))
+        module_logger.debug("value_attrib is now {}".format(value_attrib))
 
         for ikeyattrib in ['property', 'name']:
-            module_logger.info("KEY: looking for {} in {}".format(ikeyattrib, meta))
+            module_logger.debug("KEY: looking for {} in {}".format(ikeyattrib, meta))
 
             if ikeyattrib in meta.attrs:
                 key_attrib = ikeyattrib
                 break
 
-        module_logger.info("key_attrib is now {}".format(key_attrib))
+        module_logger.debug("key_attrib is now {}".format(key_attrib))
 
         if value_attrib is None:
-            module_logger.info("value is none, skipping...")
+            module_logger.debug("value is none, skipping...")
             continue
 
         if key_attrib is None:
-            module_logger.info("key is none, skipping...")
+            module_logger.debug("key is none, skipping...")
             continue
 
         meta_kv_pairs[ meta[key_attrib] ] = meta[value_attrib]
