@@ -629,6 +629,7 @@ def print_usage():
     * seed-statistics - calculates metrics on the original resources discovered from the input
     * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
     * metadata-statistics - statistics about the metadata for this collection (Archive-It only)
+    * html-metadata - a listing of all URI-Ms and associated HTML metadata containing a NAME or PROPERTY attribute
 
 
     Examples:
