@@ -14,6 +14,7 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 2. Clone this repository
 3. Change into the cloned directory
 4. Type `pip install .`
+5. We are still working out some dependency issues, thus you will need to type `pip install -r requirements.txt` as a last step
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
 
