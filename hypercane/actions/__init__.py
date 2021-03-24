@@ -100,7 +100,7 @@ def add_default_args(parser):
 def add_input_args(parser):
 
     parser.add_argument('-i', '--it', '--input-type',
-        help="the input type, one of mementos, timemaps, archiveit, or original-resources",
+        help="the input type, one of mementos, timemaps, original-resources, archiveit, trove, or pandora-collection",
         dest="input_type", required=True
     )
 

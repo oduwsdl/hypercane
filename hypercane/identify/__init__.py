@@ -13,7 +13,7 @@ from random import randint
 from datetime import datetime
 from archivenow import archivenow
 from copy import deepcopy
-from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict, NLACollection
+from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict, TroveCollection, PandoraCollection
 from requests_futures.sessions import FuturesSession
 from requests.exceptions import RequestException
 from urllib.parse import urlparse
@@ -289,7 +289,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
             for item in link_storage.storage:
                 urits.append(item[0])
 
-    elif input_type == "nla":
+    elif input_type == "nla" or input_type == "trove" or input_type == "pandora-collection" or input_type == "pandora-subject":
 
         collection_id = input_args
         module_logger.info("NLA collection identifier: {}".format(collection_id))
@@ -383,30 +383,44 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
 
         output_urims = download_urits_and_extract_urims(urits, session)
 
-    elif input_type == "nla":
+    elif input_type == "nla" or input_type == "trove":
 
         collection_id = input_args
-        module_logger.info("NLA collection identifier: {}".format(collection_id))
+        module_logger.info("Trove collection identifier: {}".format(collection_id))
 
-        nlac = NLACollection(collection_id, session=session)
+        tc = TroveCollection(collection_id, session=session)
 
-        subcollections = nlac.get_subcollections()
-        candidate_urims = [urim.strip() for urim in nlac.list_memento_urims()]
+        subcollections = tc.get_subcollections()
+        candidate_urims = [urim.strip() for urim in tc.list_memento_urims()]
         output_urims = candidate_urims
 
         module_logger.info("initial subcollections: {}".format(subcollections))
 
         for subcollection_id in generate_subcollection(subcollections):
-            nlac = NLACollection(subcollection_id, session=session)
-            subcollections.extend(nlac.get_subcollections())
+            tc = TroveCollection(subcollection_id, session=session)
+            subcollections.extend(tc.get_subcollections())
             # sometimes the NLA JSON returns extra \n characters around the URI-M
-            output_urims.extend( [urim.strip() for urim in nlac.list_memento_urims()] )
+            output_urims.extend( [urim.strip() for urim in tc.list_memento_urims()] )
             module_logger.info("extended subcollections: {}".format(subcollections))
             subcollections.remove(subcollection_id)
 
         if crawl_depth > 1:
             module_logger.warning(
                 "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
+
+    elif input_type == "pandora-collection":
+
+        collection_id = input_args
+
+        module_logger.info("Pandora collection identifier: {}".format(collection_id))
+
+        pc = PandoraCollection(collection_id, session=session)
+
+        output_urims = pc.list_memento_urims()
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for Pandora collections, ignoring crawl depth {}".format(crawl_depth))
 
     elif input_type == "timemaps":
 
@@ -488,19 +502,19 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             for item in link_storage.storage:
                 output_urirs.append(item[1])
 
-    elif input_type == "nla":
+    elif input_type == "nla" or input_type == "trove":
 
         collection_id = input_args
         module_logger.info("NLA collection identifier: {}".format(collection_id))
 
-        nlac = NLACollection(collection_id, session=session)
+        nlac = TroveCollection(collection_id, session=session)
 
         subcollections = nlac.get_subcollections()
         
         output_urirs = []
 
         for subcollection_id in generate_subcollection(subcollections):
-            nlac = NLACollection(subcollection_id, session=session)
+            nlac = TroveCollection(subcollection_id, session=session)
             subcollections.extend(nlac.get_subcollections())
             candidate_urirs = nlac.list_seed_uris()    
 
@@ -521,6 +535,20 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
         if crawl_depth > 1:
             module_logger.warning(
                 "Crawling not yet implemented for NLA collections, ignoring crawl depth {}".format(crawl_depth))
+
+    elif input_type == "pandora-collection":
+
+        collection_id = input_args
+
+        module_logger.info("Pandora collection identifier: {}".format(collection_id))
+
+        pc = PandoraCollection(collection_id, session=session)
+
+        output_urirs = pc.list_seed_uris()
+
+        if crawl_depth > 1:
+            module_logger.warning(
+                "Crawling not yet implemented for Pandora collections, ignoring crawl depth {}".format(crawl_depth))
 
     elif input_type == "timemaps":
         urits = input_args
@@ -587,7 +615,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     module_logger.info("processing input for type {}".format(input_type))
 
-    if input_type == 'archiveit' or input_type == 'nla':
+    if input_type in ['archiveit', 'nla', 'trove', 'pandora-collection']:
         input_data = input_arguments
         uridata = None
     else:
