@@ -103,7 +103,7 @@ python-datauri==0.2.8
 python-dateutil==2.8.1
 python-magic==0.4.15
 pytz==2019.3
-PyYAML==5.3
+PyYAML==5.4
 queuelib==1.5.0
 rank-bm25==0.2
 readability-lxml==0.7
