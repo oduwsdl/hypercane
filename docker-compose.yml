@@ -9,7 +9,6 @@ services:
         depends_on:
             - mongodb
         image: oduwsdl/hypercane:latest
-        build: ./
         command: bash
         restart: always
         volumes:
