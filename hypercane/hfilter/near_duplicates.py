@@ -50,7 +50,7 @@ def filter_near_duplicates(urims, cache_storage):
 
                 comparison_structure.setdefault(urit, []).append(
                     (
-                        datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
+                        memento_datetime, # datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
                         int(urim_to_simhash[urim]),
                         urim
                     )
