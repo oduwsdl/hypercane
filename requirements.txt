@@ -1,4 +1,4 @@
-aiu==0.1.1a4
+aiu==0.2.0
 alabaster==0.7.12
 appnope==0.1.0
 archivenow==2020.7.18.12.19.44
@@ -64,7 +64,7 @@ kiwisolver==1.1.0
 langdetect==1.0.7
 langid==1.1.6
 lazy-object-proxy==1.4.3
-lxml==4.2.1
+lxml==4.6.1
 MarkupSafe==1.1.1
 matplotlib==3.1.3
 mccabe==0.6.1
@@ -73,8 +73,8 @@ murmurhash==1.0.2
 networkx==2.4
 newspaper3k==0.2.8
 nltk==3.4.5
-numpy==1.16.0
-otmt==1.0.1a0
+numpy==1.20.2
+otmt==1.0.2
 packaging==20.1
 paramiko==2.4.2
 parsel==1.5.2

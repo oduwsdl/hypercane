@@ -126,6 +126,9 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                 except ValueError:
                     # sometimes, when returned from MongoDB, the memento-datetime comes back in a different format
                     mdt = datetime.strptime(mdt, "%Y-%m-%d %H:%M:%S")
+                except TypeError:
+                    # since the Trove work, mdt is now a datetime object
+                    pass
 
                 module_logger.info("returning memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
 
