@@ -17,35 +17,35 @@ def generate_collection_metadata(archive_name, collection_id, session):
 
         return aic.return_all_metadata_dict()
 
-    elif archive_name == 'nla':
+    elif archive_name == 'trove':
 
-        from aiu import NLACollection
+        from aiu import TroveCollection
         from urllib.parse import unquote
 
-        nlac = NLACollection(collection_id, session=session)
+        tc = TroveCollection(collection_id, session=session)
 
         metadata_dict = generate_blank_metadata([])
         
 
         metadata_dict['id'] = collection_id
-        metadata_dict['name'] = nlac.get_collection_name()
-        metadata_dict['exists'] = nlac.does_exist()
-        metadata_dict['uri'] = unquote(nlac.get_collection_uri())
-        metadata_dict['collected_by'] = nlac.get_collectedby()
+        metadata_dict['name'] = tc.get_collection_name()
+        metadata_dict['exists'] = tc.does_exist()
+        metadata_dict['uri'] = unquote(tc.get_collection_uri())
+        metadata_dict['collected_by'] = tc.get_collectedby()
         del metadata_dict['collected_by_uri']
-        metadata_dict['archived_since'] = nlac.get_archived_since()
-        metadata_dict['archived_until'] = nlac.get_archived_until()
+        metadata_dict['archived_since'] = tc.get_archived_since()
+        metadata_dict['archived_until'] = tc.get_archived_until()
         del metadata_dict['private']
         del metadata_dict['optional']
-        metadata_dict['subcollections'] = nlac.get_subcollections()
-        metadata_dict['supercollections'] = nlac.get_breadcrumbs()
-        metadata_dict['subject'] = nlac.get_subject()
-        metadata_dict['memento_list'] = [ i.strip() for i in nlac.list_memento_urims() ]
+        metadata_dict['subcollections'] = tc.get_subcollections()
+        metadata_dict['supercollections'] = tc.get_breadcrumbs()
+        metadata_dict['subject'] = tc.get_subject()
+        metadata_dict['memento_list'] = [ i.strip() for i in tc.list_memento_urims() ]
 
         del metadata_dict['seed_metadata'] # Archive-It like seeds
         metadata_dict['seed_list'] = [] # NLA seeds
         
-        for urir in nlac.list_seed_uris():
+        for urir in tc.list_seed_uris():
 
             if urir[0:4] != 'http':
                 urir = urir[urir.find('/http') + 1:]
@@ -58,7 +58,7 @@ def generate_collection_metadata(archive_name, collection_id, session):
         return metadata_dict
 
     else:
-        raise NotImplementedError("Collection Metadata Only Available for collections of type 'archiveit' and 'nla'")
+        raise NotImplementedError("Collection Metadata Only Available for collections of type 'archiveit' and 'trove'")
         
 
 def generate_blank_metadata(urirs):
@@ -167,7 +167,6 @@ def report_metadatastats(args):
         )
 
     args = process_input_args(args, parser)
-    output_type = 'original-resources'
 
     logger = get_logger(
         __name__,
