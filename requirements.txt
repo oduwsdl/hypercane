@@ -1,4 +1,4 @@
-aiu==0.2.0
+aiu==0.2.1
 alabaster==0.7.12
 appnope==0.1.0
 archivenow==2020.7.18.12.19.44
