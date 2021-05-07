@@ -26,7 +26,6 @@ def generate_collection_metadata(archive_name, collection_id, session):
 
         metadata_dict = generate_blank_metadata([])
         
-
         metadata_dict['id'] = collection_id
         metadata_dict['name'] = tc.get_collection_name()
         metadata_dict['exists'] = tc.does_exist()
@@ -46,6 +45,78 @@ def generate_collection_metadata(archive_name, collection_id, session):
         metadata_dict['seed_list'] = [] # NLA seeds
         
         for urir in tc.list_seed_uris():
+
+            if urir[0:4] != 'http':
+                urir = urir[urir.find('/http') + 1:]
+
+                if urir[0:4] != 'http':
+                    urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
+            metadata_dict['seed_list'].append(urir)
+
+        return metadata_dict
+
+    elif archive_name == 'pandora-subject':
+
+        from aiu import PandoraSubject
+
+        ps = PandoraSubject(collection_id, session=session)
+
+        metadata_dict = generate_blank_metadata([])
+        
+        metadata_dict['id'] = collection_id
+        metadata_dict['name'] = ps.get_subject_name()
+        metadata_dict['exists'] = ps.does_exist()
+        metadata_dict['uri'] = ps.subject_uri
+        metadata_dict['collected_by'] = ps.get_collectedby()
+        del metadata_dict['collected_by_uri']
+        del metadata_dict['archived_since']
+        del metadata_dict['private']
+        del metadata_dict['optional']
+        metadata_dict['subcategories'] = ps.list_subcategories()
+        metadata_dict['collections'] = ps.list_collections()
+        del metadata_dict['subject']
+        metadata_dict['memento_list'] = [ i.strip() for i in ps.list_memento_urims() ]
+
+        del metadata_dict['seed_metadata'] # Archive-It like seeds
+        metadata_dict['seed_list'] = [] # NLA seeds
+
+        for urir in ps.list_seed_uris():
+
+            if urir[0:4] != 'http':
+                urir = urir[urir.find('/http') + 1:]
+
+                if urir[0:4] != 'http':
+                    urir = 'http://' + urir[urir.find('/', urir.find('/') + 1) + 1:]
+
+            metadata_dict['seed_list'].append(urir)
+
+        return metadata_dict
+
+    elif archive_name == 'pandora-collection':
+
+        from aiu import PandoraCollection
+
+        pc = PandoraCollection(collection_id, session=session)
+
+        metadata_dict = generate_blank_metadata([])
+        
+        metadata_dict['id'] = collection_id
+        metadata_dict['name'] = pc.get_collection_name()
+        metadata_dict['exists'] = pc.does_exist()
+        metadata_dict['uri'] = pc.collection_uri
+        metadata_dict['collected_by'] = pc.get_collectedby()
+        del metadata_dict['collected_by_uri']
+        del metadata_dict['archived_since']
+        del metadata_dict['private']
+        del metadata_dict['optional']
+        del metadata_dict['subject']
+        metadata_dict['memento_list'] = [ i.strip() for i in pc.list_memento_urims() ]
+
+        del metadata_dict['seed_metadata'] # Archive-It like seeds
+        metadata_dict['seed_list'] = [] # NLA seeds
+
+        for urir in pc.list_seed_uris():
 
             if urir[0:4] != 'http':
                 urir = urir[urir.find('/http') + 1:]
@@ -124,10 +195,10 @@ def discover_collection_metadata(args):
 
     logger.info("Starting collection metadata discovery run.")
 
-    if args.input_type == 'archiveit' or args.input_type == 'nla':
+    if args.input_type in [ 'archiveit', 'pandora-subject', 'pandora-collection', 'trove' ]:
         metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
     else:
-        logger.warning("Metadata reports are only supported for Archive-It collections, proceeding to create JSON output for URI-Rs.")
+        logger.warning("Metadata reports are only supported for Pandora Subjects, Pandora Collections, Archive-It Collections, and Trove Collections, proceeding to create JSON output for URI-Rs.")
 
         urirdata = discover_resource_data_by_input_type(
             args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -181,7 +252,7 @@ def report_metadatastats(args):
     output = {}
 
     if args.input_type == 'archiveit':
-        metadata = generate_collection_metadata(args.input_arguments, session)
+        metadata = generate_collection_metadata(args.input_type, args.input_args, session)
         output['id'] = metadata['id']
         output['archived since'] = metadata['archived_since']
         output['# of seeds'] = len(metadata['seed_metadata']['seeds'])
@@ -577,6 +648,8 @@ def print_usage():
     Examples:
 
     hc report metadata -i archiveit -a 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
+
+    hc report metadata -i trove -a 13742 -o 13742-metadata.json -cs mongodb://localhost/cache
 
     hc report entities -i mementos -a memento-file.tsv -o entity-report.json
 
