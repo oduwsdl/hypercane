@@ -327,6 +327,11 @@ def synthesize_warcs(args):
         prog="hc synthesize files"
     )
 
+    parser.add_argument('--no-download-embedded', dest='no_download_embedded',
+        help="issue this argument to avoid synthesizing a WARC with embedded images, JavaScript, and stylesheets",
+        required=False, default=False, action='store_true'
+    )
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -356,7 +361,7 @@ def synthesize_warcs(args):
     # TODO: make this multithreaded
     for urim in urimdata.keys():
         try:
-            synthesize_warc(urim, session, args.output_directory)
+            synthesize_warc(urim, session, args.output_directory, collect_embedded_resources=(not args.no_download_embedded))
         except Exception:
             logger.exception("failed to generate WARC for URI-M {}".format(urim))
             hypercane.errors.errorstore.add(urim, traceback.format_exc())
