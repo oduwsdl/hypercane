@@ -15,6 +15,24 @@ def extract_image_uris(html):
             if img['src'] != '':
                 imageurls.append(img['src'])
 
+
+    # images from metadata
+    for field in ['og:image', 'twitter:image', 'twitter:image:src', 'og:image:url', 'image']:
+
+        for attribute in ['property', 'name', 'itemprop']:
+
+            discovered_fields = soup.find_all('meta', { attribute: field } )
+
+            if len(discovered_fields) > 0:
+
+                for value_attribute in ['content', 'value']:
+
+                    if value_attribute in discovered_fields[0]:
+
+                        imageurls.append(
+                            discovered_fields[0][value_attribute]
+                        )
+
     return imageurls
 
 def extract_javascript_uris(html):
