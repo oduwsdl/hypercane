@@ -19,13 +19,13 @@ class Install(_install):
         import sys
 
         try:
-            nlp = spacy.load('en')
+            nlp = spacy.load('en_core_web_sm')
         except OSError:
             print('Downloading language model for spaCy\n'
                 "(don't worry, this will only happen once)", file=sys.stderr)
             from spacy.cli import download
             download('en')
-            nlp = spacy.load('en')
+            nlp = spacy.load('en_core_web_sm')
 
 setup(
     name=__appname__.lower(),
