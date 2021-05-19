@@ -1,4 +1,4 @@
-Hypercane: Intelligent Samping of Web Archive Collections
+Hypercane: Intelligent Sampling of Web Archive Collections
 =========================================================
 
 .. image:: images/hypercane-logo-alpha-sm.png
