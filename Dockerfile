@@ -12,8 +12,12 @@ LABEL   org.opencontainers.image.title="Hypercane" \
 WORKDIR /app
 COPY    requirements.txt ./
 RUN     pip install -r requirements.txt
+RUN     python -m spacy download en_core_web_sm
 
 COPY    . ./
-RUN     pip install .
+# RUN     pip install .
+
+# workaround for some pinned version installation issues
+RUN ./install.sh 
 
 WORKDIR /hypercane-work
