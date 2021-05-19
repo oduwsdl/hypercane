@@ -47,7 +47,7 @@ setup(
         'pymongo',
         'rank_bm25',
         'requests',
-        'requests_cache==0.4.13',
+        'requests_cache==0.5.2',
         'scrapy',
         'simhash',
         'spacy',

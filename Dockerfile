@@ -10,14 +10,13 @@ LABEL   org.opencontainers.image.title="Hypercane" \
         org.opencontainers.image.authors="Shawn M. Jones <https://github.com/shawnmjones>"
 
 WORKDIR /app
+RUN     pip install --upgrade pip
+
 COPY    requirements.txt ./
 RUN     pip install -r requirements.txt
 RUN     python -m spacy download en_core_web_sm
 
 COPY    . ./
-# RUN     pip install .
-
-# workaround for some pinned version installation issues
-RUN ./install.sh 
+RUN pip install .  --use-feature=in-tree-build
 
 WORKDIR /hypercane-work
