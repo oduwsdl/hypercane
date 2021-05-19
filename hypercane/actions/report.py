@@ -252,7 +252,7 @@ def report_metadatastats(args):
     output = {}
 
     if args.input_type == 'archiveit':
-        metadata = generate_collection_metadata(args.input_type, args.input_args, session)
+        metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
         output['id'] = metadata['id']
         output['archived since'] = metadata['archived_since']
         output['# of seeds'] = len(metadata['seed_metadata']['seeds'])
@@ -633,6 +633,60 @@ def report_growth_curve_stats(args):
         logger.info("Growth curve saved to {}".format(args.growthcurve_filename))
 
 
+def report_html_metadata(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type, discover_original_resources_by_input_type
+
+    from hypercane.report.per_page_metadata import output_page_metadata_as_ors
+
+    import json
+
+    parser = argparse.ArgumentParser(
+        description="Provide a report on the images from in the mementos discovered in the input.",
+        prog="hc report html-metadata"
+        )
+
+    parser.add_argument('--use-urirs', required=False,
+        dest='use_urirs', action='store_true',
+        help="Regardless of headers, assume the input are URI-Rs and do not try to archive or convert them to URI-Ms."
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection image data run")
+
+    if args.use_urirs == True:
+        uridata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_original_resources_by_input_type
+        )
+    else:
+        uridata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+
+    output_page_metadata_as_ors(uridata, args.cache_storage, args.output_filename)
+
+    logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
+
 def print_usage():
 
     print("""'hc report' is used to print reports about web archive collections
@@ -644,6 +698,9 @@ def print_usage():
     * entities - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the named entities in the collection
     * seed-statistics - calculates metrics on the original resources discovered from the input
     * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
+    * metadata-statistics - statistics about the metadata for this collection (Archive-It only)
+    * html-metadata - a listing of all URI-Ms and associated HTML metadata containing a NAME or PROPERTY attribute
+
 
     Examples:
 
@@ -664,6 +721,7 @@ supported_commands = {
     "entities": report_entities,
     "seed-statistics": report_seedstats,
     "growth": report_growth_curve_stats,
-    "metadata-statistics": report_metadatastats
+    "metadata-statistics": report_metadatastats,
+    "html-metadata": report_html_metadata
 }
 
