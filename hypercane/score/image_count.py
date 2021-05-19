@@ -63,6 +63,6 @@ def score_by_image_count(urimdata, session):
                 # sys.exit(255)
 
     for urim in urimlist:
-        urimdata[urim]["Rank---ImageCount"] = image_counts[urim]
+        urimdata[urim]["Score---ImageCount"] = image_counts[urim]
 
     return urimdata
