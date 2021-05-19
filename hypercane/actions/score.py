@@ -269,6 +269,51 @@ def path_depth_scoring(args):
 
     logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
 
+def category_scoring(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.dsa1_ranking import score_by_category
+
+    parser = argparse.ArgumentParser(
+        description="Score the input using the path depth of the URI-R of each memento.",
+        prog="hc score path-depth"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by DSA1 scoring equation")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urimdata = score_by_category(
+        urimdata, session
+        )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
+
 # def textrank_scoring(args):
 
 #     import argparse
@@ -325,10 +370,12 @@ def print_usage():
     print("""'hc score' is used to employ techniques that score the mementos in a web archive collection
 
     Supported commands:
-    * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm
+    * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm (https://doi.org/10.1145/3091478.3091508)
     * bm25 - score documents according to the input query
     * image-count - score by the number of images in each document
     * card-score - score by how well the memento creates a social card on Facebook and Twitter
+    * path-depth - score by path depth, as defined by McCown et al. (https://arxiv.org/abs/cs/0511077)
+    * url-category-score - score by the categories from Padia et al. (https://doi.org/10.1145/2232817.2232821)
 
     Examples:
 
@@ -342,6 +389,7 @@ supported_commands = {
     "image-count": image_count_scoring,
     "simple-card-score": simple_card_scoring,
     "path-depth": path_depth_scoring,
+    "url-category-score": category_scoring
     # "textrank": textrank_scoring
 }
 
