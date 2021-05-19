@@ -387,7 +387,7 @@ w3newspapers_sources = [
 
 # Borrowed from: https://github.com/yasmina85/DSA-stories/blob/181d2453a7931bbbe8b56d46575a4d8491d736c2/src/memento_picker.py#L13
 # Credit goes to Yasmin AlNoamany
-def get_memento_uri_category(memento_uri, session):
+def get_memento_uri_category_score(memento_uri, session):
 
 # Original code below
 #    base_ait_idx_end = memento_uri.find('http',10)
@@ -452,6 +452,28 @@ def get_memento_uri_category(memento_uri, session):
     else:
         return 0
 
+def get_path_depth(urim, session):
+    """
+        Calculate path depth for URI-R of urim based on method from https://arxiv.org/abs/cs/0511077
+    """
+
+    from urllib.parse import urlparse
+
+    r = session.get(urim)
+    urir = r.links['original']['url']
+
+    o = urlparse(urir)
+    
+    if o.path[0] == '/':
+        depth = len([ p for p in o.path.split('/') if len(p) > 0])
+    elif o.path[0] == '':
+        depth = 0
+
+    if '?' in urir:
+        depth += 1
+
+    return depth
+
 # Borrowed from https://github.com/yasmina85/DSA-stories/blob/181d2453a7931bbbe8b56d46575a4d8491d736c2/src/memento_picker.py#L5
 # Credit goes to Yasmin AlNoamany
 def get_memento_depth(mem_uri, session):
@@ -464,9 +486,11 @@ def get_memento_depth(mem_uri, session):
 #    level = original_uri.count('/')
 
     # updated code starts here:
-    r = session.get(mem_uri)
+    r = session.get(urim)
     urir = r.links['original']['url']
     level = urir.count('/')
+
+    # TODO: how does it break the DSA1 scoring function if we apply get_path_depth instead?
 
     return level/10.0
 
@@ -502,7 +526,7 @@ def get_memento_damage(memento_uri, memento_damage_url, session):
 
 def get_memento_score(urim, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
 
-    category_score = get_memento_uri_category(urim, session)
+    category_score = get_memento_uri_category_score(urim, session)
     path_depth_score = get_memento_depth(urim, session)
     damage_score = get_memento_damage(urim, memento_damage_url, session)
 
@@ -546,6 +570,44 @@ def rank_by_dsa1_score(urimdata, session, memento_damage_url=None, damage_weight
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     for urim in urim_to_score:
-        urimdata[urim]['Rank---DSA1-Score'] = urim_to_score[urim]
+        urimdata[urim]['Score---DSA1-Score'] = urim_to_score[urim]
+
+    return urimdata
+
+def score_by_path_depth(urimdata, session):
+
+    # urim_to_cluster = {}
+    # clusters_to_urims = {}
+
+    urims = list(urimdata.keys())
+
+    # for urim in urims:
+    #     cluster = urimdata[urim]['Cluster']
+    #     urim_to_cluster[urim] = cluster
+    #     clusters_to_urims.setdefault(cluster, []).append(urim)
+
+    urim_to_score = {}
+
+    total_urims = len(urims)
+    completed_urims = 0
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_path_depth, urim, session): urim for urim in urims }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+
+            completed_urims += 1
+            module_logger.info("extracting score result for {}/{}".format(completed_urims, total_urims))
+
+            try:
+                urim = future_to_urim[future]
+                urim_to_score[urim] = future.result()
+            except Exception as exc:
+                module_logger.exception("Error: {}, failed to compute score for {}, skipping...".format(repr(exc), urim))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    for urim in urim_to_score:
+        urimdata[urim]['Score---PathDepth'] = urim_to_score[urim]
 
     return urimdata

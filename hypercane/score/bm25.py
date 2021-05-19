@@ -43,6 +43,6 @@ def rank_by_bm25(urimdata, session, query, cache_storage):
 
     for i in range(0, len(urimlist)):
         urim = urimlist[i]
-        urimdata[urim]['Rank---BM25'] = doc_scores[i]
+        urimdata[urim]['Score---BM25'] = doc_scores[i]
 
     return urimdata

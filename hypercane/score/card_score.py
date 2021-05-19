@@ -76,7 +76,7 @@ def compute_simple_card_scores(urimdata, session):
 
 
     for urim in urim_to_score:
-        urimdata[urim]['Rank---Card-Score'] = urim_to_score[urim]
+        urimdata[urim]['Score---Card-Score'] = urim_to_score[urim]
 
     return urimdata
     

@@ -224,6 +224,50 @@ def simple_card_scoring(args):
 
     logger.info("Finished scoring by card-score, output is at {}".format(args.output_filename))
 
+def path_depth_scoring(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.dsa1_ranking import score_by_path_depth
+
+    parser = argparse.ArgumentParser(
+        description="Score the input using the path depth of the URI-R of each memento.",
+        prog="hc score path-depth"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by DSA1 scoring equation")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urimdata = score_by_path_depth(
+        urimdata, session
+        )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
 
 # def textrank_scoring(args):
 
@@ -296,7 +340,8 @@ supported_commands = {
     "dsa1-scoring": dsa1_scoring,
     "bm25": bm25_ranking,
     "image-count": image_count_scoring,
-    "simple-card-score": simple_card_scoring
+    "simple-card-score": simple_card_scoring,
+    "path-depth": path_depth_scoring,
     # "textrank": textrank_scoring
 }
 
