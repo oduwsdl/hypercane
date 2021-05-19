@@ -121,4 +121,4 @@ _site
 .bundle
 
 # hand testing of Hypercane
-hypercane-hand-testing/
+hand-testing/
