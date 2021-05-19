@@ -15,17 +15,17 @@ class Install(_install):
         nltk.download("stopwords")
         nltk.download("punkt")
 
-        import spacy
-        import sys
+        # import spacy
+        # import sys
 
-        try:
-            nlp = spacy.load('en_core_web_sm')
-        except OSError:
-            print('Downloading language model for spaCy\n'
-                "(don't worry, this will only happen once)", file=sys.stderr)
-            from spacy.cli import download
-            download('en')
-            nlp = spacy.load('en_core_web_sm')
+        # try:
+        #     nlp = spacy.load('en_core_web_sm')
+        # except OSError:
+        #     print('Downloading language model for spaCy\n'
+        #         "(don't worry, this will only happen once)", file=sys.stderr)
+        #     from spacy.cli import download
+        #     download('en')
+        #     nlp = spacy.load('en_core_web_sm')
 
 setup(
     name=__appname__.lower(),
@@ -35,28 +35,31 @@ setup(
     include_package_data=True,
     install_requires=[
         'aiu',
-        'archivenow',
+        'archivenow==2020.7.18.12.19.44',
         'boilerpy3',
         'distance',
         'newspaper3k',
         'guess-language-spirit',
         'jsonlines',
         'MementoEmbed',
+        'nltk',
         'otmt',
         'pymongo',
         'rank_bm25',
         'requests',
-        'requests_cache',
+        'requests_cache==0.4.13',
         'scrapy',
         'simhash',
         'spacy',
-        'sumgram==0.0.16',
+        'sumgram',
         'warcio'
     ],
-    setup_requires=['nltk', 'spacy'],
+    # setup_requires=[
+    #     'nltk',
+    #     # 'spacy'
+    # ],
     scripts=[
         'bin/hc'
-    ],
-    test_suite="tests"
+    ]
 )
 
