@@ -611,3 +611,41 @@ def score_by_path_depth(urimdata, session):
         urimdata[urim]['Score---PathDepth'] = urim_to_score[urim]
 
     return urimdata
+
+def score_by_category(urimdata, session):
+
+    # urim_to_cluster = {}
+    # clusters_to_urims = {}
+
+    urims = list(urimdata.keys())
+
+    # for urim in urims:
+    #     cluster = urimdata[urim]['Cluster']
+    #     urim_to_cluster[urim] = cluster
+    #     clusters_to_urims.setdefault(cluster, []).append(urim)
+
+    urim_to_score = {}
+
+    total_urims = len(urims)
+    completed_urims = 0
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_memento_uri_category_score, urim, session): urim for urim in urims }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+
+            completed_urims += 1
+            module_logger.info("extracting score result for {}/{}".format(completed_urims, total_urims))
+
+            try:
+                urim = future_to_urim[future]
+                urim_to_score[urim] = future.result()
+            except Exception as exc:
+                module_logger.exception("Error: {}, failed to compute score for {}, skipping...".format(repr(exc), urim))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    for urim in urim_to_score:
+        urimdata[urim]['Score---PathDepth'] = urim_to_score[urim]
+
+    return urimdata
