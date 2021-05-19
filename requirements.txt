@@ -1,4 +1,4 @@
-aiu==0.2.0
+aiu==0.2.3
 alabaster==0.7.12
 archivenow==2020.7.18.12.19.44
 attrs==21.2.0
@@ -94,7 +94,7 @@ redis==3.0.1
 redis-namespace==3.0.1.1
 regex==2021.4.4
 requests==2.22.0
-requests-cache==0.4.13
+requests-cache==0.5.2
 requests-file==1.5.1
 requests-futures==1.0.0
 scikit-learn==0.24.2
@@ -118,7 +118,6 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==1.0.3
 sphinxcontrib-serializinghtml==1.1.4
 srsly==2.4.1
-sumgram @ file:///private/tmp/sumgram
 summa==1.2.0
 thinc==8.0.3
 threadpoolctl==2.1.0
