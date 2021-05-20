@@ -156,8 +156,6 @@ def score_sort(args):
         # TODO: derive URI-Ms from input type
         raise NotImplementedError("Input type of {} not yet supported for ordering".format(args.input_type))
 
-    from pprint import PrettyPrinter
-
     if args.scoring_field is None:
         scoring_fields = list(urimdata[list(urimdata.keys())[0]].keys())
         scoring_field = scoring_fields[0]
