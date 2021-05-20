@@ -58,3 +58,37 @@ def select_random_clusters(memento_clusters, cluster_count):
 
     return sampled_urims
 
+def select_by_random_oversampling(memento_clusters):
+
+    sampled_urims = []
+
+    largest_cluster_size = 0
+    largest_cluster = None
+
+    for cluster in memento_clusters:
+
+        if len(memento_clusters[cluster]) > largest_cluster_size:
+            largest_cluster = cluster
+            largest_cluster_size = len(memento_clusters[cluster])
+
+    sampled_urims.extend( memento_clusters[largest_cluster] )
+
+    for cluster in memento_clusters:
+
+        if cluster == largest_cluster:
+            continue
+
+        cluster_sample = []
+        cluster_sample.extend( memento_clusters[cluster] )
+
+        while len(cluster_sample) < largest_cluster_size:
+
+            cluster_size_diff = largest_cluster_size - len(cluster_sample)
+            sample_extension = select_true_random(memento_clusters[cluster], cluster_size_diff)
+            cluster_sample.extend( sample_extension )
+
+        sampled_urims.extend(cluster_sample)
+
+    return sampled_urims
+        
+
