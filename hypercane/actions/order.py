@@ -106,6 +106,74 @@ def pubdate_else_memento_datetime(args):
 
     logger.info("Finished ordering documents, output is at {}".format(args.output_filename))
 
+def score_sort(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import save_resource_data, get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.order.score import order_by_score
+
+    parser = argparse.ArgumentParser(
+        description="Order by publication date first, fall back to memento-datetime.",
+        prog="hc order pubdate_else_memento_datetime"
+    )
+
+    parser.add_argument('--descending', help="If specified, sort such that highest scoring URI-Ms are first.",
+        action='store_true', default=False, dest='descending'
+    )
+
+    parser.add_argument('--scoring-field', help="Specify the scoring field to sort by, default is first encountered",
+        default=None, dest='scoring_field'
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting ordering of the documents by their scores...")
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    if args.input_type == "mementos":
+        # urims = extract_uris_from_input(args.input_arguments)
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for ordering".format(args.input_type))
+
+    from pprint import PrettyPrinter
+
+    # pp = PrettyPrinter(indent=4)
+
+    # pp.pprint(urimdata)
+
+    # sys.exit(255)
+
+    logger.info("extracted {} mementos from input".format(len(urimdata.keys())))
+
+    ordered_urims = order_by_score(urimdata, args.descending, args.scoring_field)
+
+    logger.info("placed {} mementos in order".format(len(ordered_urims)))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', ordered_urims)
+
+    logger.info("Finished ordering documents by score, output is at {}".format(args.output_filename))
+
 def print_usage():
 
     print("""'hc order' is used to employ techniques that order the mementos from the input
@@ -113,6 +181,7 @@ def print_usage():
     Supported commands:
     * pubdate-else-memento-datetime - order the documents according to AlNoamany's Algorithm
     * memento-datetime - order the documents by memento-datetime
+    * score - order the documents by score, use --descending to sort by highest first
 
     Examples:
 
@@ -122,6 +191,7 @@ def print_usage():
 
 supported_commands = {
     "pubdate-else-memento-datetime": pubdate_else_memento_datetime,
-    "memento-datetime": memento_datetime
+    "memento-datetime": memento_datetime,
+    "score": score_sort
 }
 
