@@ -121,8 +121,9 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
             try:
                 mdt = future.result()[0]
-                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
-                urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+                # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                # urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
+                urim_to_mementodatetime[urim] = mdt.timestamp()
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())

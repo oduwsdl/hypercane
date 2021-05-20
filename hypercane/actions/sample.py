@@ -234,10 +234,35 @@ def sample_with_filtered_random(args):
 
     run_sample_with(parser, args, "Filtered Random", algorithm_script)
 
-def sample_with_true_random_args(args):
+# def sample_with_true_random_args(args):
 
+#     import argparse
+
+#     from hypercane.actions import add_input_args, add_default_args
+
+#     parser = argparse.ArgumentParser(
+#         description="Sample random URLs from a web archive collection.",
+#         prog="hc sample true-random"
+#         )
+
+#     parser = add_input_args(parser)
+
+#     parser.add_argument('-k', '--k', required=False, help="the number of items to sample", default=28, dest='sample_count')
+
+#     parser = add_default_args(parser)
+
+#     args = parser.parse_args(args)
+
+#     return args
+
+def sample_with_true_random(args):
+
+    from hypercane.sample.probability import select_true_random
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
     import argparse
-
     from hypercane.actions import add_input_args, add_default_args
 
     parser = argparse.ArgumentParser(
@@ -252,18 +277,6 @@ def sample_with_true_random_args(args):
     parser = add_default_args(parser)
 
     args = parser.parse_args(args)
-
-    return args
-
-def sample_with_true_random(args):
-
-    from hypercane.sample.true_random import select_true_random
-    from hypercane.actions import get_logger, calculate_loglevel
-    from hypercane.utils import get_web_session, save_resource_data
-    from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_mementos_by_input_type
-
-    args = sample_with_true_random_args(args)
 
     logger = get_logger(
         __name__,
@@ -289,7 +302,58 @@ def sample_with_true_random(args):
     sampled_urims = select_true_random(list(urimdata.keys()), int(args.sample_count))
 
     logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
-    save_resource_data(args.output_filename, urimdata, 'original-resources', sampled_urims)
+    save_resource_data(args.output_filename, urimdata, 'mementos', sampled_urims)
+
+    logger.info("Done sampling.")
+
+def sample_with_systematic(args):
+
+    from hypercane.sample.probability import select_systematically
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    import argparse
+    from hypercane.actions import add_input_args, add_default_args
+
+    parser = argparse.ArgumentParser(
+        description="Sample random URLs from a web archive collection.",
+        prog="hc sample systematic"
+        )
+
+    parser = add_input_args(parser)
+
+    parser.add_argument('-j', '--j', required=True, help="the iteration of the item to sample, e.g., --j 5 for every 5th item", dest='iteration')
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+
+    session = get_web_session(cache_storage=args.cache_storage)
+    output_type = 'mementos'
+
+    logger.info("Starting random sampling of URI-Ms.")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    logger.info("Executing systemic sample to select every {}th item from from {} URI-Ms".format(
+        int(args.iteration), len(urimdata.keys())))
+    sampled_urims = select_systematically(list(urimdata.keys()), int(args.iteration))
+
+    logger.info("Writing sampled URI-Ms out to {}".format(args.output_filename))
+    save_resource_data(args.output_filename, urimdata, 'mementos', sampled_urims)
 
     logger.info("Done sampling.")
 
@@ -302,6 +366,7 @@ def print_usage():
     * dsa1 - select URI-Ms using the DSA1 (AlNoamany's) Algorithm
     * alnoamany - alias for dsa1
     * filtered-random - filters off-topic mementos, filters near-duplicates, and then samples k of the remainder, randomly
+    * systematic - returns every jth memento from the input
 
     Examples:
 
@@ -315,6 +380,19 @@ supported_commands = {
     "true-random": sample_with_true_random,
     "dsa1": sample_with_dsa1,
     "alnoamany": sample_with_dsa1,
-    "filtered-random": sample_with_filtered_random
+    "filtered-random": sample_with_filtered_random,
+    "systematic": sample_with_systematic,
+    # "statified-random": None,
+    # "stratified-systematic": None,
+    # "random-cluster": None,
+    # "random-oversample": None,
+    # "random-undersample": None
 }
+
+    # * stratified-random - returns j items randomly chosen from each cluster, requries that the input be clustered with the cluster action
+    # * stratified-systematic - returns every jth URI-M from each cluster, requries that the input be clustered witht he cluster action
+    # * random-cluster - return a randomly selected cluster from the sample, requires that the input be clustered with the cluster action
+    # * random-oversample - randomly duplicates URI-Ms in the smaller clusters until they match the size of the largest cluster, requires input be clustered with the cluster action
+    # * random-undersample - randomly chooses URI-Ms from the larger clusters until they match the size of the smallest cluster, requires input be clustered with the cluster action
+
 
