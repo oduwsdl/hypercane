@@ -515,3 +515,13 @@ def create_html_metadata_kv_pairs(urim, session):
         meta_kv_pairs[ meta[key_attrib] ] = meta[value_attrib]
 
     return meta_kv_pairs
+
+def organize_mementos_by_cluster(urimdata):
+
+    memento_clusters = {}
+
+    for urim in urimdata:
+
+        memento_clusters.setdefault( urimdata[urim]['Cluster'], []).append(urim)
+
+    return memento_clusters

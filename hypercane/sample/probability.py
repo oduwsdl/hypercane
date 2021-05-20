@@ -25,3 +25,13 @@ def select_systematically(urims, iteration):
         icounter += 1
 
     return sampled_urims
+
+def select_random_per_cluster(memento_clusters, sample_count):
+
+    sampled_urims = []
+
+    for cluster in memento_clusters:
+
+        sampled_urims.extend( select_true_random( memento_clusters[cluster], sample_count ) )
+
+    return sampled_urims
