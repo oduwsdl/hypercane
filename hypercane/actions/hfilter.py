@@ -666,6 +666,7 @@ def print_include_usage():
     * languages - include mementos with the given languages (specified with --lang)
     * non-duplicates - employ Simhash to only include mementos that are not duplicates
     * on-topic - execute the Off-Topic Memento Toolkit to only include on-topic mementos
+    * score - include only those mementos containing a score meeting the given criteria, supplied by the --criteria argument, requires that the input contains scoring information
     * highest-score-per-cluster - include only the highest ranking memento in each cluster, requires that the input contain clustered mementos
     * containing-pattern - include only mementos that contain the given regular experession pattern
     * near-datetime - include only mementos whose memento-datetime falls into the given range

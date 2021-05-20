@@ -370,6 +370,7 @@ def print_usage():
     * lda - cluster the collection via LDA topic modeling
     * kmeans - cluster the user-supplied feature using K-means clustering
     * domainname - cluster the URI-Ms by domainname
+    * original-resource - cluster the URI-Ms by URI-R
 
     Examples:
 

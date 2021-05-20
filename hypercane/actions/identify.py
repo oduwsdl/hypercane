@@ -156,6 +156,10 @@ def print_usage():
 
     hc identify timemaps -i archiveit -a 8788 -o timemap-output-file.tsv -cs mongodb://localhost/cache
 
+    hc identify mementos -i trove -a 13524 -o mementos.tsv -cs mongodb://localhost/cache
+
+    hc identify mementos -i pandora-subject -a 83 -o mementos.tsv -cs mongodb://localhost/cache
+
     hc identify mementos -i timemaps -a timemap-input-file.tsv -o mementos.tsv -cs mongodb://localhost/cache
 
 """)
