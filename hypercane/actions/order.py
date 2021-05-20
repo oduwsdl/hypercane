@@ -158,15 +158,17 @@ def score_sort(args):
 
     from pprint import PrettyPrinter
 
-    # pp = PrettyPrinter(indent=4)
+    if args.scoring_field is None:
+        scoring_fields = list(urimdata[list(urimdata.keys())[0]].keys())
+        scoring_field = scoring_fields[0]
+    else:
+        scoring_field = args.scoring_field
 
-    # pp.pprint(urimdata)
-
-    # sys.exit(255)
+    logger.info("ordering by field {}".format(scoring_field))
 
     logger.info("extracted {} mementos from input".format(len(urimdata.keys())))
 
-    ordered_urims = order_by_score(urimdata, args.descending, args.scoring_field)
+    ordered_urims = order_by_score(urimdata, args.descending, scoring_field)
 
     logger.info("placed {} mementos in order".format(len(ordered_urims)))
 
