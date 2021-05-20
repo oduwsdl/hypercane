@@ -13,8 +13,10 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 1. Install [MongoDB](https://www.mongodb.com/download-center/community)
 2. Clone this repository
 3. Change into the cloned directory
-4. Type `pip install .`
-5. We are still working out some dependency issues, thus you will need to type `pip install -r requirements.txt` as a last step
+4. Type `pip install --upgrade pip` because this next step only works with the latest version of `pip`
+5. Type `pip install -r requirements.txt` to ensure that you install the correct dependency library versions
+6. Type `python -m spacy download en_core_web_sm` to download a language pipeline for entity detection - (Note: attempts to automated this step inside `setup.py` have not been successful)
+7. Type `pip install . --use-feature=in-tree-build`
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
 
@@ -60,4 +62,4 @@ To discover the list of commands associated with an action, use the `--help` com
 
 # The Future of Hypercane
 
-We are working on additional sampling algorithms and options for the advanced actions. Please feel free to submit issues and pull requests at https://github.com/oduwsdl/hypercane
+We are working on additional sampling algorithms and options for the advanced actions. Please feel free to submit issues and pull requests at https://github.com/oduwsdl/hypercane.

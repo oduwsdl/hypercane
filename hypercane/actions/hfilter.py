@@ -675,7 +675,7 @@ def print_include_usage():
 
     Examples:
 
-    hc filter include-only languages --lang en,es -i archiveit=8788 -o english-spanish-mementos.txt
+    hc filter include-only languages --lang en,es -i archiveit -a 8788 -o english-spanish-mementos.txt
 
     hc filter include-only on-topic -i timemaps -a uritfile.txt -o ontopic-mementos.txt
 
