@@ -373,7 +373,7 @@ def print_usage():
     * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm (https://doi.org/10.1145/3091478.3091508)
     * bm25 - score documents according to the input query
     * image-count - score by the number of images in each document
-    * card-score - score by how well the memento creates a social card on Facebook and Twitter
+    * simple-card-score - score by how well the memento creates a social card on Facebook and Twitter
     * path-depth - score by path depth, as defined by McCown et al. (https://arxiv.org/abs/cs/0511077)
     * url-category-score - score by the categories from Padia et al. (https://doi.org/10.1145/2232817.2232821)
 
