@@ -451,23 +451,23 @@ def save_resource_data(output_filename, resource_data, output_type, urilist):
 
         writer.writeheader()
 
-        for uri in resource_data.keys():
+        for uri in urilist:
 
-            if uri in urilist:
+            # if uri in urilist:
 
-                row = {}
-                row[ type_key ] = uri
+            row = {}
+            row[ type_key ] = uri
 
-                for key in resource_data[uri].keys():
-                    module_logger.info("working with key {} for uri {}".format(key, uri))
-                    if key != type_key:
-                        if key in resource_data[uri]:
-                            row[key] = resource_data[uri][key]
-                        else:
-                            # in case we are writing out data that was not filled
-                            row[key] = None
+            for key in resource_data[uri].keys():
+                module_logger.debug("working with key {} for uri {}".format(key, uri))
+                if key != type_key:
+                    if key in resource_data[uri]:
+                        row[key] = resource_data[uri][key]
+                    else:
+                        # in case we are writing out data that was not filled
+                        row[key] = None
 
-                writer.writerow(row)
+            writer.writerow(row)
 
 def create_html_metadata_kv_pairs(urim, session):
 

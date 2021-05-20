@@ -267,7 +267,7 @@ def path_depth_scoring(args):
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
-    logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
+    logger.info("Finished ranking by path depth, output is at {}".format(args.output_filename))
 
 def category_scoring(args):
 
@@ -285,7 +285,7 @@ def category_scoring(args):
 
     parser = argparse.ArgumentParser(
         description="Score the input using the path depth of the URI-R of each memento.",
-        prog="hc score path-depth"
+        prog="hc score url-category-score"
     )
 
     args = process_input_args(args, parser)
@@ -299,7 +299,7 @@ def category_scoring(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Beginning the scoring by DSA1 scoring equation")
+    logger.info("Beginning the scoring by URL category equation")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -312,7 +312,7 @@ def category_scoring(args):
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
-    logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
+    logger.info("Finished ranking by URL category, output is at {}".format(args.output_filename))
 
 # def textrank_scoring(args):
 

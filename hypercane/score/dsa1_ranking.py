@@ -646,6 +646,6 @@ def score_by_category(urimdata, session):
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     for urim in urim_to_score:
-        urimdata[urim]['Score---PathDepth'] = urim_to_score[urim]
+        urimdata[urim]['Score---URLCategoryScore'] = urim_to_score[urim]
 
     return urimdata
