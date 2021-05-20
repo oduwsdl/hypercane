@@ -91,4 +91,40 @@ def select_by_random_oversampling(memento_clusters):
 
     return sampled_urims
         
+def select_by_random_undersamping(memento_clusters):
+
+    import math
+
+    sampled_urims = []
+
+    smallest_cluster_size = math.inf
+    smallest_cluster = None
+
+    for cluster in memento_clusters:
+
+        if len(memento_clusters[cluster]) < smallest_cluster_size:
+            smallest_cluster = cluster
+            smallest_cluster_size = len(memento_clusters[cluster])
+
+    sampled_urims.extend( memento_clusters[smallest_cluster] )
+
+    print("smallest cluster is of size {}".format(smallest_cluster_size))
+
+    for cluster in memento_clusters:
+
+        if cluster == smallest_cluster:
+            continue
+
+        cluster_sample = []
+
+        while len(cluster_sample) < smallest_cluster_size:
+
+            cluster_size_diff = smallest_cluster_size - len(cluster_sample)
+            sample_extension = select_true_random(memento_clusters[cluster], cluster_size_diff)
+            cluster_sample.extend( sample_extension )
+            print("cluster sample is now size {}".format(len(cluster_sample)))
+
+        sampled_urims.extend(cluster_sample)
+
+    return sampled_urims
 
