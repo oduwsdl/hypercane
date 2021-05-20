@@ -201,7 +201,7 @@ def extract_rank_key_from_input(urimdata):
 
     return rankkey
 
-def include_rank(args):
+def include_score_range(args):
 
     import argparse
     from hypercane.actions import process_input_args, get_logger, \
@@ -217,7 +217,12 @@ def include_rank(args):
     )
 
     parser.add_argument('--criteria', default=1, dest='criteria',
-        help="The numeric criteria to use when selecting which values to keep."
+        help="The numeric criteria to use when selecting which values to keep.",
+        required=True
+    )
+
+    parser.add_argument('--scoring-field', help="Specify the scoring field to sort by, default is first encountered",
+        default=None, dest='scoring_field'
     )
 
     args = process_input_args(args, parser)
@@ -233,19 +238,29 @@ def include_rank(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    # TODO: add a note about no crawling for this filter
-    urimdata = discover_resource_data_by_input_type(
-        args.input_type, output_type, args.input_arguments, 1,
-        session, discover_mementos_by_input_type
-    )
+    if args.crawl_depth > 1:
+        logger.warning("Refusing to crawl when only analyzing prior score data")
 
-    rankkey = extract_rank_key_from_input(urimdata)
+    if args.input_type == 'mementos':
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, 1,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for filtering by score, score information must come from a prior execution of the score command".format(args.input_type))
+
+    if args.scoring_field is None:
+        scoring_fields = list(urimdata[list(urimdata.keys())[0]].keys())
+        scoring_field = scoring_fields[0]
+    else:
+        scoring_field = args.scoring_field
 
     filtered_urims = []
 
     for urim in urimdata:
         if eval("{}{}".format(
-            urimdata[urim][rankkey], args.criteria
+            urimdata[urim][scoring_field], args.criteria
             )):
             filtered_urims.append(urim)
 
@@ -256,65 +271,6 @@ def include_rank(args):
         args.output_filename, urimdata, 'mementos', filtered_urims)
 
     logger.info("Done filtering mementos by score, output is saved to {}".format(
-        args.output_filename
-    ))
-
-
-def exclude_rank(args):
-
-    import argparse
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
-    from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_mementos_by_input_type
-    from hypercane.utils import get_web_session
-    from hypercane.utils import save_resource_data
-
-    parser = argparse.ArgumentParser(
-        description="Include only mementos containing a score meeting the given criteria.",
-        prog="hc filter include-only score"
-    )
-
-    parser.add_argument('--criteria', default=1, dest='criteria',
-        help="The numeric criteria to use when selecting which values to keep."
-    )
-
-    args = process_input_args(args, parser)
-    output_type = 'mementos'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
-    logger.info("Starting detection of documents meeting the criteria for score ...")
-
-    session = get_web_session(cache_storage=args.cache_storage)
-
-    # TODO: add a note about no crawling for this filter
-    urimdata = discover_resource_data_by_input_type(
-        args.input_type, output_type, args.input_arguments, 1,
-        session, discover_mementos_by_input_type
-    )
-
-    rankkey = extract_rank_key_from_input(urimdata)
-
-    filtered_urims = []
-
-    for urim in urimdata:
-        if not eval("{}{}".format(
-            urimdata[urim][rankkey], args.criteria
-            )):
-            filtered_urims.append(urim)
-
-    logger.info("Saving {} filtered URI-Ms to {}".format(
-        len(filtered_urims), args.output_filename))
-
-    save_resource_data(
-        args.output_filename, urimdata, 'mementos', filtered_urims)
-
-    logger.info("Done filtering mementos by scor, output is saved to {}".format(
         args.output_filename
     ))
 
@@ -743,10 +699,11 @@ def print_exclude_usage():
 """)
 
 include_criteria = {
+    "language": include_languages,
     "languages": include_languages,
     "non-duplicates": include_nonduplicates,
     "on-topic": include_ontopic,
-    # "rank": include_rank,
+    "score": include_score_range,
     "highest-score-per-cluster": include_highest_score_per_cluster,
     "containing-pattern": include_containing_pattern,
     "near-datetime": include_near_datetime,
@@ -755,10 +712,10 @@ include_criteria = {
 }
 
 exclude_criteria = {
+    "language": exclude_languages,
     "languages": exclude_languages,
     "near-duplicates": exclude_nearduplicates,
     "off-topic": exclude_offtopic,
-    # "rank": exclude_rank,
     "containing-pattern": exclude_containing_pattern
 }
 
