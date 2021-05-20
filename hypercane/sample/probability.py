@@ -45,3 +45,16 @@ def select_systematic_per_cluster(memento_clusters, iteration):
         sampled_urims.extend( select_systematically( memento_clusters[cluster], iteration) )
 
     return sampled_urims
+
+def select_random_clusters(memento_clusters, cluster_count):
+
+    sampled_urims = []
+
+    sampled_clusters = random.sample( list(memento_clusters.keys()), cluster_count )
+
+    for cluster in sampled_clusters:
+
+        sampled_urims.extend( memento_clusters[cluster] )
+
+    return sampled_urims
+
