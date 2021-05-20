@@ -637,8 +637,6 @@ def print_usage():
     * random-oversample - randomly duplicates URI-Ms in the smaller clusters until they match the size of the largest cluster, requires input be clustered with the cluster action
     * random-undersample - randomly chooses URI-Ms from the larger clusters until they match the size of the smallest cluster, requires input be clustered with the cluster action
 
-
-
     Examples:
 
     hc sample true-random -i archiveit -a 8788 -o seed-output-file.txt -n 10 -cs mongodb://localhost/cache

@@ -108,8 +108,6 @@ def select_by_random_undersamping(memento_clusters):
 
     sampled_urims.extend( memento_clusters[smallest_cluster] )
 
-    print("smallest cluster is of size {}".format(smallest_cluster_size))
-
     for cluster in memento_clusters:
 
         if cluster == smallest_cluster:
@@ -122,7 +120,6 @@ def select_by_random_undersamping(memento_clusters):
             cluster_size_diff = smallest_cluster_size - len(cluster_sample)
             sample_extension = select_true_random(memento_clusters[cluster], cluster_size_diff)
             cluster_sample.extend( sample_extension )
-            print("cluster sample is now size {}".format(len(cluster_sample)))
 
         sampled_urims.extend(cluster_sample)
 
