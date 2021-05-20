@@ -369,7 +369,7 @@ def sample_with_stratified_random(args):
 
     parser = argparse.ArgumentParser(
         description="Sample random URLs from a web archive collection.",
-        prog="hc sample systematic"
+        prog="hc sample stratified-random"
         )
 
     parser = add_input_args(parser)
@@ -411,6 +411,60 @@ def sample_with_stratified_random(args):
 
     logger.info("Done sampling.")
 
+def sample_with_stratified_systematic(args):
+
+    from hypercane.sample.probability import select_systematic_per_cluster
+    from hypercane.actions import get_logger, calculate_loglevel
+    from hypercane.utils import get_web_session, save_resource_data, organize_mementos_by_cluster
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    import argparse
+    from hypercane.actions import add_input_args, add_default_args
+
+    parser = argparse.ArgumentParser(
+        description="Sample random URLs from a web archive collection.",
+        prog="hc sample stratified-systematic"
+        )
+
+    parser = add_input_args(parser)
+
+    parser.add_argument('-j', '--j', required=True, help="the iteration of the item to sample from each cluster, e.g., --j 5 for every 5th item from each cluster", dest='iteration')
+
+    parser = add_default_args(parser)
+
+    args = parser.parse_args(args)
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    if args.errorfilename is not None:
+        hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+
+    session = get_web_session(cache_storage=args.cache_storage)
+    output_type = 'mementos'
+
+    logger.info("Starting random sampling of URI-Ms.")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    memento_clusters = organize_mementos_by_cluster(urimdata)
+
+    logger.info("Executing stratified systematic sample to select each {} item each from {} clusters of {} URI-Ms".format(
+        int(args.iteration), len(memento_clusters), len(urimdata.keys())))
+    
+    sampled_urims = select_systematic_per_cluster(memento_clusters, int(args.iteration))
+
+    logger.info("Writing {} sampled URI-Ms out to {}".format(len(sampled_urims), args.output_filename))
+    save_resource_data(args.output_filename, urimdata, 'mementos', sampled_urims)
+
+    logger.info("Done sampling.")
+
 def print_usage():
 
     print("""hc sample is used execute different algorithms for selecting mementos from a web archive collection, document collection, a list of TimeMaps, or a directory containing WARCs
@@ -438,7 +492,7 @@ supported_commands = {
     "filtered-random": sample_with_filtered_random,
     "systematic": sample_with_systematic,
     "stratified-random": sample_with_stratified_random,
-    # "stratified-systematic": None,
+    "stratified-systematic": sample_with_stratified_systematic,
     # "random-cluster": None,
     # "random-oversample": None,
     # "random-undersample": None
