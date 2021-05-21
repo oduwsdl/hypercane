@@ -654,7 +654,7 @@ def print_usage():
 
     hc filter exclude near-duplicates -i mementos -a ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
 
-    hc filter include-only rank "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
+    hc filter include-only score "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
 
 """)
 

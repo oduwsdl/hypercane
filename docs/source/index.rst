@@ -60,5 +60,8 @@ This documentation is not yet complete. To see what Hypercane can do, please rea
    :maxdepth: 2
 
    installation
+   input_types
+   core_actions
+   advanced_actions
    license
 

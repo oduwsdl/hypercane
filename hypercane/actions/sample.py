@@ -639,7 +639,7 @@ def print_usage():
 
     Examples:
 
-    hc sample true-random -i archiveit -a 8788 -o seed-output-file.txt -n 10 -cs mongodb://localhost/cache
+    hc sample true-random -i archiveit -a 8788 -o seed-output-file.txt -k 10 -cs mongodb://localhost/cache
 
     hc sample dsa1 -i timemaps -a timemaps.tsv -o dsa1-sample.tsv -cs mongodb://localhost/cache
 
