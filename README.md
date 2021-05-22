@@ -25,7 +25,8 @@ This grants access to the `hc` command which provides the functionality of Hyper
 The software is still volatile, so you will need to build your own docker image.
 
 1. Clone this repository
-2. Run `docker-compose run hypercane hc --help`
+2. Change into the cloned directory
+3. Run `docker-compose run hypercane hc --help`
 
 This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed.
 

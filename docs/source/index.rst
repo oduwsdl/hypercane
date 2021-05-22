@@ -1,9 +1,16 @@
 Hypercane: Intelligent Sampling of Web Archive Collections
-=========================================================
+==========================================================
 
 .. image:: images/hypercane-logo-alpha-sm.png
+   :align: center
 
 What tool can we rely on to automate the selection of mementos for summarizations and other purposes? Hypercane.
+
+
+.. figure:: images/resized_Stick_figure_choosing.jpg
+   :align: center
+
+   How do you sample mementos? What if there were thousands to choose among? What if we only want a small subset like 28 for our story? Hypercane helps you do this work.
 
 Humans can choose mementos from a collection, but doing so is difficult if they are unfamiliar with the collection. In the appendix of the `preprint version <https://arxiv.org/abs/1905.11342>`_ of *Social Cards Probably Provide For Better Understanding of Web Archive Collections*, we detail how difficult it is to understand a web archive collection with the existing Archive-It interface. The issue is scale. Most web archive collections consist of thousands of documents. In that same work, we show that most collections contain insufficient metadata to assist users in making choices about which mementos to sample. Depending on the algorithm chosen, Hypercane takes into account `the structural features <http://doi.org/10.17605/OSF.IO/EV42P>`_ of the collection and the content of the collection's mementos to make its decisions.
 
@@ -49,17 +56,12 @@ Hypercane is a research project and is rather volatile. These actions will remai
 
    hc report seed-statistics -i original-resources -a urirs.tsv -o seedstats.json
 
-This documentation is not yet complete. To see what Hypercane can do, please read the following blog posts:
-
-* `Hypercane Part 1: Intelligent Sampling of Web Archive Collections <https://ws-dl.blogspot.com/2020/06/2020-06-03-hypercane-part-1-intelligent.html>`_
-* `Hypercane Part 2: Synthesizing Output For Other Tools <https://ws-dl.blogspot.com/2020/06/2020-06-10-hypercane-part-2.html>`_
-* `Hypercane Part 3: Building Your Own Algorithms <https://ws-dl.blogspot.com/2020/06/2020-06-17-hypercane-part-3-building.html>`_
-
 
 .. toctree::
    :maxdepth: 2
 
    installation
+   caching
    input_types
    core_actions
    advanced_actions
