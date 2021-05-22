@@ -1,7 +1,7 @@
 Advanced Actions
 ================
 
-.. note::
+.. attention::
     All examples on this page assume that the ``HC_CACHE_STORAGE`` variable has been set. If you do not know what this means, read the :ref:`caching_and_being_nice` section first.
 
 To build your own sampling algorithms or explore a collection in different ways, Hypercane also offers the advanced actions of:

@@ -1,7 +1,7 @@
 Inputs and Outputs
 ==================
 
-.. note::
+.. attention::
     All examples on this page assume that the ``HC_CACHE_STORAGE`` variable has been set. If you do not know what this means, read the :ref:`caching_and_being_nice` section first.
 
 All Hypercane commands specify input types with `-i` and and an output file or directory with `-o`. The subsection below contains the list of possible values for `-i` and how to use them.
@@ -68,9 +68,10 @@ The power of Hypercane: outputs are just future inputs
 
 With the exception of the :ref:`synthesize` and :ref:`report` actions, all other actions produce a tab-separated file containing a list of memento URI-Ms, TimeMap URI-Ts, or original resource URI-Rs. All Hypercane commands will also accept this file format, allowing most Hypercane commands to feed data into each other. As shown in the hypothetical diagram below, we can execute a sample action using one algorithm and feed the result into another sample action using a different algorithm. The resulting mementos can then be fed into an order action before finally feeding the result into a :ref:`synthesize` action to generate input for a Raintale story containing only those mementos. Many combinations of actions are possible.
 
-.. figure:: images/outputs-are-future-inputs.png
+.. image:: images/outputs-are-future-inputs.png
     :align: center
 
+.. centered::
     A hypothetical Hypercane workflow shows a user providing a list of TimeMap URI-Ts as input to a sample command. The output list of Memento URI-Ms from that command can be used as input to subsequent commands who then feed others.
 
 For example, one can acquire the list of TimeMaps from Archive-It collection 694 and save it to a file named `694-timemaps.tsv`:

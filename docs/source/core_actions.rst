@@ -1,7 +1,7 @@
 Core Actions
 ============
 
-.. note::
+.. attention::
     All examples on this page assume that the ``HC_CACHE_STORAGE`` variable has been set. If you do not know what this means, read the :ref:`caching_and_being_nice` section first.
 
 For sampling from a collection or converting it into different forms, Hypercane offers the core actions of:
