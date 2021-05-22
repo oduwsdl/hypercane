@@ -9,19 +9,19 @@ Sometimes seed mementos are not enough and we want to discover the deep mementos
 
 Each diagram below illustrates the crawling algorithm used to acquire a different Memento object. Hypercane's input types are shown at the top.
 
-.. image:: images/identify-mementos.png
+.. image:: https://raw.githubusercontent.com/oduwsdl/hypercane/master/docs/source/images/Identify-mementos.png
     :align: center
 
 .. centered::
     A flowchart demonstrating how Hypercane produces a list of URI-Ms from a crawl with one of the different input types shown at the top. This flowchart documents how ``hc identify mementos`` functions when we use the ``--crawl-depth`` argument.
 
-.. image:: images/identify-original-resources.png
+.. image:: ./images/identify-original-resources.png
     :align: center
 
 .. centered::
     A flowchart demonstrating how Hypercane produces a list of URI-Rs from a crawl with one of the different input types shown at the top. This flowchart documents how ``hc identify original-resources`` functions when we use the ``--crawl-depth`` argument.
 
-.. image:: images/identify-TimeMaps.png
+.. image:: ./images/identify-TimeMaps.png
     :align: center
 
 .. centered::
