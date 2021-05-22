@@ -695,7 +695,7 @@ def print_exclude_usage():
 
     hc filter exclude languages --lang en,de -i archiveit -a 8788 -o nonenglish-nongerman-mementos.txt
 
-    hc filter exclude containing_pattern --pattern 'cheese' -i mementos -a mementofile.tsv -o mementos-with-cheese.tsv
+    hc filter exclude containing_pattern --pattern 'cheese' -i mementos -a mementofile.tsv -o mementos-without-cheese.tsv
 
 """)
 
