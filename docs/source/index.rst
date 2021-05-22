@@ -7,10 +7,11 @@ Hypercane: Intelligent Sampling of Web Archive Collections
 What tool can we rely on to automate the selection of mementos for summarizations and other purposes? Hypercane.
 
 
-.. figure:: images/resized_Stick_figure_choosing.jpg
+.. image:: images/resized_Stick_figure_choosing.jpg
    :align: center
 
-   How do you sample mementos? What if there were thousands to choose among? What if we only want a small subset like 28 for our story? Hypercane helps you do this work.
+.. centered::
+   *How do you sample mementos? What if there were thousands to choose among? What if we only want a small subset like 28 for our story? Hypercane helps you do this work.*
 
 Humans can choose mementos from a collection, but doing so is difficult if they are unfamiliar with the collection. In the appendix of the `preprint version <https://arxiv.org/abs/1905.11342>`_ of *Social Cards Probably Provide For Better Understanding of Web Archive Collections*, we detail how difficult it is to understand a web archive collection with the existing Archive-It interface. The issue is scale. Most web archive collections consist of thousands of documents. In that same work, we show that most collections contain insufficient metadata to assist users in making choices about which mementos to sample. Depending on the algorithm chosen, Hypercane takes into account `the structural features <http://doi.org/10.17605/OSF.IO/EV42P>`_ of the collection and the content of the collection's mementos to make its decisions.
 

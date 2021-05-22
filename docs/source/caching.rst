@@ -38,4 +38,4 @@ So that the user does not need to specify `-cs` every time, they can specify the
 All subsequent Hypercane commands run in the same shell will use this database as their cache. When working with a single collection, this is often the best choice.
 
 .. note::
-    `We are evaluating whether or not caching services like Squid might successfully handle HTTPS requests from Hypercane. <https://github.com/oduwsdl/hypercane/issues/16>`_ Once we make this determination, we may abandon MongoDB in favor of more standardized caching.
+    `We are evaluating whether or not caching services like Squid might successfully store HTTPS responses sent to Hypercane. <https://github.com/oduwsdl/hypercane/issues/16>`_ Once we make this determination, we may abandon MongoDB in favor of more standardized caching.
