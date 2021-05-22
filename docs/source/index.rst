@@ -65,5 +65,6 @@ Hypercane is a research project and is rather volatile. These actions will remai
    input_types
    core_actions
    advanced_actions
+   crawling
    license
 
