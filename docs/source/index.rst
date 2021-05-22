@@ -7,7 +7,7 @@ Hypercane: Intelligent Sampling of Web Archive Collections
 What tool can we rely on to automate the selection of mementos for summarizations and other purposes? Hypercane.
 
 
-.. image:: images/resized_Stick_figure_choosing.jpg
+.. image:: https://raw.githubusercontent.com/oduwsdl/hypercane/master/docs/source/images/resized_Stick_Figure_choosing.jpg
    :align: center
 
 .. centered::
