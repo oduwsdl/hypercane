@@ -15,13 +15,13 @@ Each diagram below illustrates the crawling algorithm used to acquire a differen
 .. centered::
     A flowchart demonstrating how Hypercane produces a list of URI-Ms from a crawl with one of the different input types shown at the top. This flowchart documents how ``hc identify mementos`` functions when we use the ``--crawl-depth`` argument.
 
-.. image:: ./images/identify-original-resources.png
+.. image:: https://raw.githubusercontent.com/oduwsdl/hypercane/master/docs/source/images/Identify-original-resources.png
     :align: center
 
 .. centered::
     A flowchart demonstrating how Hypercane produces a list of URI-Rs from a crawl with one of the different input types shown at the top. This flowchart documents how ``hc identify original-resources`` functions when we use the ``--crawl-depth`` argument.
 
-.. image:: ./images/identify-TimeMaps.png
+.. image:: https://raw.githubusercontent.com/oduwsdl/hypercane/master/docs/source/images/Identify-TimeMaps.png
     :align: center
 
 .. centered::
