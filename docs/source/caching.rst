@@ -7,8 +7,8 @@ Hypercane is designed for researchers and storytellers. Hypercane is based on th
 
 **We want Hypercane to be successful and recognize that we would not be here without web archives. If you run a web archive and find that a someone using Hypercane is causing problems for your archive, please** `contact us <https://github.com/oduwsdl/hypercane/issues/new/choose>`_ **so we can work toward a solution.**
 
-Caching with -cs
-----------------
+Caching with ``-cs``
+--------------------
 
 Hypercane stores a cache of all objects it encounters in MongoDB through the requests-cache library. While some commands do not require caching, a number will not execute unless the user specifies a caching database. **This is to protect the web archive from unnecessarily high traffic load and improve performance across Hypercane commands.** Hypercane commands can be executed in any order, meaning that a user may hit the cache numerous times while working with a collecition.
 
