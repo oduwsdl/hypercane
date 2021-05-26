@@ -15,7 +15,7 @@ from archivenow import archivenow
 from copy import deepcopy
 from aiu import ArchiveItCollection, convert_LinkTimeMap_to_dict, TroveCollection, PandoraCollection, PandoraSubject
 from requests_futures.sessions import FuturesSession
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, RetryError
 from urllib.parse import urlparse
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
@@ -318,11 +318,17 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
         for urim in urims:
 
-            module_logger.debug("seeking for URI-R for URI-M {}".format(urim))
-            urit = get_memento_http_metadata(urim, session.cache_storage, 
-                metadata_fields=['timemap'])[0]
+            module_logger.debug("seeking for URI-T for URI-M {}".format(urim))
 
-            urits.append(urit)
+            try:
+                urit = get_memento_http_metadata(urim, session.cache_storage, 
+                    metadata_fields=['timemap'])[0]
+
+                urits.append(urit)
+            except RetryError:
+                module_logger.exception("Exceeded the number of retries for {} , skipping TimeMap discovery, reporting exception...".format(urim))
+            except KeyError:
+                module_logger.exception("Failed to find a TimeMap for {} , skipping TimeMap discovery, reporting exception...".format(urim))
 
         if crawl_depth > 1:
 
@@ -523,7 +529,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
 
     output_urirs = []
 
-    module_logger.info("discovering mementos for input type {}".format(input_type))
+    module_logger.info("discovering original-resources for input type {}".format(input_type))
 
     if input_type == "archiveit":
         collection_id = input_args
@@ -641,7 +647,9 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
                     metadata_fields=['original'])[0]
                 output_urirs.append(urir)
             except MementoURINotAtArchiveFailure:
-                module_logger.exception("Could not discover original resource for {} , skipping...".format(urim))
+                module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
+            except RetryError:
+                module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
 
         if crawl_depth > 1:
             link_storage = StorageObject()
@@ -684,7 +692,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
         'original-resources': 'URI-R'
     }
 
-    module_logger.info("processing input for type {}".format(input_type))
+    module_logger.info("processing input of type {}".format(input_type))
 
     if input_type in ['archiveit', 'trove', 'pandora-collection', 'pandora-subject']:
         input_data = input_arguments
@@ -700,7 +708,7 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
         input_type, input_data, crawl_depth, session,accept_datetime=accept_datetime,
         timegates=timegates)
 
-    module_logger.info("discovered {} URIs".format(len(output_uris)))
+    module_logger.info("discovered {} URIs matching requested type".format(len(output_uris)))
 
     if uridata is None:
         uridata = {}
@@ -723,3 +731,21 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     return uridata
 
+def generate_faux_urits(urims, cache_storage):
+
+    faux_urits = []
+
+    for urim in urims:
+        
+        try:
+            urir = get_memento_http_metadata(urim, cache_storage, 
+                metadata_fields=['original'])[0]
+
+            faux_urits.append("fauxtm://{}".format(urir))
+
+        except MementoURINotAtArchiveFailure:
+            module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
+        except RetryError:
+            module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
+
+    return faux_urits

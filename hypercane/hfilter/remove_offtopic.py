@@ -14,6 +14,7 @@ from requests.exceptions import RequestException
 from requests_futures.sessions import FuturesSession
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+from urllib.parse import urlparse
 
 from ..utils import get_web_session, get_boilerplate_free_content
 import hypercane.errors
@@ -53,7 +54,13 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             Returns the dict form of TimeMap at `urit` provided that it
             was previously stored via `addTimeMap`.
         """
-        return convert_LinkTimeMap_to_dict(self.session.get(urit).text)
+
+        o = urlparse(urit)
+
+        if o.scheme == 'fauxtm':
+            NotImplementedError("fauxtms not implemented yet")
+        else:
+            return convert_LinkTimeMap_to_dict(self.session.get(urit).text)
 
     def addMemento(self, urim):
         try:
