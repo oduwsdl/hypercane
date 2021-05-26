@@ -555,3 +555,74 @@ def organize_mementos_by_cluster(urimdata):
         memento_clusters.setdefault( urimdata[urim]['Cluster'], []).append(urim)
 
     return memento_clusters
+
+def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
+
+    dbconn = MongoClient(cache_storage)
+    db = dbconn.get_default_database()
+
+    try:
+        return db.derivedvalues.find_one(
+            { "fauxurit": faux_urit }
+        )["timemap_json"]
+    except (KeyError, TypeError):
+
+        from hypercane.identify import generate_faux_urit
+
+        faux_urit_urim_list = {}
+
+        for urim in urims:
+
+            faux_urit_i = generate_faux_urit(urim, cache_storage)
+            faux_urit_urim_list.setdefault( faux_urit_i, [] ).append(urim)
+
+        for faux_urit_i in faux_urit_urim_list:
+
+            urir = faux_urit_i.replace('fauxtm://', '')
+
+            timemap_json = {
+                'original_uri': urir,
+                'timegate_uri': None,
+                'timemap_uri': {
+                    "json_format": faux_urit_i
+                },
+                'mementos': {
+                    'first': {},
+                    'last': {},
+                    'list': {}
+                }
+            }
+
+            mementos_list = []
+            mementos_by_datetime = []
+
+            for urim in faux_urit_urim_list[faux_urit_i]:
+
+                mdt = get_memento_http_metadata(urim, cache_storage, metadata_fields=['memento-datetime'])
+
+                memento_entry = {
+                    "datetime": mdt.strformat("%Y-%m-%dT%H%M%SZ"),
+                    "uri": urim
+                }
+
+                mementos_list.append(memento_entry)
+                mementos_by_datetime.append( ( mdt, urim ) )
+
+            timemap_json['mementos']['list'] = mementos_list
+
+            mementos_by_datetime.sort()
+
+            timemap_json['mementos']['first']['datetime'] = mementos_by_datetime[0][0].strformat("%Y-%m-%dT%H%M%SZ")
+            timemap_json['mementos']['first']['uri'] = mementos_by_datetime[0][1]
+
+            timemap_json['mementos']['last']['datetime'] = mementos_by_datetime[-1][0].strformat("%Y-%m-%dT%H%M%SZ")
+            timemap_json['mementos']['last']['uri'] = mementos_by_datetime[-1][1]
+
+            db.derivedvalues.update(
+                { "fauxurit": faux_urit_i },
+                { "$set": { "timemap_json" : timemap_json } }
+            )
+
+        return db.derivedvalues.find_one(
+            { "fauxurit": faux_urit }
+        )["timemap_json"]

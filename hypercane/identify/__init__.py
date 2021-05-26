@@ -731,21 +731,32 @@ def discover_resource_data_by_input_type(input_type, output_type, input_argument
 
     return uridata
 
+def generate_faux_urit(urim, cache_storage):
+
+    faux_urit = None
+
+    try:
+        urir = get_memento_http_metadata(urim, cache_storage, 
+            metadata_fields=['original'])[0]
+
+        faux_urit = "fauxtm://{}".format(urir)
+
+    except MementoURINotAtArchiveFailure:
+        module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
+    except RetryError:
+        module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
+
+    return faux_urit
+
 def generate_faux_urits(urims, cache_storage):
 
     faux_urits = []
 
     for urim in urims:
-        
-        try:
-            urir = get_memento_http_metadata(urim, cache_storage, 
-                metadata_fields=['original'])[0]
+        urit = generate_faux_urit(urim, cache_storage)
 
-            faux_urits.append("fauxtm://{}".format(urir))
+        if urit is not None:
+            faux_urits.append(urit)
 
-        except MementoURINotAtArchiveFailure:
-            module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
-        except RetryError:
-            module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
 
     return faux_urits
