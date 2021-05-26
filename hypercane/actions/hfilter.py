@@ -49,7 +49,8 @@ def remove_offtopic(parser, args):
     from hypercane.utils import get_web_session
     from pymongo import MongoClient
     from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_timemaps_by_input_type, download_urits_and_extract_urims
+        discover_timemaps_by_input_type, download_urits_and_extract_urims, \
+        discover_mementos_by_input_type, generate_faux_urits
     from hypercane.hfilter.remove_offtopic import detect_off_topic
     from hypercane.utils import save_resource_data
 
@@ -67,18 +68,33 @@ def remove_offtopic(parser, args):
     session = get_web_session(cache_storage=args.cache_storage)
     dbconn = MongoClient(args.cache_storage)
 
+    usefauxTimeMaps = False
+
     if args.input_type == 'mementos':
-        logger.warning(
-            "Beware that an input type of 'mementos' may cause unexpected behavior. Specific mementos will be converted to TimeMaps and thus provide more mementos for consideration of off-topic analysis than were submitted."
+        # logger.warning(
+        #     "Beware that an input type of 'mementos' may cause unexpected behavior. Specific mementos will be converted to TimeMaps and thus provide more mementos for consideration of off-topic analysis than were submitted."
+        # )
+        logger.warning("Beware that an input type of 'mementos' may cause unexpected behavior. If you want a full accounting of all mementos in each TimeMap, please run hc identify timemaps first and feed that list into this command. Otherwise, we will create 'faux TimeMaps' based on the mementos you submtted.")
+        useFauxTimeMaps = True
+
+    if useFauxTimeMaps == True:
+
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, processing_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
         )
 
-    uritdata = discover_resource_data_by_input_type(
-        args.input_type, processing_type, args.input_arguments, args.crawl_depth,
-        session, discover_timemaps_by_input_type
-    )
+        urims = list(urimdata.keys())
+        urits = generate_faux_urits(urims)
 
-    urits = list(uritdata.keys())
-    urims = download_urits_and_extract_urims(urits, session)
+    else:
+        uritdata = discover_resource_data_by_input_type(
+            args.input_type, processing_type, args.input_arguments, args.crawl_depth,
+            session, discover_timemaps_by_input_type
+        )
+
+        urits = list(uritdata.keys())
+        urims = download_urits_and_extract_urims(urits, session)
 
     ontopic_mementos = detect_off_topic(
         dbconn, session, urits, urims, args.timemap_measures,

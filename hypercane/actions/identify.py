@@ -11,12 +11,20 @@ def discover_timemaps(args):
     from hypercane.utils import get_web_session, save_resource_data
 
     from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_timemaps_by_input_type
+        discover_timemaps_by_input_type, generate_faux_urits, \
+        discover_mementos_by_input_type
 
     parser = argparse.ArgumentParser(
         description="Discover the timemaps in a web archive collection.",
         prog="hc identify timemaps"
         )
+
+    # note: this is just for testing purposes, but do not remove this argument
+    parser.add_argument('--faux-tms-acceptable', 
+        # help="accept faux URI-Ts as output; if you do not understand this, you likely do not want this option",
+        help=argparse.SUPPRESS,
+        action='store_true', required=False,
+        dest='faux_tms_acceptable')
 
     args = process_input_args(args, parser)
     output_type = 'timemaps'
@@ -32,10 +40,24 @@ def discover_timemaps(args):
     logger.info("Starting timemap discovery run.")
     logger.info("Using {} for cache storage".format(args.cache_storage))
 
-    uritdata = discover_resource_data_by_input_type(
-        args.input_type, output_type, args.input_arguments, args.crawl_depth,
-        session, discover_timemaps_by_input_type
-    )
+    if args.faux_tms_acceptable == True:
+
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+
+        urits = generate_faux_urits(list(urimdata.keys()), args.cache_storage)
+
+        uritdata = {}
+        for urit in urits:
+            uritdata[urit] = {}
+
+    else:
+        uritdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_timemaps_by_input_type
+        )
 
     save_resource_data(args.output_filename, uritdata, 'timemaps', list(uritdata.keys()))
 

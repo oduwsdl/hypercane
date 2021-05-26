@@ -17,7 +17,7 @@ from newspaper import Article
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from mementoembed.mementoresource import memento_resource_factory, \
-    get_original_uri_from_response
+    get_original_uri_from_response, NotAMementoError
 
 from .version import __useragent__
 import hypercane.errors
@@ -100,10 +100,13 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             else:
 
-                output_values.append(
-                    db.derivedvalues.find_one(
+                value = db.derivedvalues.find_one(
                         { "urim": urim }
-                    )[field] )
+                )[field]
+
+                module_logger.info("returning cached data for field {} with value [{}]".format(field, value))
+
+                output_values.append(value)
 
         return output_values
 
@@ -112,14 +115,25 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
         r = session.get(urim)
         r.raise_for_status
 
-        mr = memento_resource_factory(urim, session)
+        memento_compliant_archive = True
+
+        try:
+            mr = memento_resource_factory(urim, session)
+        except NotAMementoError:
+            module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+            memento_compliant_archive = False
 
         for field in metadata_fields:
 
             if field == 'memento-datetime':
 
                 # mdt = r.headers['memento-datetime']
-                mdt = mr.memento_datetime
+                if memento_compliant_archive == True:
+                    mdt = mr.memento_datetime
+                else:
+                    mdt = r.url[r.url.find('/http') - 14 : r.url.find('/http')]
+                    mdt = datetime.strptime(mdt, "%Y%m%d%H%M%S")
+                    module_logger.warning("Non-Compliant Memento: guessing memento-datetime of {} from URI-M {}".format(mdt, urim))
 
                 try:
                     mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
@@ -141,8 +155,13 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             elif field == 'original':
 
-                # urir = get_original_uri_from_response(r)
-                urir = mr.original_uri
+                if memento_compliant_archive == True:
+                    # urir = get_original_uri_from_response(r)
+                    urir = mr.original_uri
+                else:
+                    urir = r.url[r.url.find('/http') + 1:]
+                    module_logger.warning("Non-Compliant Memento: guessing original-resource of {} from URI-M {}".format(urir, urim))
+                
                 output_values.append( urir )
                 db.derivedvalues.update(
                     { "urim": urim },
@@ -152,7 +171,12 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             elif field == 'timegate':
 
-                urig = mr.timegate
+                if memento_compliant_archive == True:
+                    urig = mr.timegate
+                else:
+                    urig = None
+                    module_logger.error("Non-Compliant Memento: cannot guess TimeGate for URI-M {}".format(urim))
+
                 output_values.append( urig )
                 db.derivedvalues.update(
                     { "urim": urim },
@@ -162,8 +186,14 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             else:
 
-                r = mr.response
+                if memento_compliant_archive == True:
+                    r = mr.response
+                else:
+                    module_logger.warning("Non-Compliant Memento: attempting to derive field {} from headers for URI-M {}".format(field, urim))
+                    # reuse r from above
+
                 uri = r.links[field]["url"]
+                module_logger.debug("extracted uri {} for field {}".format(uri, field))
                 output_values.append( uri )
                 db.derivedvalues.update(
                     { "urim": urim },
