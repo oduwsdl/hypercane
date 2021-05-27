@@ -85,7 +85,7 @@ def remove_offtopic(parser, args):
         )
 
         urims = list(urimdata.keys())
-        urits = generate_faux_urits(urims)
+        urits = generate_faux_urits(urims, args.cache_storage)
 
     else:
         uritdata = discover_resource_data_by_input_type(

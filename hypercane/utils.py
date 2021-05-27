@@ -1,5 +1,5 @@
 import os
-import sys
+import time
 import logging
 import csv
 import traceback
@@ -7,6 +7,8 @@ import traceback
 from datetime import datetime
 from urllib.parse import urlparse
 from pymongo import MongoClient
+import pymongo
+import pymongo.errors
 from requests import Session
 from requests_cache import CachedSession
 from requests_cache.backends import MongoCache
@@ -75,6 +77,8 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
     session = get_web_session(cache_storage)
     db = dbconn.get_default_database()
 
+    module_logger.debug("using database host [{}], port [{}], name[{}]".format(dbconn.HOST, dbconn.PORT, dbconn.get_default_database().name))
+
     output_values = []
 
     # if memento metadata in cache, return it
@@ -84,9 +88,17 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             if field == 'memento-datetime':
 
-                mdt = db.derivedvalues.find_one(
-                    { "urim": urim }
-                )['memento-datetime']
+                try:
+                    mdt = db.derivedvalues.find_one(
+                        { "urim": urim }
+                    )['memento-datetime']
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    mdt = db.derivedvalues.find_one(
+                        { "urim": urim }
+                    )['memento-datetime']
 
                 try:
                     mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
@@ -100,9 +112,17 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
             else:
 
-                value = db.derivedvalues.find_one(
-                        { "urim": urim }
-                )[field]
+                try:
+                    value = db.derivedvalues.find_one(
+                            { "urim": urim }
+                    )[field]
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    value = db.derivedvalues.find_one(
+                            { "urim": urim }
+                    )[field]
 
                 module_logger.info("returning cached data for field {} with value [{}]".format(field, value))
 
@@ -120,6 +140,7 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
         try:
             mr = memento_resource_factory(urim, session)
         except NotAMementoError:
+            # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
             module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
             memento_compliant_archive = False
 
@@ -147,11 +168,22 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                 module_logger.info("returning memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
 
                 output_values.append( mdt )
-                db.derivedvalues.update(
-                    { "urim": urim },
-                    { "$set": { "memento-datetime": str(mdt) }},
-                    upsert=True
-                )
+                
+                try:
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "memento-datetime": str(mdt) }},
+                        upsert=True
+                    )
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "memento-datetime": str(mdt) }},
+                        upsert=True
+                    )
 
             elif field == 'original':
 
@@ -163,11 +195,21 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                     module_logger.warning("Non-Compliant Memento: guessing original-resource of {} from URI-M {}".format(urir, urim))
                 
                 output_values.append( urir )
-                db.derivedvalues.update(
-                    { "urim": urim },
-                    { "$set": { "original": urir }},
-                    upsert=True
-                )
+                try:
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "original": urir }},
+                        upsert=True
+                    )
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "original": urir }},
+                        upsert=True
+                    )
 
             elif field == 'timegate':
 
@@ -178,11 +220,22 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                     module_logger.error("Non-Compliant Memento: cannot guess TimeGate for URI-M {}".format(urim))
 
                 output_values.append( urig )
-                db.derivedvalues.update(
-                    { "urim": urim },
-                    { "$set": { "timegate": urir }},
-                    upsert=True
-                )
+
+                try:
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "timegate": urig }},
+                        upsert=True
+                    )
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { "timegate": urig }},
+                        upsert=True
+                    )
 
             else:
 
@@ -195,11 +248,23 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                 uri = r.links[field]["url"]
                 module_logger.debug("extracted uri {} for field {}".format(uri, field))
                 output_values.append( uri )
-                db.derivedvalues.update(
-                    { "urim": urim },
-                    { "$set": { field: uri }},
-                    upsert=True
-                )
+
+                try:
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { field: uri }},
+                        upsert=True
+                    )
+                except pymongo.errors.AutoReconnect:
+                    # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                    module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                    time.sleep(2)
+                    db.derivedvalues.update(
+                        { "urim": urim },
+                        { "$set": { field: uri }},
+                        upsert=True
+                    )
+
 
         return output_values
 
@@ -211,9 +276,18 @@ def get_language(urim, cache_storage):
 
     # 1 if lang of urim in cache, return it
     try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["language"]
+        try:
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["language"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["language"]
+
     except (KeyError, TypeError):
 
         content = get_boilerplate_free_content(
@@ -222,11 +296,21 @@ def get_language(urim, cache_storage):
 
         language = guess_language(content)
 
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "language": language }},
-            upsert=True
-        )
+        try:
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "language": language }},
+                upsert=True
+            )
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "language": language }},
+                upsert=True
+            )
 
         return language
 
@@ -240,9 +324,18 @@ def get_raw_simhash(urim, cache_storage):
 
     # 1 if lang of urim in cache, return it
     try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["raw simhash"]
+        try:
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["raw simhash"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["raw simhash"]
+
     except (KeyError, TypeError):
 
         r = session.get(urim)
@@ -260,11 +353,21 @@ def get_raw_simhash(urim, cache_storage):
 
         simhash = Simhash(r2.text).value
 
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "raw simhash": str(simhash) }},
-            upsert=True
-        )
+        try:
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "raw simhash": str(simhash) }},
+                upsert=True
+            )
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "raw simhash": str(simhash) }},
+                upsert=True
+            )
 
         return str(simhash)
 
@@ -276,9 +379,18 @@ def get_tf_simhash(urim, cache_storage):
 
     # 1 if lang of urim in cache, return it
     try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["tf simhash"]
+        try:
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["tf simhash"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["tf simhash"]
+
     except (KeyError, TypeError):
 
         content = get_boilerplate_free_content(
@@ -292,11 +404,21 @@ def get_tf_simhash(urim, cache_storage):
         # submit to Simhash library
         simhash = Simhash(" ".join(words)).value
 
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "tf simhash": str(simhash) }},
-            upsert=True
-        )
+        try:
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "tf simhash": str(simhash) }},
+                upsert=True
+            )
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "tf simhash": str(simhash) }},
+                upsert=True
+            )
 
         return str(simhash)
 
@@ -316,9 +438,18 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
     # 1. if boilerplate free content in cache, return it
     try:
         module_logger.info("returing boilerplate free content from cache for {}".format(urim))
-        bpfree = db.derivedvalues.find_one(
-            { "urim": urim }
-        )["boilerplate free content"]
+        try:
+            bpfree = db.derivedvalues.find_one(
+                { "urim": urim }
+            )["boilerplate free content"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            bpfree = db.derivedvalues.find_one(
+                { "urim": urim }
+            )["boilerplate free content"]
+
         return bytes(bpfree, "utf8")
     except (KeyError, TypeError):
 
@@ -331,16 +462,32 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         extractor = extractors.ArticleExtractor()
 
         try:
-            mr = memento_resource_factory(urim, session)
-            bpfree = extractor.get_content(mr.raw_content)
+            try:
+                mr = memento_resource_factory(urim, session)
+                bpfree = extractor.get_content(mr.raw_content)
+            except NotAMementoError:
+                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+                module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+                r = session.get(urim)
+                bpfree = extractor.get_content(r.text)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
-            db.derivedvalues.update(
-                { "urim": urim },
-                { "$set": { "boilerplate free content": bpfree } },
-                upsert=True
-            )
+            try:
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "boilerplate free content": bpfree } },
+                    upsert=True
+                )
+            except pymongo.errors.AutoReconnect:
+                # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                time.sleep(2)
+                db.derivedvalues.update(
+                    { "urim": urim },
+                    { "$set": { "boilerplate free content": bpfree } },
+                    upsert=True
+                )
 
         except Exception:
             module_logger.exception("failed to extract boilerplate from {}, setting value to empty string".format(urim))
@@ -364,9 +511,18 @@ def get_newspaper_publication_date(urim, cache_storage):
     db = dbconn.get_default_database()
 
     try:
-        return db.derivedvalues.find_one(
-            { "urim": urim }
-        )["newspaper publication date"]
+        try:
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["newspaper publication date"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "urim": urim }
+            )["newspaper publication date"]
+        
     except (KeyError, TypeError):
         raw_urim = otmt.generate_raw_urim(urim)
 
@@ -384,10 +540,21 @@ def get_newspaper_publication_date(urim, cache_storage):
         else:
             pd = pd.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
-        db.derivedvalues.update(
-            { "urim": urim },
-            { "$set": { "newspaper publication date": str(pd) } }
-        )
+        try:
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "newspaper publication date": str(pd) } },
+                upsert=True
+            )
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            db.derivedvalues.update(
+                { "urim": urim },
+                { "$set": { "newspaper publication date": str(pd) } },
+                upsert=True
+            )
 
         return pd
 
@@ -395,29 +562,37 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
 
     urim_data = {}
 
+    module_logger.info("processing file {} for input type {}".format(filename, input_type_field))
+
     with open(filename) as f:
         csvreader = csv.DictReader(f, delimiter='\t')
+
+        module_logger.debug("input type field [{}] == first field name [{}]".format(
+            input_type_field, csvreader.fieldnames[0]
+        ))
 
         if input_type_field == csvreader.fieldnames[0]:
             # make sure the headers are valid
 
+            module_logger.debug("iterating through file {}".format(filename))
+
             for row in csvreader:
 
-                # module_logger.info("reading row {}".format(row))
+                module_logger.debug("reading row {}".format(row))
 
-                # module_logger.info("row.keys: {}".format(row.keys()))
+                module_logger.debug("row.keys: {}".format(row.keys()))
 
                 rowdata = {}
                 urim = row[input_type_field]
 
-                # module_logger.info("rowdata: {}".format(rowdata))
+                module_logger.debug("rowdata: {}".format(rowdata))
 
                 for key in row.keys():
-                    # module_logger.info("examining field {} in input".format(key))
+                    module_logger.debug("examining field {} in input".format(key))
                     if key != input_type_field:
                         rowdata[key] = row[key]
 
-                # module_logger.info("rowdata now: {}".format(rowdata))
+                module_logger.debug("rowdata now: {}".format(rowdata))
 
                 urim_data[urim] = rowdata
 
@@ -564,9 +739,18 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
     module_logger.debug("searching for faux TimeMap at {}".format(faux_urit))
 
     try:
-        return db.derivedvalues.find_one(
-            { "fauxurit": faux_urit }
-        )["timemap_json"]
+        try:
+            return db.derivedvalues.find_one(
+                { "fauxurit": faux_urit }
+            )["timemap_json"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "fauxurit": faux_urit }
+            )["timemap_json"]
+
     except (KeyError, TypeError):
 
         from hypercane.identify import generate_faux_urit
@@ -626,12 +810,31 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
 
             module_logger.info("writing {} to the database".format(faux_urit_i))
 
-            db.derivedvalues.update(
-                { "fauxurit": faux_urit_i },
-                { "$set": { "timemap_json" : timemap_json } },
-                upsert=True
-            )
+            try:
+                db.derivedvalues.update(
+                    { "fauxurit": faux_urit_i },
+                    { "$set": { "timemap_json" : timemap_json } },
+                    upsert=True
+                )
+            except pymongo.errors.AutoReconnect:
+                # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+                module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+                time.sleep(2)
+                db.derivedvalues.update(
+                    { "fauxurit": faux_urit_i },
+                    { "$set": { "timemap_json" : timemap_json } },
+                    upsert=True
+                )
 
-        return db.derivedvalues.find_one(
-            { "fauxurit": faux_urit }
-        )["timemap_json"]
+        try:
+            return db.derivedvalues.find_one(
+                { "fauxurit": faux_urit }
+            )["timemap_json"]
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            return db.derivedvalues.find_one(
+                { "fauxurit": faux_urit }
+            )["timemap_json"]
+

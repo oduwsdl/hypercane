@@ -1,6 +1,8 @@
 import logging
 import pprint
 
+from mementoembed.mementoresource import NotAMementoError
+
 pp = pprint.PrettyPrinter(indent=4)
 
 module_logger = logging.getLogger('hypercane.report.imagedata')
@@ -75,9 +77,15 @@ def generate_image_data(urimdata, cache_storage):
     for urim in urimdata:
 
         try:
-            # TODO: cache this information?
-            mr = memento_resource_factory(urim, managed_session)
-            imagedata[urim] = generate_images_and_scores(mr.im_urim, managed_session)
+            try:
+                # TODO: cache this information?
+                mr = memento_resource_factory(urim, managed_session)
+                imagedata[urim] = generate_images_and_scores(mr.im_urim, managed_session)
+            except NotAMementoError:
+                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+                module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+                imagedata[urim] = generate_images_and_scores(urim, managed_session)
+
         except Exception:
             module_logger.exception("failed to produce an image report, skipping {} ...".format(urim))
             continue
@@ -99,8 +107,14 @@ def output_image_data_as_jsonl(uridata, output_filename, cache_storage):
             # TODO: cache this information?
 
             try:
-                mr = memento_resource_factory(urim, managed_session)
-                imagedata = { "uri": urim, "imagedata": generate_images_and_scores(mr.im_urim, managed_session) }
+                try:
+                    mr = memento_resource_factory(urim, managed_session)
+                    imagedata = { "uri": urim, "imagedata": generate_images_and_scores(mr.im_urim, managed_session) }
+                except NotAMementoError:
+                    # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+                    module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+                    imagedata = { "uri": urim, "imagedata": generate_images_and_scores(urim, managed_session) }
+
             except Exception:
                 module_logger.exception("failed to produce an image report for {}".format(urim))
                 continue
