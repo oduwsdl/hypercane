@@ -52,6 +52,7 @@ setup(
         'simhash',
         'spacy',
         'sumgram',
+        'surt',
         'warcio'
     ],
     # setup_requires=[

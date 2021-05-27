@@ -16,7 +16,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from urllib.parse import urlparse
 
-from ..utils import get_web_session, get_boilerplate_free_content
+from ..utils import get_web_session, get_boilerplate_free_content, get_faux_TimeMap_json
 import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
@@ -58,7 +58,14 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         o = urlparse(urit)
 
         if o.scheme == 'fauxtm':
-            NotImplementedError("fauxtms not implemented yet")
+
+            cache_storage = "mongodb://{}:{}/{}".format(
+                self.dbconn.HOST,
+                self.dbconn.PORT,
+                self.dbconn.get_default_database().name
+            )
+            return get_faux_TimeMap_json(urit, self.urimlist, cache_storage)
+
         else:
             return convert_LinkTimeMap_to_dict(self.session.get(urit).text)
 

@@ -19,6 +19,7 @@ from requests.exceptions import RequestException, RetryError
 from urllib.parse import urlparse
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
+from surt import surt
 
 from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resources
 from ..utils import process_input_for_cluster_and_rank, get_memento_http_metadata
@@ -739,7 +740,9 @@ def generate_faux_urit(urim, cache_storage):
         urir = get_memento_http_metadata(urim, cache_storage, 
             metadata_fields=['original'])[0]
 
-        faux_urit = "fauxtm://{}".format(urir)
+        surted_urir = surt(urir)
+
+        faux_urit = "fauxtm://{}".format(surted_urir)
 
     except MementoURINotAtArchiveFailure:
         module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
@@ -758,5 +761,4 @@ def generate_faux_urits(urims, cache_storage):
         if urit is not None:
             faux_urits.append(urit)
 
-
-    return faux_urits
+    return list(set(faux_urits))
