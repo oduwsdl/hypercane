@@ -361,7 +361,7 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
 
     module_logger.info("returning {} URI-Ts".format(len(urits)))
 
-    return urits
+    return [ urit.strip() for urit in urits ]
 
 def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session, accept_datetime=None, timegates=None):
 
@@ -524,7 +524,7 @@ def discover_mementos_by_input_type(input_type, input_args, crawl_depth, session
             "Error: Unsupported input type {}.".format(input_args)
         )
 
-    return output_urims
+    return [ urim.strip() for urim in output_urims ]
 
 def discover_original_resources_by_input_type(input_type, input_args, crawl_depth, session, **kwargs):
 
@@ -648,9 +648,9 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
                     metadata_fields=['original'])[0]
                 output_urirs.append(urir)
             except MementoURINotAtArchiveFailure:
-                module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
+                module_logger.exception("Could not discover original resource for [{}], skipping original resource discovery, reporting exception...".format(urim))
             except RetryError:
-                module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
+                module_logger.exception("Exceeded the number of retries for [{}], skipping original resource discovery, reporting exception...".format(urim))
 
         if crawl_depth > 1:
             link_storage = StorageObject()
@@ -681,7 +681,7 @@ def discover_original_resources_by_input_type(input_type, input_args, crawl_dept
             "Error: Unsupported input type {}.".format(input_args)
         )
 
-    return output_urirs
+    return [ urir.strip() for urir in output_urirs ]
 
 def discover_resource_data_by_input_type(input_type, output_type, input_arguments, crawl_depth, session, discovery_function, accept_datetime=None, timegates=None):
 
@@ -745,9 +745,9 @@ def generate_faux_urit(urim, cache_storage):
         faux_urit = "fauxtm://{}".format(surted_urir)
 
     except MementoURINotAtArchiveFailure:
-        module_logger.exception("Could not discover original resource for {} , skipping original resource discovery, reporting exception...".format(urim))
+        module_logger.exception("Could not discover original resource for [{}], skipping original resource discovery, reporting exception...".format(urim))
     except RetryError:
-        module_logger.exception("Exceeded the number of retries for {} , skipping original resource discovery, reporting exception...".format(urim))
+        module_logger.exception("Exceeded the number of retries for [{}] , skipping original resource discovery, reporting exception...".format(urim))
 
     return faux_urit
 
