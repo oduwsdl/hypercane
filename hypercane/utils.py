@@ -739,17 +739,22 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
     module_logger.debug("searching for faux TimeMap at {}".format(faux_urit))
 
     try:
-        try:
-            return db.derivedvalues.find_one(
+        try:          
+            timemap_json = db.derivedvalues.find_one(
                 { "fauxurit": faux_urit }
             )["timemap_json"]
+            module_logger.debug("successfully extracted cached faux TimeMap for {}".format(faux_urit))
+            return timemap_json
         except pymongo.errors.AutoReconnect:
             # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
             module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
             time.sleep(2)
-            return db.derivedvalues.find_one(
+
+            timemap_json = db.derivedvalues.find_one(
                 { "fauxurit": faux_urit }
             )["timemap_json"]
+            module_logger.debug("after hiccup, successfully extracted cached faux TimeMap for {}".format(faux_urit))
+            return timemap_json
 
     except (KeyError, TypeError):
 
@@ -837,4 +842,7 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
             return db.derivedvalues.find_one(
                 { "fauxurit": faux_urit }
             )["timemap_json"]
+        except TypeError as e:
+            module_logger.exception("Cannot find TimeMap for {}".format(faux_urit))
+            raise e
 

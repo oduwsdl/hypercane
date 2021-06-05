@@ -526,9 +526,20 @@ def get_memento_damage(memento_uri, memento_damage_url, session):
 
 def get_memento_score(urim, session, memento_damage_url=None, damage_weight=-0.40, category_weight=0.15, path_depth_weight=0.45):
 
-    category_score = get_memento_uri_category_score(urim, session)
-    path_depth_score = get_memento_depth(urim, session)
-    damage_score = get_memento_damage(urim, memento_damage_url, session)
+    if category_weight != 0:
+        category_score = get_memento_uri_category_score(urim, session)
+    else:
+        category_score = 0
+
+    if path_depth_weight != 0:
+        path_depth_score = get_memento_depth(urim, session)
+    else:
+        path_depth_score = 0
+
+    if damage_weight != 0:
+        damage_score = get_memento_damage(urim, memento_damage_url, session)
+    else:
+        damage_score = 0
 
     score = ( 1 -  damage_weight * damage_score ) + \
         ( path_depth_weight * path_depth_score ) + \

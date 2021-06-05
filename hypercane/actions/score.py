@@ -116,9 +116,9 @@ def dsa1_scoring(args):
     urimdata = rank_by_dsa1_score(
         urimdata, session,
         memento_damage_url=args.memento_damage_url,
-        damage_weight=args.damage_weight,
-        category_weight=args.category_weight,
-        path_depth_weight=args.path_depth_weight
+        damage_weight=float(args.damage_weight),
+        category_weight=float(args.category_weight),
+        path_depth_weight=float(args.path_depth_weight)
         )
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
