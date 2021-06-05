@@ -36,6 +36,7 @@ def discover_timemaps(args):
     )
 
     session = get_web_session(cache_storage=args.cache_storage)
+    session.cache_storage = args.cache_storage
 
     logger.info("Starting timemap discovery run.")
     logger.info("Using {} for cache storage".format(args.cache_storage))

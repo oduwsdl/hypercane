@@ -4,6 +4,7 @@ import hypercane.errors
 def process_remove_offtopic_args(args, parser):
 
     import otmt
+    import argparse
     from hypercane.actions import add_input_args, add_default_args
 
     parser = add_input_args(parser)
@@ -68,7 +69,7 @@ def remove_offtopic(parser, args):
     session = get_web_session(cache_storage=args.cache_storage)
     dbconn = MongoClient(args.cache_storage)
 
-    usefauxTimeMaps = False
+    useFauxTimeMaps = False
 
     if args.input_type == 'mementos':
         # logger.warning(
@@ -96,9 +97,11 @@ def remove_offtopic(parser, args):
         urits = list(uritdata.keys())
         urims = download_urits_and_extract_urims(urits, session)
 
+    logger.info("applying TimeMap measures {} to determine if mementos are off-topic".format(args.timemap_measures))
+
     ontopic_mementos = detect_off_topic(
         dbconn, session, urits, urims, args.timemap_measures,
-        num_topics=args.num_topics)
+        num_topics=args.num_topics, allow_noncompliant_archives=args.allow_noncompliant_archives)
 
     logger.info("discovered {} on-topic mementos".format(len(ontopic_mementos)))
 

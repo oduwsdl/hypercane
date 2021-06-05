@@ -24,7 +24,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
-    def __init__(self, dbconn, session):
+    def __init__(self, dbconn, session, allow_noncompliant_archives=False):
         """This class assumes session is an instance of CachedSession"""
 
         self.dbconn = dbconn
@@ -33,6 +33,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         db = self.dbconn.get_default_database()
         self.error_collection = db.mementoerrors
         self.derived_collection = db.derivedvalues
+        self.allow_noncompliant_archives = allow_noncompliant_archives
 
         self.urimlist = []
         self.uritlist = []
@@ -71,7 +72,11 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                 self.dbconn.PORT,
                 self.dbconn.get_default_database().name
             )
-            return get_faux_TimeMap_json(urit, self.urimlist, cache_storage)
+            timemap_json = get_faux_TimeMap_json(urit, self.urimlist, cache_storage)
+
+            module_logger.debug("for {} returning TimeMap JSON: {}".format(urit, timemap_json))
+
+            return timemap_json
 
         else:
             return convert_LinkTimeMap_to_dict(self.session.get(urit).text)
@@ -97,7 +102,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         # protect the function from duplicates in the urims list
         urims = list(set(urims))
 
-        module_logger.info("removed duplicates, now using {} URI-Ms for processing...".format(len(urims)))
+        module_logger.info("removed duplicate URI-Ms, now using {} URI-Ms for processing...".format(len(urims)))
 
         futuressession = FuturesSession(session=self.session)
 
@@ -138,6 +143,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
 
         for uri in uri_generator(working_urim_list):
 
+            # module_logger.debug("checking on URI-M {}".format(uri))
+
             if futures[uri].done():
 
                 module_logger.debug("URI-M {} is done, processing...".format(uri))
@@ -146,6 +153,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                     module_logger.info("{}/{} mementos left to process".format(len(working_urim_list), working_starting_size))
 
                 try:
+                    module_logger.debug("examining result for URI-M {}".format(uri))
+
                     r = futures[uri].result()
 
                     if len(r.history) == 0:
@@ -153,16 +162,24 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                     else:
                         raw_urim = otmt.generate_raw_urim(r.url)
 
+                    module_logger.debug("adding {} to raw URI-M list".format(raw_urim))
                     raw_urims.append( raw_urim )
 
-                    # if 'memento-datetime' not in r.headers:
-                    #     self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
-                    # else:
+                    module_logger.debug("headers for {} are: {}".format(uri, r.headers))
+
+                    if 'memento-datetime' not in r.headers:
+                        module_logger.debug("allow noncompliant archives is {}, found a noncompliant memento at {}".format(
+                            self. allow_noncompliant_archives, uri))
+                        if self.allow_noncompliant_archives == True:
+                            module_logger.debug("adding noncompilant memento {} to URI-M list".format(uri))
+                            self.urimlist.append(uri)
+                        else:
+                            self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
+                    else:
                         # the content should be cached by the session
                         # we just need to keep track of the URI-Ms for this run
-                        # self.urimlist.append(uri)
-                    # TODO: we relaxed this for testing, we need to find a way to work this out
-                    self.urimlist.append(uri)
+                        module_logger.debug("adding compliant memento {} to URI-M list".format(uri))
+                        self.urimlist.append(uri)
 
                 except Exception as e:
                     self.addMementoError(uri, repr(e))
@@ -212,16 +229,21 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                     module_logger.info("{}/{} raw mementos left to process".format(len(working_raw_urim_list), working_rawurims_starting_size))
 
                 try:
+                    module_logger.debug("extracting result from raw URI-M download for {}".format(raw_urim))
                     r = raw_futures[raw_urim].result()
 
-                    # if 'memento-datetime' not in r.headers:
-                    #     self.addMementoError(uri, "raw URI-M {} does not produce a memento".format(raw_urim))
-                    # else:
+                    if 'memento-datetime' not in r.headers:
+                        if self.allow_noncompliant_archives == True:
+                            # module_logger.debug("adding noncompilant raw memento {} to URI-M list".format(uri))
+                            # self.urimlist.append(raw_urim)
+                            module_logger.warning("not adding noncompliant raw memento {} to URI-M list".format(uri))
+                        else:
+                            self.addMementoError(uri, "URI-M {} does not produce a memento".format(uri))
+                    else:
                         # the content should be cached by the session
-                        # we just need to keep track of the raw URI-Ms for this run
-                        # self.urimlist.append(raw_urim)
-                    # TODO: we relaxed this for testing, we need a better solution
-                    self.urimlist.append(raw_urim)
+                        # we just need to keep track of the URI-Ms for this run
+                        module_logger.debug("adding compliant raw memento {} to URI-M list".format(uri))
+                        self.urimlist.append(raw_urim)
 
                 except Exception as e:
                     self.addMementoError(raw_urim, repr(e))
@@ -229,10 +251,10 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                 # module_logger.debug("removing {} from working raw URI-M list and raw futures keys".format(raw_urim))
                 working_raw_urim_list.remove(raw_urim)
                 del raw_futures[raw_urim]
-                # module_logger.debug("raw URI-M {} in working raw URI-M list still? {}".format( raw_urim, raw_urim in working_raw_urim_list ))
-                time.sleep(1)
-                # module_logger.debug("raw URI-M {} in working raw URI-M list still? {}".format( raw_urim, raw_urim in working_raw_urim_list ))
-                # module_logger.debug("raw URI-M {} in raw futures keys still? {}".format( raw_urim, raw_urim in raw_futures ))
+
+                # time.sleep(1)
+
+        module_logger.debug("urimlist of length {} is now {}".format(len(self.urimlist), self.urimlist))
 
 
     def addMementoError(self, urim, errorinformation):
@@ -292,6 +314,8 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         then CollectionModelBoilerPlateRemovalFailureException is thrown.
         """
 
+        module_logger.debug("requesting boilerplate-free content for off-topic analysis from {}".format(urim))
+
         if self.getMementoErrorInformation(urim) is not None:
             raise otmt.CollectionModelMementoErrorException(
                 "Errors were recorded for URI-M {} : {}".format(
@@ -327,20 +351,30 @@ def get_list_of_ontopic(measuremodel):
 
     ontopic_mementos = []
 
+    # module_logger.debug("measuremodel: {}".format(measuremodel))
+    module_logger.debug("scoremodel: {}".format(measuremodel.scoremodel))
+
     for urit in measuremodel.get_TimeMap_URIs():
+        module_logger.debug("examining TimeMap at {} for topic status".format(urit))
         for urim in measuremodel.get_Memento_URIs_in_TimeMap(urit):
 
+            module_logger.debug("examining URI-M {} in TimeMap".format(urim))
+
             try:
-                if measuremodel.get_overall_off_topic_status(urim) == "on-topic":
+                topic_status = measuremodel.get_overall_off_topic_status(urim)
+                module_logger.debug("topic status for {} is {}".format(urim, topic_status))
+                if topic_status == "on-topic":
                     ontopic_mementos.append(urim)
-            except KeyError:
-                module_logger.warning("failed to get on-topic status for URI-M {}".format(urim))
+            except KeyError as e:
+                # this largely happens because the boilerplate removal returns nothing 
+                # and the OTMT does not report the problem
+                module_logger.exception("failed to get on-topic status for URI-M {}, skipping...".format(urim))
 
     return ontopic_mementos
 
-def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics=None):
+def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics=None, allow_noncompliant_archives=False):
 
-    cm = HypercaneMementoCollectionModel(dbconn, session)
+    cm = HypercaneMementoCollectionModel(dbconn, session, allow_noncompliant_archives=allow_noncompliant_archives)
 
     module_logger.info("adding {} URI-Ts to collection model".format(
         len( urits )
@@ -364,12 +398,14 @@ def detect_off_topic(dbconn, session, urits, urims, timemap_measures, num_topics
     # so how would that work exactly?
 
     module_logger.info(
-        "stored {} mementos for processing...".format(
+        "stored {} mementos and raw mementos for processing...".format(
             len(cm.getMementoURIList())
         )
     )
 
     mm = otmt.MeasureModel()
+
+    module_logger.info("mementos are stored, now using timemap measures {}".format(timemap_measures))
 
     for measure in timemap_measures:
 

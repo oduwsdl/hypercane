@@ -99,6 +99,8 @@ def add_default_args(parser):
 
 def add_input_args(parser):
 
+    import argparse
+
     parser.add_argument('-i', '--it', '--input-type',
         help="the input type, one of mementos, timemaps, original-resources, archiveit, trove, or pandora-collection",
         dest="input_type", required=True
@@ -112,6 +114,12 @@ def add_input_args(parser):
     parser.add_argument('-o', required=True, help="the file to which we write output", dest='output_filename')
 
     parser.add_argument('--crawl-depth', '--depth', required=False, help="the number of levels to use in the crawl", dest='crawl_depth', default=1, type=int)
+
+    # For testing, do not remove
+    parser.add_argument( '--allow-noncompliant-archives', required=False, 
+        # help="to allow support for archives that do not support Memento, CAUTION: may produce unpredictable results"
+        action='store_true', help=argparse.SUPPRESS, dest='allow_noncompliant_archives'
+    )
 
     return parser
 
