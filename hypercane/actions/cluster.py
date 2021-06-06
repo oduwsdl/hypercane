@@ -14,7 +14,8 @@ def cluster_by_kmeans(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.cluster.kmeans import cluster_by_memento_datetime
+    from hypercane.cluster.kmeans import cluster_by_memento_datetime, \
+        cluster_by_tfidf
 
     parser = argparse.ArgumentParser(
         description="Cluster the input using the dbscan algorithm.",
@@ -58,6 +59,8 @@ def cluster_by_kmeans(args):
 
     if args.feature == 'memento-datetime':
         urimdata = cluster_by_memento_datetime(urimdata, args.cache_storage, k)
+    elif args.feature == 'tfidf' or args.feature == 'tf-idf':
+        urimdata = cluster_by_tfidf(urimdata, args.cache_storage, k)
     else:
         raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))
 

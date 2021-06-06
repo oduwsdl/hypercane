@@ -84,3 +84,74 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
 
 
     return urimdata
+
+def cluster_by_tfidf(urimdata, cache_storage, k):
+
+    from sklearn.cluster import KMeans
+    import numpy as np
+    from hypercane.utils import get_boilerplate_free_content
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from otmt.timemap_measures import full_tokenize
+
+    urim_to_cluster = {}
+    clusters_to_urims = {}
+
+    for urim in urimdata:
+
+        try:
+            clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+            urim_to_cluster[urim] = urimdata[urim]['Cluster']
+        except KeyError:
+            clusters_to_urims.setdefault( None, [] ).append(urim)
+            urim_to_cluster[urim] = None
+
+    urimlist_after_processing = []
+    corpus = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_boilerplate_free_content, urim, cache_storage): urim for urim in urim_to_cluster.keys() }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+
+            urim = future_to_urim[future]
+
+            try:
+                content = future.result()
+                # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                corpus.append( content )
+                urimlist_after_processing.append(urim)
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    module_logger.info("creating TF-IDF vectorizer from corpus")
+
+    tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
+    tfidf = tfidf_vectorizer.fit_transform(corpus)
+
+    module_logger.info("setting up K-Means clustering on corpus TF-IDF")
+
+    km = KMeans(n_clusters=k).fit(tfidf)
+    # km = KMeans(n_clusters=k)
+
+    module_logger.info("saving cluster assignments")
+
+    for cluster in clusters_to_urims:
+
+        for urim in clusters_to_urims[cluster]:
+
+            i = urimlist_after_processing.index(urim)
+
+            doc = corpus[i]
+
+            label = km.predict(tfidf_vectorizer.transform([doc]))[0]
+
+            if cluster is None:
+                urimdata[urim]['Cluster'] = "{}".format(label)
+            else:
+                urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
+
+    return urimdata
+
+
