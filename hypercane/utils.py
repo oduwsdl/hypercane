@@ -583,7 +583,7 @@ def process_input_for_cluster_and_rank(filename, input_type_field):
                 module_logger.debug("row.keys: {}".format(row.keys()))
 
                 rowdata = {}
-                urim = row[input_type_field]
+                urim = row[input_type_field].strip()
 
                 module_logger.debug("rowdata: {}".format(rowdata))
 
@@ -849,3 +849,85 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
             module_logger.exception("Cannot find TimeMap for {}".format(faux_urit))
             raise e
 
+def generate_all_faux_TimeMaps(urims, cache_storage):
+
+    from hypercane.identify import generate_faux_urit
+
+    dbconn = MongoClient(cache_storage)
+    db = dbconn.get_default_database()
+
+    faux_urit_urim_list = {}
+
+    module_logger.info("creating faux TimeMaps for {} URI-Ms".format(len(urims)))
+
+    for urim in urims:
+
+        module_logger.debug("generating faux TimeMap for {}".format(urim))
+        faux_urit_i = generate_faux_urit(urim, cache_storage)
+        faux_urit_urim_list.setdefault( faux_urit_i, [] ).append(urim)
+
+    for faux_urit_i in faux_urit_urim_list:
+
+        # urir = faux_urit_i.replace('fauxtm://', '')
+        test_urim = faux_urit_urim_list[faux_urit_i][0]
+        urir = get_memento_http_metadata(test_urim, cache_storage, metadata_fields=['original'])[0]
+
+        module_logger.info("adding URI-R {} to TimeMap".format(urir))
+
+        timemap_json = {
+            'original_uri': urir,
+            'timegate_uri': None,
+            'timemap_uri': {
+                "json_format": faux_urit_i
+            },
+            'mementos': {
+                'first': {},
+                'last': {},
+                'list': {}
+            }
+        }
+
+        mementos_list = []
+        mementos_by_datetime = []
+
+        for urim in faux_urit_urim_list[faux_urit_i]:
+
+            mdt = get_memento_http_metadata(urim, cache_storage, metadata_fields=['memento-datetime'])[0]
+
+            memento_entry = {
+                "datetime": mdt.strftime("%Y-%m-%dT%H%M%SZ"),
+                "uri": urim
+            }
+
+            mementos_list.append(memento_entry)
+            mementos_by_datetime.append( ( mdt, urim ) )
+
+        timemap_json['mementos']['list'] = mementos_list
+
+        mementos_by_datetime.sort()
+
+        timemap_json['mementos']['first']['datetime'] = mementos_by_datetime[0][0].strftime("%Y-%m-%dT%H%M%SZ")
+        timemap_json['mementos']['first']['uri'] = mementos_by_datetime[0][1]
+
+        timemap_json['mementos']['last']['datetime'] = mementos_by_datetime[-1][0].strftime("%Y-%m-%dT%H%M%SZ")
+        timemap_json['mementos']['last']['uri'] = mementos_by_datetime[-1][1]
+
+        module_logger.info("writing {} to the database".format(faux_urit_i))
+
+        try:
+            db.derivedvalues.update(
+                { "fauxurit": faux_urit_i },
+                { "$set": { "timemap_json" : timemap_json } },
+                upsert=True
+            )
+        except pymongo.errors.AutoReconnect:
+            # TODO: apply a proxy, decorator, or some other method to wrap MongoDB calls
+            module_logger.warning("MongoDB lost the connection, sleeping for 2 seconds and retrying action")
+            time.sleep(2)
+            db.derivedvalues.update(
+                { "fauxurit": faux_urit_i },
+                { "$set": { "timemap_json" : timemap_json } },
+                upsert=True
+            )
+
+        return faux_urit_urim_list

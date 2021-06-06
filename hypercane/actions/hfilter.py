@@ -170,7 +170,7 @@ def remove_near_duplicates(parser, args):
 
     urims = list(urimdata.keys())
 
-    filtered_urims = filter_near_duplicates(urims, args.cache_storage)
+    filtered_urims = filter_near_duplicates(urims, args.cache_storage, use_faux_TimeMaps=args.allow_noncompliant_archives)
 
     logger.info("writing {} to {}".format(filtered_urims, args.output_filename))
 
