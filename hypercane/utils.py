@@ -536,7 +536,8 @@ def get_newspaper_publication_date(urim, cache_storage):
         pd = article.publish_date
 
         if pd is None:
-            pd = r.headers['memento-datetime']
+            # pd = r.headers['memento-datetime']
+            pd = get_memento_http_metadata(urim, cache_storage, metadata_fields=['memento-datetime'])[0]
         else:
             pd = pd.strftime("%a, %d %b %Y %H:%M:%S GMT")
 

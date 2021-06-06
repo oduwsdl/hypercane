@@ -22,7 +22,13 @@ def order_by_dsa1_publication_alg(urims, cache_storage):
             try:
                 urim = future_to_urim[future]
                 pdt = future.result()
-                pdt = datetime.strptime(pdt, "%a, %d %b %Y %H:%M:%S GMT")
+
+                if type(pdt) == str:
+                    try:
+                        pdt = datetime.strptime(pdt, "%a, %d %b %Y %H:%M:%S GMT")
+                    except ValueError:
+                        pdt = datetime.strptime(pdt, "%Y-%m-%d %H:%M:%S")
+                
                 publication_datetime_to_urim.append( (datetime.timestamp(pdt), urim) )
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine publication date for {}, skipping...".format(repr(exc), urim))
