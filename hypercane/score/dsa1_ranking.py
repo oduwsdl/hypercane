@@ -424,8 +424,12 @@ def get_memento_uri_category_score(memento_uri, session):
 #        return 0
 
     # Updated code starts here
-    r = session.get(memento_uri)
-    urir = r.links['original']['url']
+    # r = session.get(memento_uri)
+    # urir = r.links['original']['url']
+
+    from hypercane.utils import get_memento_http_metadata
+
+    urir = get_memento_http_metadata(memento_uri, session.cache_storage, metadata_fields=['original'])[0]
     domain = tldextract.extract(urir).registered_domain
 
     if domain in blog_sources:
@@ -459,8 +463,12 @@ def get_path_depth(urim, session):
 
     from urllib.parse import urlparse
 
-    r = session.get(urim)
-    urir = r.links['original']['url']
+    # r = session.get(urim)
+    # urir = r.links['original']['url']
+
+    from hypercane.utils import get_memento_http_metadata
+
+    urir = get_memento_http_metadata(urim, session.cache_storage, metadata_fields=['original'])[0]
 
     o = urlparse(urir)
     
@@ -486,8 +494,13 @@ def get_memento_depth(mem_uri, session):
 #    level = original_uri.count('/')
 
     # updated code starts here:
-    r = session.get(urim)
-    urir = r.links['original']['url']
+    # r = session.get(urim)
+    # urir = r.links['original']['url']
+
+    from hypercane.utils import get_memento_http_metadata
+
+    urir = get_memento_http_metadata(mem_uri, session.cache_storage, metadata_fields=['original'])[0]    
+
     level = urir.count('/')
 
     # TODO: how does it break the DSA1 scoring function if we apply get_path_depth instead?
