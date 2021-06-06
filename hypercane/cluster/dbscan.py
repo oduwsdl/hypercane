@@ -97,8 +97,6 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
     # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
 
-    output_clusters = {}
-
     # learn existing cluster assignments
     urim_to_cluster = {}
     clusters_to_urims = {}
@@ -106,10 +104,14 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
         try:
             clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+            urim_to_cluster[urim] = urimdata[urim]['Cluster']
         except KeyError:
             clusters_to_urims.setdefault( None, [] ).append(urim)
+            urim_to_cluster[urim] = None
 
     urim_to_mementodatetime = {}
+
+    module_logger.info("preparing to extract memento-datetimes from {} mementos".format(len(urimdata.keys())))
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
@@ -119,15 +121,17 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
             urim = future_to_urim[future]
 
+            module_logger.info("examining result for {}".format(urim))
+
             try:
                 mdt = future.result()[0]
                 # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
                 # urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
                 urim_to_mementodatetime[urim] = mdt.timestamp()
+                # module_logger.info("assigned timestamp {} to {}".format(urim_to_mementodatetime[urim], urim))
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
-
 
     for cluster in clusters_to_urims:
 
@@ -145,9 +149,78 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
             urim = clusters_to_urims[cluster][index]
 
             if cluster is None:
-                output_clusters[urim] = "{}".format(label)
+                urimdata[urim]['Cluster'] = "{}".format(label)
             else:
                 # preserve original cluster assignment
-                output_clusters[urim] = "{}~~~{}".format(cluster, label)
+                urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
 
-    return output_clusters
+    return urimdata
+
+def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
+
+    import concurrent.futures
+    from sklearn.cluster import KMeans
+    import numpy as np
+    from hypercane.utils import get_boilerplate_free_content
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from otmt.timemap_measures import full_tokenize
+    from sklearn.cluster import DBSCAN
+
+    urim_to_cluster = {}
+    clusters_to_urims = {}
+
+    for urim in urimdata:
+
+        try:
+            clusters_to_urims.setdefault( urimdata[urim]['Cluster'], [] ).append(urim)
+            urim_to_cluster[urim] = urimdata[urim]['Cluster']
+        except KeyError:
+            clusters_to_urims.setdefault( None, [] ).append(urim)
+            urim_to_cluster[urim] = None
+
+    urimlist_after_processing = []
+    corpus = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_boilerplate_free_content, urim, cache_storage): urim for urim in urim_to_cluster.keys() }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+
+            urim = future_to_urim[future]
+
+            try:
+                content = future.result()
+                # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                corpus.append( content )
+                urimlist_after_processing.append(urim)
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    module_logger.info("creating TF-IDF vectorizer from corpus")
+
+    tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
+    tfidf = tfidf_vectorizer.fit_transform(corpus)
+
+    module_logger.info("setting up DBSCAN clustering on corpus TF-IDF")
+
+    db = DBSCAN(eps=eps, min_samples=min_samples).fit(tfidf)
+
+    module_logger.info("saving cluster assignments")
+
+    for cluster in clusters_to_urims:
+
+        for index, label in enumerate(db.labels_):
+
+            urim = clusters_to_urims[cluster][index]
+
+            if cluster is None:
+                urimdata[urim]['Cluster'] = "{}".format(label)
+            else:
+                 # preserve original cluster assignment
+                urimdata[urim]['Cluster'] = "{}~~~{}".format(cluster, label)
+
+    return urimdata
+
+
