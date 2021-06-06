@@ -66,6 +66,8 @@ def remove_offtopic(parser, args):
 
     logger.info("Starting detection of off-topic documents...")
 
+    logger.info("using cache storage at {}".format(args.cache_storage))
+
     session = get_web_session(cache_storage=args.cache_storage)
     dbconn = MongoClient(args.cache_storage)
 

@@ -762,8 +762,11 @@ def get_faux_TimeMap_json(faux_urit, urims, cache_storage):
 
         faux_urit_urim_list = {}
 
+        module_logger.info("creating faux TimeMaps for {} URI-Ms".format(len(urims)))
+
         for urim in urims:
 
+            module_logger.debug("generating faux TimeMap for {}".format(urim))
             faux_urit_i = generate_faux_urit(urim, cache_storage)
             faux_urit_urim_list.setdefault( faux_urit_i, [] ).append(urim)
 
