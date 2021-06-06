@@ -2,14 +2,17 @@ import logging
 import traceback
 import concurrent.futures
 from datetime import datetime
+
+from tldextract import cache
 import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.near_duplicates')
 
-def filter_near_duplicates(urims, cache_storage):
+def filter_near_duplicates(urims, cache_storage, use_faux_TimeMaps=False):
 
     from simhash import Simhash
-    from ..utils import get_memento_http_metadata, get_tf_simhash
+    from ..utils import get_memento_http_metadata, get_tf_simhash, get_faux_TimeMap_json
+    from hypercane.identify import generate_faux_urit
 
     module_logger.info("discovered {} mementos in input, downloading or extracting from cache...".format(len(urims)))
 
@@ -38,27 +41,62 @@ def filter_near_duplicates(urims, cache_storage):
 
     comparison_structure = {}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    if use_faux_TimeMaps == False:
 
-        future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=["memento-datetime", "timemap"]): urim for urim in urims }
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        for future in concurrent.futures.as_completed(future_to_urim):
-            urim = future_to_urim[future]
+            future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=["memento-datetime", "timemap"]): urim for urim in urims }
 
-            try:
-                memento_datetime, urit = future.result()
+            for future in concurrent.futures.as_completed(future_to_urim):
+                urim = future_to_urim[future]
 
-                comparison_structure.setdefault(urit, []).append(
-                    (
-                        memento_datetime, # datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
-                        int(urim_to_simhash[urim]),
-                        urim
+                try:
+                    memento_datetime, urit = future.result()
+
+                    comparison_structure.setdefault(urit, []).append(
+                        (
+                            memento_datetime, # datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
+                            int(urim_to_simhash[urim]),
+                            urim
+                        )
                     )
-                )
 
-            except Exception as exc:
-                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
-                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+                except Exception as exc:
+                    module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                    hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    else:
+
+        urit_to_urim = {}
+
+        for urim in urims:
+
+            faux_urit = generate_faux_urit(urim, cache_storage)
+            urit_to_urim[urim] = faux_urit
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+            future_to_urim = { executor.submit(get_memento_http_metadata, urim, cache_storage, metadata_fields=["memento-datetime"]): urim for urim in urims }
+
+            for future in concurrent.futures.as_completed(future_to_urim):
+                urim = future_to_urim[future]
+
+                try:
+                    memento_datetime = future.result()
+
+                    urit = urit_to_urim[urim]
+
+                    comparison_structure.setdefault(urit, []).append(
+                        (
+                            memento_datetime, # datetime.strptime(memento_datetime, "%a, %d %b %Y %H:%M:%S GMT"),
+                            int(urim_to_simhash[urim]),
+                            urim
+                        )
+                    )
+
+                except Exception as exc:
+                    module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                    hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     output_urims = []
 
