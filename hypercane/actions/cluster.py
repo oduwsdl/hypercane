@@ -83,7 +83,7 @@ def cluster_by_dbscan(args):
         discover_mementos_by_input_type
 
     from hypercane.cluster.dbscan import cluster_by_simhash_distance, \
-        cluster_by_memento_datetime
+        cluster_by_memento_datetime, cluster_by_tfidf
 
     parser = argparse.ArgumentParser(
         description="Cluster the input using the dbscan algorithm.",
@@ -144,6 +144,13 @@ def cluster_by_dbscan(args):
     elif args.feature == "memento-datetime":
         logger.info("Clustering URI-Ms by Memento-Datetime")
         urimdata = cluster_by_memento_datetime(
+            urimdata, args.cache_storage,
+            min_samples=int(args.min_samples),
+            eps=float(args.eps))
+
+    elif args.feature == "tfidf" or args.feature == "tf-idf":
+        logger.info("Clustering URI-Ms by TF-IDF")
+        urimdata = cluster_by_tfidf(
             urimdata, args.cache_storage,
             min_samples=int(args.min_samples),
             eps=float(args.eps))
