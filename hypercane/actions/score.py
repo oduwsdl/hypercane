@@ -1,5 +1,58 @@
 import sys
 
+def score_by_top_entities_and_bm25(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.bm25 import bm25_by_entites
+
+    parser = argparse.ArgumentParser(
+        description="Score the input using the top k entities as a query to BM25.",
+        prog="hc score top-entities-and-bm25"
+    )
+
+    parser.add_argument('-k', dest='k',
+        required=False, help="The number of top entities to use", 
+        default=10
+    )
+
+    # TODO: make this configurable
+    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by BM25")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urimdata = bm25_by_entites(
+        urimdata, session, args.cache_storage, args.k, default_entity_types
+    )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished scoring by BM25, output is at {}".format(args.output_filename))
+
 def bm25_ranking(args):
 
     import argparse
@@ -371,11 +424,12 @@ def print_usage():
 
     Supported commands:
     * dsa1-scoring - score the documents according to the scoring function of AlNoamany's Algorithm (https://doi.org/10.1145/3091478.3091508)
-    * bm25 - score documents according to the input query
+    * bm25 - score documents according to the input query with BM25
     * image-count - score by the number of images in each document
     * simple-card-score - score by how well the memento creates a social card on Facebook and Twitter
     * path-depth - score by path depth, as defined by McCown et al. (https://arxiv.org/abs/cs/0511077)
     * url-category-score - score by the categories from Padia et al. (https://doi.org/10.1145/2232817.2232821)
+    * top-entites-and-bm25 - score by the top k entities and BM25
 
     Examples:
 
@@ -389,7 +443,8 @@ supported_commands = {
     "image-count": image_count_scoring,
     "simple-card-score": simple_card_scoring,
     "path-depth": path_depth_scoring,
-    "url-category-score": category_scoring
+    "url-category-score": category_scoring,
+    "top-entities-and-bm25": score_by_top_entities_and_bm25
     # "textrank": textrank_scoring
 }
 

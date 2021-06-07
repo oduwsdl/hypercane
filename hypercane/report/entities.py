@@ -9,7 +9,7 @@ def get_document_entities(urim, cache_storage, entity_types):
     from nltk.corpus import stopwords
     from hypercane.utils import get_boilerplate_free_content
 
-    module_logger.info("starting entity extraction process for {}".format(urim))
+    module_logger.debug("starting entity extraction process for {}".format(urim))
 
     content = get_boilerplate_free_content(urim, cache_storage=cache_storage)
 
@@ -32,6 +32,8 @@ def generate_entities(urimlist, cache_storage, entity_types):
     corpus_entities = []
     document_frequency = {}
 
+    completed_count = 0
+
     # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
@@ -52,6 +54,11 @@ def generate_entities(urimlist, cache_storage, entity_types):
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
 
+            completed_count += 1
+
+            if completed_count % 100 == 0:
+                module_logger.info("extracted entities from ({}/{}) mementos".format(completed_count, len(urimlist)))
+
     module_logger.info("discovered {} entities in corpus".format(len(corpus_entities)))
 
     fdist = nltk.FreqDist(corpus_entities)
@@ -67,10 +74,14 @@ def generate_entities(urimlist, cache_storage, entity_types):
 
     for entry in sorted(tf, reverse=True):
         entity = entry[1]
+        frequency_in_corpus = entry[0]
+        probability_in_corpus = float(entry[0])/float(len(tf))
+        inverse_document_frequency = document_frequency[entity] / len(urimlist)
+        corpus_tfidf = entry[0] * (document_frequency[entity] / len(urimlist))
         returned_terms.append( (
-            entity, entry[0], float(entry[0])/float(len(tf)),
-            document_frequency[entity], document_frequency[entity] / len(urimlist),
-            entry[0] * (document_frequency[entity] / len(urimlist))
+            entity, frequency_in_corpus, probability_in_corpus,
+            document_frequency[entity], inverse_document_frequency,
+            corpus_tfidf
         ) )
 
     return returned_terms

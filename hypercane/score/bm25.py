@@ -46,3 +46,16 @@ def rank_by_bm25(urimdata, session, query, cache_storage):
         urimdata[urim]['Score---BM25'] = doc_scores[i]
 
     return urimdata
+
+def bm25_by_entites(urimdata, session, cache_storage, k, entity_types):
+
+    from hypercane.report.entities import generate_entities
+
+    entity_data = generate_entities(list(urimdata.keys()), cache_storage, entity_types)
+
+    top_entities = entity_data[0:k]
+    query = " ".join([ entity[0] for entity in top_entities ])
+
+    urimdata = rank_by_bm25(urimdata, session, query, cache_storage)
+
+    return urimdata
