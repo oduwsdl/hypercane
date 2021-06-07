@@ -455,6 +455,7 @@ def report_entities(args):
 
     default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
 
+    # TODO: make this work, how is this type=int ?
     parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities", dest='entity_types', default=default_entity_types, type=int)
 
     args = process_input_args(args, parser)
