@@ -49,10 +49,13 @@ setup(
         'requests',
         'requests_cache==0.5.2',
         'scrapy',
+        'sentencepiece',
         'simhash',
         'spacy',
         'sumgram',
         'surt',
+        'transformers',
+        'torch',
         'warcio'
     ],
     # setup_requires=[
