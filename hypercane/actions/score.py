@@ -1,5 +1,3 @@
-import sys
-
 def score_by_top_entities_and_bm25(args):
 
     import argparse
@@ -365,7 +363,58 @@ def category_scoring(args):
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
-    logger.info("Finished ranking by URL category, output is at {}".format(args.output_filename))
+    logger.info("Finished scoring by URL category, output is at {}".format(args.output_filename))
+
+def score_by_distance_from_centroid(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.distance_from_centroid import compute_distance_from_centroid
+
+    parser = argparse.ArgumentParser(
+        description="Score the input by computing each cluster's TF-IDF cluster center and the computing the distance from that center. A higher score is farther from the other documents and hence more unique. Use --more-similar to reverse this.",
+        prog="hc score distance-from-centroid"
+    )
+
+    parser.add_argument('--more-similar', dest='more_similar',
+        action='store_true',
+        help='This will subtract all scores by 0 so that highest means more similar and not more unique.'
+    )
+
+    # TODO: an ignore outliers option to run DBSCAN instead of kmeans
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by distance from centroid category equation")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    urimdata = compute_distance_from_centroid(urimdata, args.cache_storage, more_similar=args.more_similar)
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished scoring by cluster distance, output is at {}".format(args.output_filename))
+
 
 # def textrank_scoring(args):
 
@@ -444,7 +493,8 @@ supported_commands = {
     "simple-card-score": simple_card_scoring,
     "path-depth": path_depth_scoring,
     "url-category-score": category_scoring,
-    "top-entities-and-bm25": score_by_top_entities_and_bm25
+    "top-entities-and-bm25": score_by_top_entities_and_bm25,
+    "distance-from-centroid": score_by_distance_from_centroid
     # "textrank": textrank_scoring
 }
 
