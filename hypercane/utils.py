@@ -19,7 +19,8 @@ from newspaper import Article
 from urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from mementoembed.mementoresource import memento_resource_factory, \
-    get_original_uri_from_response, NotAMementoError
+    get_original_uri_from_response, NotAMementoError, \
+    MementoMetaRedirectParsingError
 
 from .version import __useragent__
 import hypercane.errors
@@ -137,12 +138,18 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
         memento_compliant_archive = True
 
-        try:
-            mr = memento_resource_factory(urim, session)
-        except NotAMementoError:
-            # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+        if 'memento-datetime' not in r.headers:
+            # short-circuit here because memento_resource_factory may throw an unnecessary exception
             module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
             memento_compliant_archive = False
+        else:
+            try:
+                mr = memento_resource_factory(urim, session)
+            except NotAMementoError:
+                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+                module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+                memento_compliant_archive = False
+            # TODO: MementoMetaRedirectParsingError is not handled here and it fires before NotAMementoError
 
         for field in metadata_fields:
 
@@ -437,7 +444,7 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
 
     # 1. if boilerplate free content in cache, return it
     try:
-        module_logger.info("returing boilerplate free content from cache for {}".format(urim))
+        module_logger.debug("returning boilerplate free content from cache for {}".format(urim))
         try:
             bpfree = db.derivedvalues.find_one(
                 { "urim": urim }
@@ -462,14 +469,21 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
         extractor = extractors.ArticleExtractor()
 
         try:
-            try:
-                mr = memento_resource_factory(urim, session)
-                bpfree = extractor.get_content(mr.raw_content)
-            except NotAMementoError:
-                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+            
+            if 'memento-datetime' not in r.headers:
+                # short-circuit here because memento_resource_factory may throw an unnecessary exception
                 module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
-                r = session.get(urim)
                 bpfree = extractor.get_content(r.text)
+            else:
+
+                try:
+                    mr = memento_resource_factory(urim, session)
+                    bpfree = extractor.get_content(mr.raw_content)
+                except NotAMementoError:
+                    # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
+                    module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
+                    # r = session.get(urim) # why are we getting it twice? 
+                    bpfree = extractor.get_content(r.text)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
