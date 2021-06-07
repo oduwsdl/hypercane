@@ -650,7 +650,7 @@ def report_html_metadata(args):
     import json
 
     parser = argparse.ArgumentParser(
-        description="Provide a report on the images from in the mementos discovered in the input.",
+        description="Provide a report on the HTML metadata of the mementos discovered in the input.",
         prog="hc report html-metadata"
         )
 
@@ -670,7 +670,7 @@ def report_html_metadata(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection image data run")
+    logger.info("Starting collection html metadata run")
 
     if args.use_urirs == True:
         uridata = discover_resource_data_by_input_type(
@@ -685,7 +685,50 @@ def report_html_metadata(args):
 
     output_page_metadata_as_ors(uridata, args.cache_storage, args.output_filename)
 
-    logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
+    logger.info("Done with html metadata data run, output is at {}".format(args.output_filename))
+
+def report_http_status(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type, discover_original_resources_by_input_type
+
+    from hypercane.report.http_status import output_http_status_as_tsv
+
+    parser = argparse.ArgumentParser(
+        description="Provide a report on all URI-Ms, their HTTP response status (before redirects), whether they are a redirect, datetime of check, and memento header information.",
+        prog="hc report http-status"
+        )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting collection HTTP status data run")
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    output_http_status_as_tsv(urimdata, args.cache_storage, args.output_filename)
+
+    logger.info("Done with http status report, output is at {}".format(args.output_filename))
+
+
 
 def print_usage():
 
@@ -700,6 +743,7 @@ def print_usage():
     * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
     * metadata-statistics - statistics about the metadata for this collection (Archive-It only)
     * html-metadata - a listing of all URI-Ms and associated HTML metadata containing a NAME or PROPERTY attribute
+    * http-status - a TSV listing of all URI-Ms, their HTTP response status (before redirects), whether they are a redirect, datetime of check, and memento header information
 
 
     Examples:
@@ -722,6 +766,7 @@ supported_commands = {
     "seed-statistics": report_seedstats,
     "growth": report_growth_curve_stats,
     "metadata-statistics": report_metadatastats,
-    "html-metadata": report_html_metadata
+    "html-metadata": report_html_metadata,
+    "http-status": report_http_status
 }
 
