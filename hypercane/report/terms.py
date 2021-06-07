@@ -36,30 +36,42 @@ def generate_ranked_terms(urimlist, cache_storage, ngram_length=1, added_stopwor
     corpus_ngrams = []
     document_frequency = {}
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=5) as executor:
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    # NLTK is not thread safe: https://github.com/nltk/nltk/issues/803
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-        future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length, added_stopwords=added_stopwords): urim for urim in urimlist }
+    #     future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length, added_stopwords=added_stopwords): urim for urim in urimlist }
 
-        for future in concurrent.futures.as_completed(future_to_urim):
+    #     for future in concurrent.futures.as_completed(future_to_urim):
 
-            urim = future_to_urim[future]
+    #         urim = future_to_urim[future]
 
-            try:
-                # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
-                document_ngrams = future.result()
-                corpus_ngrams.extend( document_ngrams )
+    #         try:
+    #             # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
+    #             document_ngrams = future.result()
+    #             corpus_ngrams.extend( document_ngrams )
 
-                for ngram in list(set(document_ngrams)):
+    #             for ngram in list(set(document_ngrams)):
 
-                    full_ngram = " ".join(ngram)
+    #                 full_ngram = " ".join(ngram)
 
-                    document_frequency.setdefault(full_ngram, 0)
-                    document_frequency[full_ngram] += 1
+    #                 document_frequency.setdefault(full_ngram, 0)
+    #                 document_frequency[full_ngram] += 1
 
-            except Exception as exc:
-                module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
-                # sys.exit(255)
+    #         except Exception as exc:
+    #             module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
+    #             # sys.exit(255)
+
+    for urim in urimlist:
+
+        document_ngrams = get_document_tokens(urim, cache_storage, ngram_length=ngram_length, added_stopwords=added_stopwords)
+        corpus_ngrams.extend( document_ngrams )
+
+        for ngram in list(set(document_ngrams)):
+
+            full_ngram = " ".join(ngram)
+
+            document_frequency.setdefault(full_ngram, 0)
+            document_frequency[full_ngram] += 1
 
     module_logger.info("discovered {} tokens in corpus".format(len(corpus_ngrams)))
 
