@@ -454,12 +454,15 @@ def report_entities(args):
         )
 
     default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
+    default_entity_types_str = ','.join( default_entity_types)
 
     # TODO: make this work, how is this type=int ?
-    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities", dest='entity_types', default=default_entity_types, type=int)
+    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities", dest='entity_types', default=default_entity_types_str, type=str)
 
     args = process_input_args(args, parser)
     output_type = 'mementos'
+
+    submitted_entity_types = [ e for e in args.entity_types.split(',') ]
 
     logger = get_logger(
         __name__,
@@ -476,7 +479,7 @@ def report_entities(args):
         session, discover_mementos_by_input_type
     )
 
-    ranked_terms = generate_entities(list(urimdata.keys()), args.cache_storage, args.entity_types)
+    ranked_terms = generate_entities(list(urimdata.keys()), args.cache_storage, submitted_entity_types)
 
     with open(args.output_filename, 'w') as f:
 
@@ -743,8 +746,11 @@ def report_generated_queries(args):
 
     import json
 
-    from hypercane.report.generate_queries import generate_queries_from_documents_with_doct5query, \
-            generate_queries_from_metadata_with_doct5query
+    from hypercane.report.generate_queries import \
+            generate_queries_from_documents_with_doct5query, \
+            generate_queries_from_metadata_with_doct5query, \
+            generate_queries_from_documents_with_topnterms, \
+            generate_queries_from_documents_with_topentities
 
     parser = argparse.ArgumentParser(
         description="Apply techniques to generate queries from the text of the input documents.",
@@ -752,24 +758,35 @@ def report_generated_queries(args):
         )
 
     parser.add_argument('--query-count', dest='query_count',
-        help="create this many queries per document, ", default=5, required=False
+        help="create this many queries per document, only applies to 'doc2query-T5', ignored otherwise", default=5, required=False
     )
 
     parser.add_argument('--use-metadata', dest='use_metadata', action='store_true',
         help="use collection metadata to generate queries instead of documents from input, requires that input be a collection type"
     )
 
-    # parser.add_argument('--generation-method', dest='generation_method',
-    #     help="apply the given generation method for queries, valid values are 'top10entities', 'doc2query-T5'",
-    #     default='doc2query-T5', required=False
-    # )
+    parser.add_argument('--generation-method', dest='generation_method',
+        help="apply the given generation method for queries, valid values are 'topNentities', 'topNterms', 'doc2query-T5'",
+        default='doc2query-T5', required=False
+    )
+
+    parser.add_argument('--term-count', dest='term_count',
+        help="create queries with a maximum of this many terms",
+        default=10, required=False
+    )
+
+    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
+    default_entity_types_str = ','.join( default_entity_types)
+
+    # TODO: make this work, how is this type=int ?
+    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities -- only applies to 'topNentities', ignored otherwise", dest='entity_types', default=default_entity_types_str, type=str)
 
     # TODO: generate query per cluster
 
-    # TODO: use a different query generation technique than docTTTTTquery, like top n entities, top n terms
-
     args = process_input_args(args, parser)
     output_type = 'mementos'
+
+    submitted_entity_types = [ e for e in args.entity_types.split(',') ]
 
     logger = get_logger(
         __name__,
@@ -778,6 +795,9 @@ def report_generated_queries(args):
     )
 
     session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: make this configurable
+    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
 
     logger.info("Starting query generation based on input mementos")
 
@@ -799,7 +819,15 @@ def report_generated_queries(args):
             session, discover_mementos_by_input_type
         ) 
 
-        querydata = generate_queries_from_documents_with_doct5query(urimdata, args.cache_storage, args.query_count)
+        if args.generation_method == 'doc2query-T5':
+            querydata = generate_queries_from_documents_with_doct5query(urimdata, args.cache_storage, args.query_count)
+
+        elif args.generation_method == 'topNterms':
+            querydata = generate_queries_from_documents_with_topnterms(urimdata, args.cache_storage, args.term_count)
+
+        elif args.generation_method == 'topNentities':
+            querydata = generate_queries_from_documents_with_topentities(urimdata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
+
 
     with open(args.output_filename, 'w') as f:
         json.dump(querydata, f, indent=4)
