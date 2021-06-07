@@ -129,7 +129,7 @@ def generate_collection_metadata(archive_name, collection_id, session):
         return metadata_dict
 
     else:
-        raise NotImplementedError("Collection Metadata Only Available for collections of type 'archiveit' and 'trove'")
+        raise NotImplementedError("Collection Metadata Only Available for collections of type 'archiveit', 'pandora-collection', 'pandora-subject', and 'trove'")
         
 
 def generate_blank_metadata(urirs):
@@ -729,7 +729,82 @@ def report_http_status(args):
 
     logger.info("Done with http status report, output is at {}".format(args.output_filename))
 
+def report_generated_queries(args):
 
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    import json
+
+    from hypercane.report.generate_queries import generate_queries_from_documents_with_doct5query, \
+            generate_queries_from_metadata_with_doct5query
+
+    parser = argparse.ArgumentParser(
+        description="Apply techniques to generate queries from the text of the input documents.",
+        prog="hc report generated-queries"
+        )
+
+    parser.add_argument('--query-count', dest='query_count',
+        help="create this many queries per document, ", default=5, required=False
+    )
+
+    parser.add_argument('--use-metadata', dest='use_metadata', action='store_true',
+        help="use collection metadata to generate queries instead of documents from input, requires that input be a collection type"
+    )
+
+    # parser.add_argument('--generation-method', dest='generation_method',
+    #     help="apply the given generation method for queries, valid values are 'top10entities', 'doc2query-T5'",
+    #     default='doc2query-T5', required=False
+    # )
+
+    # TODO: generate query per cluster
+
+    # TODO: use a different query generation technique than docTTTTTquery, like top n entities, top n terms
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting query generation based on input mementos")
+
+    if args.use_metadata == True:
+
+        if args.input_type not in ['archiveit', 'pandora-subject', 'pandora-collection', 'trove']:
+
+            raise NotImplementedError("Can only apply to query generation for inputs of type 'archiveit', 'pandora-collection', 'pandora-subject', and 'trove'")
+
+        else:
+
+            metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
+            querydata = generate_queries_from_metadata_with_doct5query(metadata, args.cache_storage, args.query_count)
+
+    else:
+
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        ) 
+
+        querydata = generate_queries_from_documents_with_doct5query(urimdata, args.cache_storage, args.query_count)
+
+    with open(args.output_filename, 'w') as f:
+        json.dump(querydata, f, indent=4)
+
+    logger.info("Done with http status report, output is at {}".format(args.output_filename))
 
 def print_usage():
 
@@ -745,6 +820,7 @@ def print_usage():
     * metadata-statistics - statistics about the metadata for this collection (Archive-It only)
     * html-metadata - a listing of all URI-Ms and associated HTML metadata containing a NAME or PROPERTY attribute
     * http-status - a TSV listing of all URI-Ms, their HTTP response status (before redirects), whether they are a redirect, datetime of check, and memento header information
+    * generate-queries - generate a series of queries from the text in the input documents
 
 
     Examples:
@@ -768,6 +844,7 @@ supported_commands = {
     "growth": report_growth_curve_stats,
     "metadata-statistics": report_metadatastats,
     "html-metadata": report_html_metadata,
-    "http-status": report_http_status
+    "http-status": report_http_status,
+    "generate-queries": report_generated_queries
 }
 
