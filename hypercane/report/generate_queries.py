@@ -122,48 +122,74 @@ def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, quer
 
     return query_data
 
-def generate_queries_from_documents_with_topnterms(urimdata, cache_storage, threshold):
+# def generate_queries_from_documents_with_topnterms(urimdata, cache_storage, threshold):
 
-    import concurrent.futures
-    from hypercane.report.terms import get_document_tokens
+#     import concurrent.futures
+#     from hypercane.report.terms import get_document_tokens
 
-    query_data = {}
+#     query_data = {}
 
-    # NLTK is not thread safe: https://github.com/nltk/nltk/issues/803
-    # urim_to_ngrams = {}
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+#     # NLTK is not thread safe: https://github.com/nltk/nltk/issues/803
+#     # urim_to_ngrams = {}
+#     # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
-    #     future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length=1, added_stopwords=[]): urim for urim in urimdata }
+#     #     future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length=1, added_stopwords=[]): urim for urim in urimdata }
 
-    #     for future in concurrent.futures.as_completed(future_to_urim):
+#     #     for future in concurrent.futures.as_completed(future_to_urim):
 
-    #         urim = future_to_urim[future]
+#     #         urim = future_to_urim[future]
 
-    #         try:
-    #             # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
-    #             document_ngrams = future.result()
-    #             urim_to_ngrams.setdefault(urim, []).append( document_ngrams )
+#     #         try:
+#     #             # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
+#     #             document_ngrams = future.result()
+#     #             urim_to_ngrams.setdefault(urim, []).append( document_ngrams )
 
-    #         except Exception as exc:
-    #             module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
+#     #         except Exception as exc:
+#     #             module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
 
-    for urim in urimdata:
+#     for urim in urimdata:
     
-        document_ngrams = get_document_tokens(urim, cache_storage, ngram_length=1)
+#         document_ngrams = get_document_tokens(urim, cache_storage, ngram_length=1)
 
-        tf = []
+#         from pprint import PrettyPrinter
+#         pp = PrettyPrinter(indent=4)
 
-        for ngram in set(document_ngrams):
+#         pp.pprint(urim)
+        
+#         ngram_counts = {}
+#         all_full_ngrams = []
 
-            full_ngram = " ".join(ngram)
+#         for ngram in document_ngrams:
 
-            tf.append( ( document_ngrams.count(full_ngram), full_ngram ) )
+#             full_ngram = " ".join(ngram)
 
-        query_terms = " ".join( [ w[1] for w in sorted(tf, reverse=True)[0:threshold] ] )
+#             all_full_ngrams.append(full_ngram)
 
-        query_data.setdefault(urim, []).append(query_terms)
+#         pp.pprint(all_full_ngrams)
 
-    return query_data
+#         for full_ngram in set(all_full_ngrams):
+
+#             ngram_counts.setdefault( full_ngram, 0 )
+#             ngram_counts[full_ngram] += all_full_ngrams.count(full_ngram)
+
+#         pp.pprint(ngram_counts)
+#         import sys
+#         sys.exit(255)
+
+#         tf = []
+#         for ngram in ngram_counts:
+
+#             tf.append( ( ngram_counts[ngram], ngram ) )
+
+#         # from pprint import PrettyPrinter
+#         # pp = PrettyPrinter(indent=4)
+#         # pp.pprint(tf)
+
+#         query_terms = " ".join( [ w[1] for w in sorted(tf, reverse=True)[0:threshold] ] )
+
+#         query_data.setdefault(urim, []).append(query_terms)
+
+#     return query_data
 
 def generate_queries_from_documents_with_topentities(urimdata, cache_storage, threshold, entity_types):
 
@@ -172,7 +198,7 @@ def generate_queries_from_documents_with_topentities(urimdata, cache_storage, th
 
     query_data = {}
 
-    urim_to_entites = {}
+    urim_to_entities = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
@@ -185,20 +211,24 @@ def generate_queries_from_documents_with_topentities(urimdata, cache_storage, th
             try:
                 # TODO: we're storing the result in RAM, essentially storing the whole collection there, maybe a generator would be better?
                 document_entities = future.result()
-                urim_to_entites.setdefault(urim, []).append( document_entities )
+                urim_to_entities[urim] = document_entities
 
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
 
-    for urim in urim_to_entites:
+    # from pprint import PrettyPrinter
+    # pp = PrettyPrinter(indent=4)
+    # pp.pprint(urim_to_entities)
+
+    for urim in urim_to_entities:
     
         ef = []
 
-        for term in set(urim_to_entites[urim]):
+        for term in set(urim_to_entities[urim]):
 
-            ef.append( ( urim_to_entites[urim].count(term), term ) )
+            ef.append( ( urim_to_entities[urim].count(term), term ) )
 
-        query_terms = " ".join( sorted(ef, reverse=True)[0:threshold] )
+        query_terms = " ".join( [ e[1] for e in sorted(ef, reverse=True) ] [0:threshold] )
 
         query_data.setdefault(urim, []).append(query_terms)
 
