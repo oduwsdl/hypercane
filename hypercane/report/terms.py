@@ -19,6 +19,7 @@ def get_document_tokens(urim, cache_storage, ngram_length, added_stopwords=[]):
     allstop = stoplist + punctuation + additional_stopchars + stop_numbers
 
     content = get_boilerplate_free_content(urim, cache_storage=cache_storage)
+
     doc_tokens = word_tokenize(content.decode('utf8').lower())
     doc_tokens = [ token for token in doc_tokens if token not in allstop ]
     table = str.maketrans('', '', string.punctuation)

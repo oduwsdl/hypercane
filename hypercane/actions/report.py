@@ -749,7 +749,6 @@ def report_generated_queries(args):
     from hypercane.report.generate_queries import \
             generate_queries_from_documents_with_doct5query, \
             generate_queries_from_metadata_with_doct5query, \
-            generate_queries_from_documents_with_topnterms, \
             generate_queries_from_documents_with_topentities
 
     parser = argparse.ArgumentParser(
@@ -766,7 +765,7 @@ def report_generated_queries(args):
     )
 
     parser.add_argument('--generation-method', dest='generation_method',
-        help="apply the given generation method for queries, valid values are 'topNentities', 'topNterms', 'doc2query-T5'",
+        help="apply the given generation method for queries, valid values are 'topNentities', 'doc2query-T5'",
         default='doc2query-T5', required=False
     )
 
@@ -821,9 +820,6 @@ def report_generated_queries(args):
 
         if args.generation_method == 'doc2query-T5':
             querydata = generate_queries_from_documents_with_doct5query(urimdata, args.cache_storage, args.query_count)
-
-        elif args.generation_method == 'topNterms':
-            querydata = generate_queries_from_documents_with_topnterms(urimdata, args.cache_storage, args.term_count)
 
         elif args.generation_method == 'topNentities':
             querydata = generate_queries_from_documents_with_topentities(urimdata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
