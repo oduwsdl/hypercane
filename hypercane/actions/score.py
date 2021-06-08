@@ -176,6 +176,74 @@ def dsa1_scoring(args):
 
     logger.info("Finished ranking by DSA1 scoring equation, output is at {}".format(args.output_filename))
 
+def dsa2_scoring(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.dsa2_score import score_by_dsa2_score
+
+    parser = argparse.ArgumentParser(
+        description="Score the input using the DSA2 scoring equation.",
+        prog="hc score dsa2-scoring"
+    )
+
+    parser.add_argument('--card-weight', dest='card_weight',
+        default=-0.50, type=float,
+        help="The weight for how well a page can produce a card."
+    )
+
+    parser.add_argument('--size-weight', dest='size_weight',
+        default=0.25, type=float,
+        help="The weight for the size of the content, in case a card is not possible."
+    )
+
+    parser.add_argument('--image-count-weight', dest='image_count_weight',
+        default=0.25, type=float,
+        help="The weight for number of images, in case a card is not possible."
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by DSA2 scoring equation")
+
+    if args.input_type == "mementos":
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        # TODO: derive URI-Ms from input type
+        raise NotImplementedError("Input type of {} not yet supported for scoring".format(
+            args.input_type))
+
+    urimdata = score_by_dsa2_score(
+        urimdata, args.cache_storage,
+        card_weight=float(args.card_weight),
+        size_weight=float(args.size_weight),
+        image_count_weight=float(args.image_count_weight)
+        )
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished ranking by DSA2 scoring equation, output is at {}".format(args.output_filename))
+
 def image_count_scoring(args):
 
     import argparse
@@ -570,7 +638,8 @@ supported_commands = {
     "url-category-score": category_scoring,
     "top-entities-and-bm25": score_by_top_entities_and_bm25,
     "distance-from-centroid": score_by_distance_from_centroid,
-    "size": score_by_size
+    "size": score_by_size,
+    "dsa2-scoring": dsa2_scoring
     # "textrank": textrank_scoring
 }
 
