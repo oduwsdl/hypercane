@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 import hypercane.errors
 
-module_logger = logging.getLogger('hypercane.score.dsa1_ranking')
+module_logger = logging.getLogger('hypercane.score.dsa1_score')
 
 blog_sources = [
     'blogger.com',

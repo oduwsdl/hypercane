@@ -114,7 +114,7 @@ def dsa1_scoring(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.score.dsa1_ranking import rank_by_dsa1_score
+    from hypercane.score.dsa1_score import rank_by_dsa1_score
 
     parser = argparse.ArgumentParser(
         description="Score the input using the DSA1 scoring equation.",
@@ -287,7 +287,7 @@ def path_depth_scoring(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.score.dsa1_ranking import score_by_path_depth
+    from hypercane.score.dsa1_score import score_by_path_depth
 
     parser = argparse.ArgumentParser(
         description="Score the input using the path depth of the URI-R of each memento.",
@@ -332,7 +332,7 @@ def category_scoring(args):
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    from hypercane.score.dsa1_ranking import score_by_category
+    from hypercane.score.dsa1_score import score_by_category
 
     parser = argparse.ArgumentParser(
         description="Score the input using the path depth of the URI-R of each memento.",
