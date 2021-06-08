@@ -436,7 +436,7 @@ def score_by_size(args):
     )
 
     parser.add_argument('--feature', dest='feature',
-        required=False, help="The feature to score with, options are 'bytes', 'characters', 'boilerplate-free-characters'", 
+        required=False, help="The feature to score with, options are: 'bytes', 'characters', 'boilerplate-free-characters', 'words', 'sentences'", 
         default="bytes"
     )
 
@@ -467,10 +467,16 @@ def score_by_size(args):
         urimdata = compute_character_size(urimdata, args.cache_storage, bytes=False)
 
     elif args.feature == 'boilerplate-free-characters':
-        urimdata = compute_boilerplate_free_character_size(urimdata, args.cache_storage)
+        urimdata = compute_boilerplate_free_character_size(urimdata, args.cache_storage, unit='characters')
+
+    elif args.feature == 'words':
+        urimdata = compute_boilerplate_free_character_size(urimdata, args.cache_storage, unit='words')
+
+    elif args.feature == 'sentences':
+        urimdata = compute_boilerplate_free_character_size(urimdata, args.cache_storage, unit='sentences')
 
     else:
-        raise NotImplementedError("Feature {} not yet implemented with this score".format(args.feature))
+        raise NotImplementedError("Feature '{}' not yet implemented with this score".format(args.feature))
 
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
