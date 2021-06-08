@@ -65,9 +65,9 @@ def extract_stylesheet_uris(html):
 
 def generate_warc_record_for_urim(warcwriter, urim, session, get_raw=True):
 
-    import otmt
     from warcio.statusandheaders import StatusAndHeaders
     from datetime import datetime
+    from ..utils import generate_raw_urim
 
     warc_target_uri = None
 
@@ -94,7 +94,7 @@ def generate_warc_record_for_urim(warcwriter, urim, session, get_raw=True):
     # we use response.url instead of urim to (hopefully) avoid raw redirects
 
     if get_raw == True:
-        raw_urim = otmt.generate_raw_urim(resp.url)
+        raw_urim = generate_raw_urim(resp.url)
         raw_response = session.get(raw_urim, stream=True)
     else:
         raw_urim = urim

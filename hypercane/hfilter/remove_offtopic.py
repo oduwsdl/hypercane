@@ -16,7 +16,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from urllib.parse import urlparse
 
-from ..utils import get_web_session, get_boilerplate_free_content, get_faux_TimeMap_json
+from ..utils import get_web_session, get_boilerplate_free_content, get_faux_TimeMap_json, generate_raw_urim
 import hypercane.errors
 
 module_logger = logging.getLogger('hypercane.hfilter.remove_offtopic')
@@ -86,9 +86,9 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
             r = self.session.get(urim)
 
             if len(r.history) == 0:
-                raw_urim = otmt.generate_raw_urim(urim)
+                raw_urim = generate_raw_urim(urim)
             else:
-                raw_urim = otmt.generate_raw_urim(r.url)
+                raw_urim = generate_raw_urim(r.url)
 
             self.session.get(raw_urim)
             self.urimlist.append(urim)
@@ -158,9 +158,9 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
                     r = futures[uri].result()
 
                     if len(r.history) == 0:
-                        raw_urim = otmt.generate_raw_urim(uri)
+                        raw_urim = generate_raw_urim(uri)
                     else:
-                        raw_urim = otmt.generate_raw_urim(r.url)
+                        raw_urim = generate_raw_urim(r.url)
 
                     module_logger.debug("adding {} to raw URI-M list".format(raw_urim))
                     raw_urims.append( raw_urim )
@@ -280,7 +280,7 @@ class HypercaneMementoCollectionModel(otmt.CollectionModel):
         If data was stored via `addMementoError` for `urim`, then
         `CollectionModelMementoErrorException` is thrown.
         """
-        raw_urim = otmt.generate_raw_urim(urim)
+        raw_urim = generate_raw_urim(urim)
         return self.session.get(raw_urim).text
 
     def getMementoErrorInformation(self, urim):
