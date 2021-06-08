@@ -65,7 +65,7 @@ def compute_simple_card_scores(urimdata, session):
 
         for future in concurrent.futures.as_completed(future_to_urim):
             completed_urims += 1
-            module_logger.info("extracting score result for {}/{}".format(completed_urims, total_urims))
+            module_logger.debug("extracting score result for {}/{}".format(completed_urims, total_urims))
 
             try:
                 urim = future_to_urim[future]
