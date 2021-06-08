@@ -129,9 +129,8 @@ def generate_queries_from_documents_with_topnterms(urimdata, cache_storage, thre
 
     query_data = {}
 
-    urim_to_ngrams = {}
-
     # NLTK is not thread safe: https://github.com/nltk/nltk/issues/803
+    # urim_to_ngrams = {}
     # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
     #     future_to_urim = { executor.submit(get_document_tokens, urim, cache_storage, ngram_length=1, added_stopwords=[]): urim for urim in urimdata }
@@ -147,7 +146,6 @@ def generate_queries_from_documents_with_topnterms(urimdata, cache_storage, thre
 
     #         except Exception as exc:
     #             module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
-
 
     for urim in urimdata:
     

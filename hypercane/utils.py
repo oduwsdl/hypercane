@@ -5,7 +5,7 @@ import csv
 import traceback
 
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin, quote
 from pymongo import MongoClient
 import pymongo
 import pymongo.errors
@@ -24,6 +24,7 @@ from mementoembed.mementoresource import memento_resource_factory, \
 
 from .version import __useragent__
 import hypercane.errors
+import re
 
 module_logger = logging.getLogger("hypercane.utils")
 
@@ -348,9 +349,9 @@ def get_raw_simhash(urim, cache_storage):
         r = session.get(urim)
 
         if len(r.history) == 0:
-            raw_urim = otmt.generate_raw_urim(urim)
+            raw_urim = generate_raw_urim(urim)
         else:
-            raw_urim = otmt.generate_raw_urim(r.url)
+            raw_urim = generate_raw_urim(r.url)
 
         r2 = session.get(raw_urim)
         r2.raise_for_status()
@@ -429,6 +430,83 @@ def get_tf_simhash(urim, cache_storage):
 
         return str(simhash)
 
+def get_html_free_content_from_solrwayback(urim, urir, crawl_date):
+
+    import requests
+    import io
+    import csv
+
+    session = requests.Session()
+
+    bpfree_content = ""
+
+    query_url = urljoin(
+        urim,
+        "/solrwayback/services/export/csv?query=url:%22{}%22%20AND%20crawl_date:%22{}%22&fields=content".format(
+            quote(urir), crawl_date
+        )
+    )
+
+    module_logger.warning("visiting URL {} at SolrWayback".format(query_url))
+    r = session.get(query_url)
+    
+    csvfileobj = io.StringIO(r.text) # because we need a file-like object
+    reader = csv.DictReader(csvfileobj) # because we need a CSV parser
+    numrecords = len(list(reader)) # because we want to count the # of records
+    csvfileobj.seek(0) # because counting the number of records iterates to the end of the file object
+    reader = csv.DictReader(csvfileobj) # so we can read the CSV file for real this time 
+
+    module_logger.warning("discovered {} records in the response from SolrWayback...".format(numrecords))
+
+    if numrecords != 1:
+        module_logger.warning("There are {} records in the response from SolrWayback, we expected 1, we will try to take the first one available".format(numrecords))
+
+    module_logger.warning("searching for memento at SolrWayback coordinates {} and {}".format(
+        urir, crawl_date
+    ))
+
+    for row in reader:
+        # print("examining row {}".format(row))
+        bpfree_content = bytes(row['content'], encoding='utf8')
+        break
+
+    return bpfree_content
+
+# def generate_raw_memento_from_solrwayback_urim(urim):
+
+#     raw_urim = urljoin(
+#         urim,
+
+#     )
+
+def generate_raw_urim(urim):
+
+    import otmt
+
+    o = urlparse(urim)
+
+    # note: I have found no way to identify SolrWayback through headers, it does not identify itself
+    if o.path[0:13] == '/solrwayback/':
+        module_logger.warning("SolrWayback is not Memento-compliant and support is very experimental. We do not recommend using Hypercane with SolrWayback until they implement the Memento Protocol.")
+        # examples:
+        # aug memento: http://localhost:8080/solrwayback/services/viewForward?source_file_path=/Volumes/nerfherder-extern-3/archive-it-collections/download-from-do-server/694-warcs/06621867d0bf3074679c0a773c1efd07-20210508002237.warc.gz&offset=0
+        # raw memento: http://localhost:8080/solrwayback/services/downloadRaw?source_file_path=/Volumes/nerfherder-extern-3/archive-it-collections/download-from-do-server/694-warcs/532bc3af7e0114db49b20383be1704dc-20210508005926.warc.gz&offset=0
+
+        if '/solrwayback/services/viewForward' in o.path:
+            raw_urim = urim.replace(
+                '/solrwayback/services/viewForward?source_file_path=',
+                '/solrwayback/services/downloadRaw?source_file_path=')
+        else:
+            # other: http://localhost:8080/solrwayback/services/web/20080418011213/http://planetblacksburg.com/
+            # not sure how to get from here to downloadRaw
+            raw_urim = otmt.generate_raw_urim(urim) # this is just a noop
+            
+    else:
+        # OTMT handles all standard Wayback id_ tricks
+        raw_urim = otmt.generate_raw_urim(urim)
+
+    return raw_urim
+
 def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=None):
 
     import otmt
@@ -473,7 +551,10 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
             if 'memento-datetime' not in r.headers:
                 # short-circuit here because memento_resource_factory may throw an unnecessary exception
                 module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
-                bpfree = extractor.get_content(r.text)
+                raw_urim = generate_raw_urim(urim)
+                module_logger.warning("attempting to remove boilerplate from raw URI-M {}...".format(raw_urim))
+                raw_response = session.get(raw_urim)
+                bpfree = extractor.get_content(raw_response.text)
             else:
 
                 try:
@@ -482,8 +563,10 @@ def get_boilerplate_free_content(urim, cache_storage="", dbconn=None, session=No
                 except NotAMementoError:
                     # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
                     module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
-                    # r = session.get(urim) # why are we getting it twice? 
-                    bpfree = extractor.get_content(r.text)
+                    raw_urim = generate_raw_urim(urim)
+                    module_logger.warning("attempting to remove boilerplate from raw URI-M {}...".format(raw_urim))
+                    raw_response = session.get(raw_urim)
+                    bpfree = extractor.get_content(raw_response.text)
 
             module_logger.info("storing boilerplate free content in cache {}".format(urim))
 
@@ -538,7 +621,7 @@ def get_newspaper_publication_date(urim, cache_storage):
             )["newspaper publication date"]
         
     except (KeyError, TypeError):
-        raw_urim = otmt.generate_raw_urim(urim)
+        raw_urim = generate_raw_urim(urim)
 
         r = session.get(raw_urim)
         r.raise_for_status()
