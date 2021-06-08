@@ -28,11 +28,11 @@ def compute_distance_from_centroid(urimdata, cache_storage, more_similar=False):
         except KeyError:
             clusters_to_urims.setdefault( None, [] ).append(urim)
             urim_to_cluster[urim] = None
-
-    urimlist_after_processing = []
-    corpus = []
     
     for cluster in clusters_to_urims:
+
+        urimlist_after_processing = []
+        corpus = []
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 

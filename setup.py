@@ -45,6 +45,7 @@ setup(
         'nltk',
         'otmt',
         'pymongo',
+        'python-Levenshtein',
         'rank_bm25',
         'requests',
         'requests_cache==0.5.2',
