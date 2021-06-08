@@ -415,6 +415,67 @@ def score_by_distance_from_centroid(args):
 
     logger.info("Finished scoring by cluster distance, output is at {}".format(args.output_filename))
 
+def score_by_size(args):
+
+    import argparse
+
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+
+    from hypercane.utils import get_web_session, save_resource_data
+
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    from hypercane.score.document_size import compute_boilerplate_free_character_size, \
+        compute_character_size
+
+    parser = argparse.ArgumentParser(
+        description="Score the input by size.",
+        prog="hc score size"
+    )
+
+    parser.add_argument('--feature', dest='feature',
+        required=False, help="The feature to score with, options are 'bytes', 'characters', 'boilerplate-free-characters'", 
+        default="bytes"
+    )
+
+    # TODO: an ignore outliers option to run DBSCAN instead of kmeans
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Beginning the scoring by mementy by size with feature {}".format(args.feature))
+
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, args.crawl_depth,
+        session, discover_mementos_by_input_type
+    )
+
+    if args.feature == 'bytes':
+        urimdata = compute_character_size(urimdata, args.cache_storage, bytes=True)
+
+    elif args.feature == 'characters':
+        urimdata = compute_character_size(urimdata, args.cache_storage, bytes=False)
+
+    elif args.feature == 'boilerplate-free-characters':
+        urimdata = compute_boilerplate_free_character_size(urimdata, args.cache_storage)
+
+    else:
+        raise NotImplementedError("Feature {} not yet implemented with this score".format(args.feature))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
+
+    logger.info("Finished scoring by size with feature {}, output is at {}".format(args.feature, args.output_filename))
+
 
 # def textrank_scoring(args):
 
@@ -479,10 +540,18 @@ def print_usage():
     * path-depth - score by path depth, as defined by McCown et al. (https://arxiv.org/abs/cs/0511077)
     * url-category-score - score by the categories from Padia et al. (https://doi.org/10.1145/2232817.2232821)
     * top-entites-and-bm25 - score by the top k entities and BM25
+    * distance-from-centroid - score by the distance of each memento from the center of its cluster
+    * size - score by the size of each memento
 
     Examples:
 
     hc score dsa1-scoring -i mementos -a input_mementos.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache
+
+    hc score bm25 -i mementos -a input_mementos.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache --query cheese
+
+    hc score simple-card-score -i pandora-subject -a 82 -o scored_mementos.tsv -cs mongodb://localhost/cache
+
+    hc score path-depth -i timemap -a input_timemaps.tsv -o scored_mementos.tsv -cs mongodb://localhost/cache
 
 """)
 
@@ -494,7 +563,8 @@ supported_commands = {
     "path-depth": path_depth_scoring,
     "url-category-score": category_scoring,
     "top-entities-and-bm25": score_by_top_entities_and_bm25,
-    "distance-from-centroid": score_by_distance_from_centroid
+    "distance-from-centroid": score_by_distance_from_centroid,
+    "size": score_by_size
     # "textrank": textrank_scoring
 }
 
