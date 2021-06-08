@@ -61,36 +61,42 @@ def generate_queries_from_documents_with_doct5query(urimdata, cache_storage, que
 
     return query_data
 
-def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, query_count):
+def generate_metadata_as_document(metadata):
 
-    from transformers import T5Tokenizer, T5ForConditionalGeneration
-    import torch
-
-    query_data = {}
     doc_text = ""
 
     for field in metadata:
 
         if field != 'seed_list':
 
-            if type(metadata[field]) == str:
-                doc_text += "{} : {}\n".format( field, metadata[field] )
-            elif type(metadata[field]) == list:
-                doc_text += "{} : {}\n".format(field, ",".join(metadata[field]))
+                if type(metadata[field]) == str:
+                    doc_text += "{} : {}\n".format( field, metadata[field] )
+                elif type(metadata[field]) == list:
+                    doc_text += "{} : {}\n".format(field, ",".join(metadata[field]))
 
-    for seed in metadata['seed_metadata']['seeds']:
+        for seed in metadata['seed_metadata']['seeds']:
 
-        for subfield in metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0]:
+            for subfield in metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0]:
 
-            if type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == str:
+                if type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == str:
 
-                doc_text += "{} : {}\n".format( subfield, metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
+                    doc_text += "{} : {}\n".format( subfield, metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
 
-            elif type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == list:
+                elif type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == list:
 
-                doc_text += "{} : {}\n".format( subfield, 
-                    ",".join( metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
-                )
+                    doc_text += "{} : {}\n".format( subfield, 
+                        ",".join( metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
+                    )
+
+    return doc_text
+
+def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, query_count):
+
+    from transformers import T5Tokenizer, T5ForConditionalGeneration
+    import torch
+
+    query_data = {}
+    doc_text = generate_metadata_as_document(metadata)
 
     # To avoid issue with "Token indices sequence length is longer than the specified maximum sequence length for this model (1853 > 512). Running this sequence through the model will result in indexing errors"
     doc_text = doc_text[0:512]
@@ -216,10 +222,6 @@ def generate_queries_from_documents_with_topentities(urimdata, cache_storage, th
             except Exception as exc:
                 module_logger.exception("URI-M [{}] generated an exception [{}], skipping...".format(urim, repr(exc)))
 
-    # from pprint import PrettyPrinter
-    # pp = PrettyPrinter(indent=4)
-    # pp.pprint(urim_to_entities)
-
     for urim in urim_to_entities:
     
         ef = []
@@ -231,5 +233,35 @@ def generate_queries_from_documents_with_topentities(urimdata, cache_storage, th
         query_terms = " ".join( [ e[1] for e in sorted(ef, reverse=True) ] [0:threshold] )
 
         query_data.setdefault(urim, []).append(query_terms)
+
+    return query_data
+
+def generate_queries_from_metadata_with_topentities(metadata, cache_storage, threshold, entity_types):
+
+    import spacy
+    import nltk
+
+    nlp = spacy.load("en_core_web_sm")
+
+    query_data = {}
+
+    doc_text = generate_metadata_as_document(metadata)
+    doc = nlp(doc_text)
+
+    entities = []
+
+    for ent in doc.ents:
+        if ent.label_ in entity_types:
+            entities.append(ent.text.strip().replace('\n', ' ').lower())
+
+    entitycount = {}
+
+    for entity in entities:
+        entitycount.setdefault(entity, 0)
+        entitycount[entity] += 1
+
+    query = " ".join( [ e[1] for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ] )
+
+    query_data.setdefault("metadata", []).append(query)
 
     return query_data

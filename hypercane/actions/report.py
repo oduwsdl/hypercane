@@ -749,7 +749,8 @@ def report_generated_queries(args):
     from hypercane.report.generate_queries import \
             generate_queries_from_documents_with_doct5query, \
             generate_queries_from_metadata_with_doct5query, \
-            generate_queries_from_documents_with_topentities
+            generate_queries_from_documents_with_topentities, \
+            generate_queries_from_metadata_with_topentities
 
     parser = argparse.ArgumentParser(
         description="Apply techniques to generate queries from the text of the input documents.",
@@ -798,7 +799,7 @@ def report_generated_queries(args):
     # TODO: make this configurable
     default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
 
-    logger.info("Starting query generation based on input mementos")
+    logger.info("Starting query generation based on input mementos with method {}".format(args.generation_method))
 
     if args.use_metadata == True:
 
@@ -809,7 +810,15 @@ def report_generated_queries(args):
         else:
 
             metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
-            querydata = generate_queries_from_metadata_with_doct5query(metadata, args.cache_storage, args.query_count)
+
+            if args.generation_method == 'doc2query-T5':
+                querydata = generate_queries_from_metadata_with_doct5query(metadata, args.cache_storage, args.query_count)
+            
+            elif args.generation_method == 'topNentities':
+                querydata = generate_queries_from_metadata_with_topentities(metadata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
+
+            else:
+                raise NotImplementedError("Unknkown metadata generation method: {}".format(args.generation_method))
 
     else:
 
@@ -823,6 +832,9 @@ def report_generated_queries(args):
 
         elif args.generation_method == 'topNentities':
             querydata = generate_queries_from_documents_with_topentities(urimdata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
+
+        else:
+            raise NotImplementedError("Unknkown metadata generation method: {}".format(args.generation_method))
 
 
     with open(args.output_filename, 'w') as f:

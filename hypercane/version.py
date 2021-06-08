@@ -1,3 +1,3 @@
 __appname__ = "hypercane"
-__appversion__ = '0.2021.06.08.223401'
+__appversion__ = '0.2021.06.08.234200'
 __useragent__ = "{}/{}".format(__appname__, __appversion__)
