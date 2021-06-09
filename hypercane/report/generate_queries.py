@@ -5,6 +5,83 @@ import traceback
 
 module_logger = logging.getLogger('hypercane.report.generate_queries')
 
+def generate_lexical_signatures_from_documents_with_tfidf(urimdata, cache_storage, threshold):
+
+    from hypercane.utils import get_boilerplate_free_content
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from otmt.timemap_measures import full_tokenize
+    from nltk.corpus import stopwords
+    from nltk.tokenize import word_tokenize
+    import string
+    import random
+
+    query_data = {}
+
+    corpus = []
+    urim_to_corpus = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
+        future_to_urim = { executor.submit(get_boilerplate_free_content, urim, cache_storage): urim for urim in urimdata.keys() }
+
+        for future in concurrent.futures.as_completed(future_to_urim):
+
+            urim = future_to_urim[future]
+
+            try:
+                content = future.result()
+                corpus.append( content )
+                urim_to_corpus.append( urim )
+
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+    stop_words = stopwords.words('english')
+    # stop_words.extend("''", '""', '--', '---', "'s", "'t")
+    stop_words.extend(string.punctuation)
+    vectorizer = TfidfVectorizer(stop_words=stopwords.words('english'))
+    X = vectorizer.fit_transform(corpus)
+
+    for i in range(0, len(urim_to_corpus)):
+
+        urim = urim_to_corpus[i]
+
+        tfidf_per_word = sorted(
+            [ (f, t) for t, f in dict(zip(vectorizer.get_feature_names(), X.toarray()[i])).items() ], reverse=True)
+
+        # in case every word has the same TFIDF value
+        topval = tfidf_per_word[0:threshold][0][0]
+        topvalues = [ f for f, t in tfidf_per_word[0:threshold] ]
+        if all(topval == f for f in topvalues):
+            
+            # does everyone have the same value?
+            if all(topval == f for f, t in tfidf_per_word):
+                lexical_signature = " ".join( [ t for f, t in random.sample(tfidf_per_word, k=threshold) ] )
+
+            else:
+                # what about those where topval refers to a lot of items?
+
+                terms_to_consider = []
+
+                for f, t in tfidf_per_word:
+
+                    if f == topval:
+                        terms_to_consider.append( t )
+
+                lexical_signature = " ".join( random.sample(terms_to_consider, k=threshold) )
+
+        else:
+
+            lexical_signature = " ".join(
+                [ t for f, t in tfidf_per_word[0:threshold] ]
+            )
+        
+        module_logger.debug("generated query [{}] for URI-M {}".format(lexical_signature, urim))
+        query_data.setdefault(urim, []).append( lexical_signature )
+
+    return query_data
+
 def generate_queries_from_documents_with_doct5query(urimdata, cache_storage, query_count):
 
     from hypercane.utils import get_boilerplate_free_content
