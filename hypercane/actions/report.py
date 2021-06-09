@@ -1,3 +1,4 @@
+from hypercane.report.generate_queries import generate_lexical_signatures_from_documents_with_tfidf
 import sys
 
 from datetime import datetime
@@ -766,7 +767,7 @@ def report_generated_queries(args):
     )
 
     parser.add_argument('--generation-method', dest='generation_method',
-        help="apply the given generation method for queries, valid values are 'topNentities', 'doc2query-T5'",
+        help="apply the given generation method for queries, valid values are 'topNentities', 'doc2query-T5', 'lexical-signature'",
         default='doc2query-T5', required=False
     )
 
@@ -818,7 +819,7 @@ def report_generated_queries(args):
                 querydata = generate_queries_from_metadata_with_topentities(metadata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
 
             else:
-                raise NotImplementedError("Unknkown metadata generation method: {}".format(args.generation_method))
+                raise NotImplementedError("Unknkown metadata generation method with metadata: {}".format(args.generation_method))
 
     else:
 
@@ -833,8 +834,11 @@ def report_generated_queries(args):
         elif args.generation_method == 'topNentities':
             querydata = generate_queries_from_documents_with_topentities(urimdata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
 
+        elif args.generation_method == 'lexical-signature':
+            querydata = generate_lexical_signatures_from_documents_with_tfidf(urimdata, args.cache_storage, args.term_count)
+
         else:
-            raise NotImplementedError("Unknkown metadata generation method: {}".format(args.generation_method))
+            raise NotImplementedError("Unknkown metadata generation method with documents: {}".format(args.generation_method))
 
 
     with open(args.output_filename, 'w') as f:
