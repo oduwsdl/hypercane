@@ -9,9 +9,7 @@ def generate_lexical_signatures_from_documents_with_tfidf(urimdata, cache_storag
 
     from hypercane.utils import get_boilerplate_free_content
     from sklearn.feature_extraction.text import TfidfVectorizer
-    from otmt.timemap_measures import full_tokenize
     from nltk.corpus import stopwords
-    from nltk.tokenize import word_tokenize
     import string
     import random
 
@@ -38,7 +36,6 @@ def generate_lexical_signatures_from_documents_with_tfidf(urimdata, cache_storag
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     stop_words = stopwords.words('english')
-    # stop_words.extend("''", '""', '--', '---', "'s", "'t")
     stop_words.extend(string.punctuation)
     vectorizer = TfidfVectorizer(stop_words=stopwords.words('english'))
     X = vectorizer.fit_transform(corpus)
@@ -340,5 +337,55 @@ def generate_queries_from_metadata_with_topentities(metadata, cache_storage, thr
     query = " ".join( [ e[1] for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ] )
 
     query_data.setdefault("metadata", []).append(query)
+
+    return query_data
+
+def generate_lexical_signature_from_metadata(metadata, cache_storage, threshold):
+
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from nltk.corpus import stopwords
+    import string
+    import random
+
+    query_data = {}
+
+    doc_text = generate_metadata_as_document(metadata)
+    corpus = [ doc_text ]
+
+    stop_words = stopwords.words('english')
+    stop_words.extend(string.punctuation)
+    vectorizer = TfidfVectorizer(stop_words=stopwords.words('english'))
+    X = vectorizer.fit_transform(corpus)
+
+    tfidf_per_word = sorted(
+            [ (f, t) for t, f in dict(zip(vectorizer.get_feature_names(), X.toarray()[0])).items() ], reverse=True)
+
+    topval = tfidf_per_word[0:threshold][0][0]
+    topvalues = [ f for f, t in tfidf_per_word[0:threshold] ]
+    if all(topval == f for f in topvalues):
+        
+        # does everyone have the same value?
+        if all(topval == f for f, t in tfidf_per_word):
+            lexical_signature = " ".join( [ t for f, t in random.sample(tfidf_per_word, k=threshold) ] )
+
+        else:
+            # what about those where topval refers to a lot of items?
+
+            terms_to_consider = []
+
+            for f, t in tfidf_per_word:
+
+                if f == topval:
+                    terms_to_consider.append( t )
+
+            lexical_signature = " ".join( random.sample(terms_to_consider, k=threshold) )
+
+    else:
+
+        lexical_signature = " ".join(
+            [ t for f, t in tfidf_per_word[0:threshold] ]
+        )
+
+    query_data.setdefault("metadata", []).append(lexical_signature)
 
     return query_data
