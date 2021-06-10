@@ -751,7 +751,8 @@ def report_generated_queries(args):
             generate_queries_from_documents_with_doct5query, \
             generate_queries_from_metadata_with_doct5query, \
             generate_queries_from_documents_with_topentities, \
-            generate_queries_from_metadata_with_topentities
+            generate_queries_from_metadata_with_topentities, \
+            generate_lexical_signature_from_metadata
 
     parser = argparse.ArgumentParser(
         description="Apply techniques to generate queries from the text of the input documents.",
@@ -773,7 +774,7 @@ def report_generated_queries(args):
 
     parser.add_argument('--term-count', dest='term_count',
         help="create queries with a maximum of this many terms",
-        default=10, required=False
+        default=10, required=False, type=int
     )
 
     default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
@@ -797,9 +798,6 @@ def report_generated_queries(args):
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    # TODO: make this configurable
-    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
-
     logger.info("Starting query generation based on input mementos with method {}".format(args.generation_method))
 
     if args.use_metadata == True:
@@ -817,6 +815,9 @@ def report_generated_queries(args):
             
             elif args.generation_method == 'topNentities':
                 querydata = generate_queries_from_metadata_with_topentities(metadata, args.cache_storage, args.term_count, entity_types=submitted_entity_types)
+
+            elif args.generation_method == 'lexical-signature':
+                querydata = generate_lexical_signature_from_metadata(metadata, args.cache_storage, args.term_count)
 
             else:
                 raise NotImplementedError("Unknkown metadata generation method with metadata: {}".format(args.generation_method))
