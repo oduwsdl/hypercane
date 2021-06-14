@@ -62,7 +62,7 @@ murmurhash==1.0.5
 newspaper3k==0.2.8
 nltk==3.6.2
 numpy==1.20.3
-otmt==1.0.2
+otmt==1.0.3
 packaging==20.9
 paramiko==2.7.2
 parsel==1.6.0
