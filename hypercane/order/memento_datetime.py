@@ -21,8 +21,8 @@ def order_by_memento_datetime(urims, cache_storage):
 
             try:
                 urim = future_to_urim[future]
-                mdt = future.result()
-                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                mdt = future.result()[0]
+                # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
                 memento_datetime_to_urim.append( (datetime.timestamp(mdt), urim) )
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
