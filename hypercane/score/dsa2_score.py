@@ -42,17 +42,23 @@ def score_by_dsa2_score(urimdata, cache_storage, card_weight, size_weight, image
 
     for urim in urimlist:
 
-        all_card_scores.append(
-            card_scores[urim]['Score---Card-Score']
-        )
+        try:
+            all_card_scores.append(
+                card_scores[urim]['Score---Card-Score']
+            )
 
-        all_size_scores.append(
-            size_scores[urim]['Score---BoilerplateFreeCharacterSize']
-        )
+            all_size_scores.append(
+                size_scores[urim]['Score---BoilerplateFreeCharacterSize']
+            )
 
-        all_image_count_scores.append(
-            image_count_scores[urim]['Score---ImageCount']
-        )
+            all_image_count_scores.append(
+                image_count_scores[urim]['Score---ImageCount']
+            )
+        except KeyError as e:
+            module_logger.exception("URI-M [{}] was missing a necessary score value, setting_score to 0...".format(urim))
+            all_card_scores.append(0)
+            all_size_scores.append(0)
+            all_image_count_scores(0)
 
     # note that DSA2 scores cannot be compared because the mean and std are relative to the set of data
     std_size_scores = zscore( all_size_scores )

@@ -360,6 +360,10 @@ def include_highest_score_per_cluster(args):
         prog="hc filter include-only highest-score-per-cluster"
     )
 
+    parser.add_argument('--score-key', dest='score_key',
+        help="The field name of the score in the input file. It is possible for the input to contain multiple score keys. This argument allows you to choose one.", required=False, default=None
+    )
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -379,7 +383,10 @@ def include_highest_score_per_cluster(args):
         session, discover_mementos_by_input_type
     )
 
-    rankkey = extract_rank_key_from_input(urimdata)
+    if args.score_key is None:
+        rankkey = extract_rank_key_from_input(urimdata)
+    else:
+        rankkey = args.score_key
 
     logger.info("using score key {}".format(rankkey))
 
