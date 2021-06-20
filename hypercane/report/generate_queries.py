@@ -141,26 +141,29 @@ def generate_metadata_as_document(metadata):
 
     for field in metadata:
 
-        if field != 'seed_list':
+        module_logger.debug("examining field {} of type {}".format(field, type(metadata[field])))
+        # module_logger.info("doc_text is now\n{}".format(doc_text))
 
-                if type(metadata[field]) == str:
-                    doc_text += "{} : {}\n".format( field, metadata[field] )
-                elif type(metadata[field]) == list:
-                    doc_text += "{} : {}\n".format(field, ",".join(metadata[field]))
+        if field not in [ 'seed_list', 'metadata_timestamp', 'collection_uri', 'collected_by_uri' ]:
 
-        for seed in metadata['seed_metadata']['seeds']:
+            if type(metadata[field]) == str:
+                doc_text += "{} : {}\n".format( field, metadata[field] )
+            elif type(metadata[field]) == list:
+                doc_text += "{} : {}\n".format(field, ",".join(metadata[field]))
 
-            for subfield in metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0]:
+    for seed in metadata['seed_metadata']['seeds']:
 
-                if type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == str:
+        for subfield in metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0]:
 
-                    doc_text += "{} : {}\n".format( subfield, metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
+            if type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == str:
 
-                elif type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == list:
+                doc_text += "{} : {}\n".format( subfield, metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
 
-                    doc_text += "{} : {}\n".format( subfield, 
-                        ",".join( metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
-                    )
+            elif type(metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield]) == list:
+
+                doc_text += "{} : {}\n".format( subfield, 
+                    ",".join( metadata['seed_metadata']['seeds'][seed]['collection_web_pages'][0][subfield] )
+                )
 
     return doc_text
 
@@ -169,11 +172,12 @@ def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, quer
     from transformers import T5Tokenizer, T5ForConditionalGeneration
     import torch
 
+    module_logger.info("query count is {} and is type {}".format(query_count, type(query_count)))
+
     query_data = {}
     doc_text = generate_metadata_as_document(metadata)
 
-    # To avoid issue with "Token indices sequence length is longer than the specified maximum sequence length for this model (1853 > 512). Running this sequence through the model will result in indexing errors"
-    doc_text = doc_text[0:512]
+    module_logger.info("generated full collection metadata of length {} as:\n{}".format(len(doc_text), doc_text))
 
     query_data["input_text"] = doc_text
 
@@ -187,6 +191,9 @@ def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, quer
     module_logger.info("creating model from doc2query base MSMARCO")
     model = T5ForConditionalGeneration.from_pretrained('castorini/doc2query-t5-base-msmarco')
 
+    # To avoid issue with "Token indices sequence length is longer than the specified maximum sequence length for this model (1853 > 512). Running this sequence through the model will result in indexing errors"
+    doc_text = doc_text[0:512]
+    module_logger.info("generated collection metadata of length {} as:\n{}".format(len(doc_text), doc_text))
     input_ids = tokenizer.encode(doc_text, return_tensors='pt').to(device)
     outputs = model.generate(
         input_ids=input_ids,
@@ -198,7 +205,7 @@ def generate_queries_from_metadata_with_doct5query(metadata, cache_storage, quer
     for i in range(query_count):
         query = tokenizer.decode(outputs[i], skip_special_tokens=True)
         module_logger.debug("generated query [{}] from metadata".format(query, metadata))
-        query_data.setdefault("metadata", []).append( query )
+        query_data.setdefault("queries", []).append( query )
 
     return query_data
 
@@ -336,7 +343,7 @@ def generate_queries_from_metadata_with_topentities(metadata, cache_storage, thr
 
     query = " ".join( [ e[1] for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ] )
 
-    query_data.setdefault("metadata", []).append(query)
+    query_data.setdefault("queries", []).append(query)
 
     return query_data
 
@@ -386,6 +393,6 @@ def generate_lexical_signature_from_metadata(metadata, cache_storage, threshold)
             [ t for f, t in tfidf_per_word[0:threshold] ]
         )
 
-    query_data.setdefault("metadata", []).append(lexical_signature)
+    query_data.setdefault("queries", []).append(lexical_signature)
 
     return query_data
