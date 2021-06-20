@@ -760,7 +760,7 @@ def report_generated_queries(args):
         )
 
     parser.add_argument('--query-count', dest='query_count',
-        help="create this many queries per document, only applies to 'doc2query-T5', ignored otherwise", default=5, required=False
+        help="create this many queries per document, only applies to 'doc2query-T5', ignored otherwise", default=5, required=False, type=int
     )
 
     parser.add_argument('--use-metadata', dest='use_metadata', action='store_true',
