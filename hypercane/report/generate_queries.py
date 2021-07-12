@@ -311,9 +311,10 @@ def generate_queries_from_documents_with_topentities(urimdata, cache_storage, th
 
             ef.append( ( urim_to_entities[urim].count(term), term ) )
 
-        query_terms = " ".join( [ e[1] for e in sorted(ef, reverse=True) ] [0:threshold] )
+        # query_terms = " ".join( [ e[1] for e in sorted(ef, reverse=True) ] [0:threshold] )
+        query_terms = [ e[1].replace('\n', ' ').replace('\r', ' ') for e in sorted(ef, reverse=True) ][0:threshold]
 
-        query_data.setdefault(urim, []).append(query_terms)
+        query_data.setdefault(urim, []).extend(query_terms)
 
     return query_data
 
@@ -341,9 +342,10 @@ def generate_queries_from_metadata_with_topentities(metadata, cache_storage, thr
         entitycount.setdefault(entity, 0)
         entitycount[entity] += 1
 
-    query = " ".join( [ e[1] for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ] )
+    # query = " ".join( [ e[1] for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ] )
+    query = [ e[1].replace('\n', ' ').replace('\r', ' ') for e in sorted( [ (v, k) for k, v in entitycount.items() ], reverse=True )[0:threshold] ]
 
-    query_data.setdefault("queries", []).append(query)
+    query_data.setdefault("queries", []).extend(query)
 
     return query_data
 
