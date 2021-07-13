@@ -211,6 +211,7 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
 
     urim_to_cluster = {}
     clusters_to_urims = {}
+    urim_to_content = {}
 
     for urim in urimdata:
 
@@ -221,8 +222,7 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
             clusters_to_urims.setdefault( None, [] ).append(urim)
             urim_to_cluster[urim] = None
 
-    urimlist_after_processing = []
-    corpus = []
+    # corpus = []
 
     module_logger.info("acquiring boilerplate-free content")
 
@@ -237,34 +237,42 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
             try:
                 content = future.result()
                 # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
-                corpus.append( content )
-                urimlist_after_processing.append(urim)
+                # corpus.append( content )
+                urim_to_content[urim] = content
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
-    module_logger.info("creating TF-IDF vectorizer from corpus")
-
-    tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
-    tfidf = tfidf_vectorizer.fit_transform(corpus)
-
-    module_logger.info("setting up DBSCAN clustering on corpus TF-IDF with array of shape {}".format(tfidf.shape))
-
-    if eps is None:
-        module_logger.info("no epsilon supplied, estimating epsilon")
-        eps = estimate_epsilon(tfidf)
-        module_logger.info("estimated epsilon value of {}".format(eps))
-    else:
-        eps = float(eps)
-        module_logger.info("using submitted epsilon value of {}".format(eps))
-
-    module_logger.info("clustering by TF-IDF")
-    X = (tfidf * tfidf.T).toarray()
-    db = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
-
-    module_logger.info("saving cluster assignments for {} unique labels".format(len(np.unique(db.labels_))))
-
     for cluster in clusters_to_urims:
+
+        corpus = []
+
+        for urim in clusters_to_urims[cluster]:
+            module_logger.debug("examining URI-M {} from cluster {}".format(urim, cluster))
+
+            try:
+                corpus.append(urim_to_content[urim])
+            except Exception as exc:
+                module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
+                hypercane.errors.errorstore.add(urim, traceback.format_exc())
+
+        module_logger.info("creating TF-IDF vectorizer from corpus")
+        tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
+        tfidf = tfidf_vectorizer.fit_transform(corpus)
+        
+        if eps is None:
+            module_logger.info("no epsilon supplied, estimating epsilon")
+            eps = estimate_epsilon(tfidf)
+            module_logger.info("estimated epsilon value of {}".format(eps))
+        else:
+            eps = float(eps)
+            module_logger.info("using submitted epsilon value of {}".format(eps))
+
+        module_logger.info("setting up DBSCAN clustering on corpus TF-IDF with array of shape {}".format(tfidf.shape))
+        X = (tfidf * tfidf.T).toarray()
+        db = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
+
+        module_logger.info("saving cluster assignments for {} unique labels".format(len(np.unique(db.labels_))))
 
         for index, label in enumerate(db.labels_):
 
