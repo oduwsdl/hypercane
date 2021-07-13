@@ -154,7 +154,6 @@ def cluster_by_dbscan(args):
         if args.eps is None:
             # from https://doi.org/10.25777/zm0w-gp91
             eps = 0.4
-            # is 0.4 in dissertation
         else:
             eps = float(args.eps)
 
@@ -183,18 +182,10 @@ def cluster_by_dbscan(args):
     elif args.feature == "tfidf" or args.feature == "tf-idf":
         logger.info("Clustering URI-Ms by TF-IDF")
 
-        # TODO: we need a sensible default
-        if args.eps is None:
-            eps = 0.5
-        else:
-            eps = float(args.eps)
-
-        logger.info("applying eps = {}".format(eps))
-
         urimdata = cluster_by_tfidf(
             urimdata, args.cache_storage,
             min_samples=int(args.min_samples),
-            eps=float(args.eps))
+            eps=args.eps)
 
     else:
         raise NotImplementedError("Clustering feature of {} not yet supported.".format(args.feature))

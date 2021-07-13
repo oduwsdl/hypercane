@@ -108,7 +108,7 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                     # sometimes, when returned from MongoDB, the memento-datetime comes back in a different format
                     mdt = datetime.strptime(mdt, "%Y-%m-%d %H:%M:%S")
 
-                module_logger.info("returning cached memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
+                module_logger.debug("returning cached memento-datetime of type {} with value [{}]".format(type(mdt), mdt))
 
                 output_values.append( mdt )
 
@@ -126,7 +126,7 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
                             { "urim": urim }
                     )[field]
 
-                module_logger.info("returning cached data for field {} with value [{}]".format(field, value))
+                module_logger.debug("returning cached data for field {} with value [{}]".format(field, value))
 
                 output_values.append(value)
 
