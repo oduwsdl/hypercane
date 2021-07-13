@@ -202,14 +202,12 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
     # thanks to: https://github.com/vishnuprathish/DocumentClustering/blob/master/dbscan.py
 
     import concurrent.futures
-    from sklearn.cluster import KMeans
     import numpy as np
     from hypercane.utils import get_boilerplate_free_content
     from sklearn.feature_extraction.text import TfidfVectorizer
     from otmt.timemap_measures import full_tokenize
     from sklearn.cluster import DBSCAN
-    from sklearn.metrics import pairwise_distances
-    from scipy.spatial.distance import cosine
+
 
     urim_to_cluster = {}
     clusters_to_urims = {}
@@ -261,7 +259,7 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
         module_logger.info("using submitted epsilon value of {}".format(eps))
 
     module_logger.info("clustering by TF-IDF")
-    X = (tfidf * tfidf.T).A
+    X = (tfidf * tfidf.T).toarray()
     db = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
 
     module_logger.info("saving cluster assignments for {} unique labels".format(len(np.unique(db.labels_))))
