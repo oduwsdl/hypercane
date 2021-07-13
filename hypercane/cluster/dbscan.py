@@ -121,9 +121,8 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
     from datetime import datetime
     from sklearn.cluster import DBSCAN
     from ..utils import get_memento_http_metadata
-    from pprint import PrettyPrinter
+    from scipy.stats import zscore
 
-    pp = PrettyPrinter(indent=4)
 
     # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
@@ -152,14 +151,14 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
             urim = future_to_urim[future]
 
-            module_logger.info("examining result for {}".format(urim))
+            module_logger.debug("examining result for {}".format(urim))
 
             try:
                 mdt = future.result()[0]
                 # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
                 # urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
                 urim_to_mementodatetime[urim] = mdt.timestamp()
-                module_logger.info("assigned timestamp {} to {}".format(urim_to_mementodatetime[urim], urim))
+                module_logger.debug("assigned timestamp {} to {}".format(urim_to_mementodatetime[urim], urim))
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
@@ -172,10 +171,18 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
             mdt_list.append(urim_to_mementodatetime[urim])
 
-        X = np.matrix(mdt_list)
+        module_logger.info("mean of data: {}".format(np.mean(mdt_list)))
+        module_logger.info("standard deviation of data: {}".format(np.std(mdt_list)))
+
+        X = np.matrix(zscore(mdt_list))
 
         if eps is None:
+            module_logger.info("no epsilon supplied, estimating epsilon")
             eps = estimate_epsilon(X)
+            module_logger.info("estimated epsilon value of {}".format(eps))
+        else:
+            eps = float(eps)
+            module_logger.info("using submitted epsilon value of {}".format(eps))
 
         db = DBSCAN(eps=eps, min_samples=min_samples).fit(X.T)
 
@@ -192,6 +199,8 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
 def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
 
+    # thanks to: https://github.com/vishnuprathish/DocumentClustering/blob/master/dbscan.py
+
     import concurrent.futures
     from sklearn.cluster import KMeans
     import numpy as np
@@ -199,6 +208,8 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
     from sklearn.feature_extraction.text import TfidfVectorizer
     from otmt.timemap_measures import full_tokenize
     from sklearn.cluster import DBSCAN
+    from sklearn.metrics import pairwise_distances
+    from scipy.spatial.distance import cosine
 
     urim_to_cluster = {}
     clusters_to_urims = {}
@@ -214,6 +225,8 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
 
     urimlist_after_processing = []
     corpus = []
+
+    module_logger.info("acquiring boilerplate-free content")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
 
@@ -237,11 +250,21 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
     tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
     tfidf = tfidf_vectorizer.fit_transform(corpus)
 
-    module_logger.info("setting up DBSCAN clustering on corpus TF-IDF")
+    module_logger.info("setting up DBSCAN clustering on corpus TF-IDF with array of shape {}".format(tfidf.shape))
 
-    db = DBSCAN(eps=eps, min_samples=min_samples).fit(tfidf)
+    if eps is None:
+        module_logger.info("no epsilon supplied, estimating epsilon")
+        eps = estimate_epsilon(tfidf)
+        module_logger.info("estimated epsilon value of {}".format(eps))
+    else:
+        eps = float(eps)
+        module_logger.info("using submitted epsilon value of {}".format(eps))
 
-    module_logger.info("saving cluster assignments")
+    module_logger.info("clustering by TF-IDF")
+    X = (tfidf * tfidf.T).A
+    db = DBSCAN(eps=eps, min_samples=min_samples).fit(X)
+
+    module_logger.info("saving cluster assignments for {} unique labels".format(len(np.unique(db.labels_))))
 
     for cluster in clusters_to_urims:
 

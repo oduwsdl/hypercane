@@ -295,6 +295,58 @@ def include_score_range(args):
         args.output_filename
     ))
 
+def exclude_containing_cluster_id(args):
+
+    import argparse
+    from hypercane.actions import process_input_args, get_logger, \
+        calculate_loglevel
+    from hypercane.utils import get_web_session
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+    from hypercane.utils import save_resource_data
+    from hypercane.hfilter.by_clusterid import exclude_by_cluster_id
+
+
+    parser = argparse.ArgumentParser(
+        description="Exclude clusters with the given cluster ID",
+        prog="hc filter exclude with-cluster-id"
+    )
+
+    parser.add_argument('--cluster-id', required=True,
+        dest='cluster_id',
+        help="The ID of the cluster to exclude from the output."
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    logger.info("Starting filtering of mementos with cluster ID {}...".format(args.cluster_id))
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    # TODO: add a note about no crawling for this filter
+    urimdata = discover_resource_data_by_input_type(
+        args.input_type, output_type, args.input_arguments, 1,
+        session, discover_mementos_by_input_type
+    )
+
+    filtered_urims = exclude_by_cluster_id(urimdata, args.cluster_id)
+
+    logger.info("returning {} mementos that do not belong to cluster {}".format(len(filtered_urims), args.cluster_id))
+
+    save_resource_data(args.output_filename, urimdata, 'mementos', filtered_urims)
+
+    logger.info("Completed filtering of mementos with cluster ID {}, output is in {}".format(
+        args.cluster_id, args.output_filename
+    ))
+
+
 def include_largest_clusters(args):
 
     import argparse
@@ -660,7 +712,7 @@ def exclude_containing_pattern(args):
 
     parser = argparse.ArgumentParser(
         description="Exclude mementos containing the specified pattern after boilerplate removal.",
-        prog="hc filter include containing-pattern"
+        prog="hc filter exclude containing-pattern"
     )
 
     start_containing_pattern(parser, args, False)
@@ -718,6 +770,7 @@ def print_exclude_usage():
     * off-topic - execute the Off-Topic Memento Toolkit to exclude off-topic mementos
     * near-duplicates - employ Simhash to exclude mementos that are near-duplicates
     * containing-pattern - exclue mementos that contain the given regular experession pattern
+    * cluster-id - exclude mementos with the given cluster id; requires that the input be clustered
 
     Examples:
 
@@ -745,7 +798,8 @@ exclude_criteria = {
     "languages": exclude_languages,
     "near-duplicates": exclude_nearduplicates,
     "off-topic": exclude_offtopic,
-    "containing-pattern": exclude_containing_pattern
+    "containing-pattern": exclude_containing_pattern,
+    "with-cluster-id": exclude_containing_cluster_id
 }
 
 
