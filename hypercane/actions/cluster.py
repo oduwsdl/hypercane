@@ -96,8 +96,8 @@ def cluster_by_dbscan(args):
     )
 
     parser.add_argument('--eps', dest='eps',
-        default=0.5,
-        help='The maximum distance between two samples for one to be considered as in the neighbordhood of the other. See: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html'
+        default=None,
+        help='The maximum distance between two samples for one to be considered as in the neighbordhood of the other. We will compute defaults if no value specified. See: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html'
     )
 
     parser.add_argument('--min-samples', dest='min_samples',
@@ -127,29 +127,70 @@ def cluster_by_dbscan(args):
 
     if args.feature == "raw-simhash":
         logger.info("Clustering URI-Ms by Raw Simhash")
+
+        if args.eps is None:
+            # from https://github.com/yasmina85/DSA-stories/blob/master/src/story_extractor.py
+            eps = 0.3
+        else:
+            eps = float(args.eps)
+
+        if args.min_samples is None:
+            # from https://github.com/yasmina85/DSA-stories/blob/master/src/story_extractor.py
+            min_samples = 2
+        else:
+            min_samples = float(args.min_samples)
+
+        logger.info("applying eps = {}".format(eps))
+
         urimdata = cluster_by_simhash_distance(
             urimdata, args.cache_storage,
             simhash_function=get_raw_simhash,
-            min_samples=int(args.min_samples),
-            eps=float(args.eps))
+            min_samples=min_samples,
+            eps=eps)
 
     elif args.feature == "tf-simhash":
         logger.info("Clustering URI-Ms by Term Frequency Simhash")
+
+        if args.eps is None:
+            # from https://doi.org/10.25777/zm0w-gp91
+            eps = 0.4
+            # is 0.4 in dissertation
+        else:
+            eps = float(args.eps)
+
+        if args.min_samples is None:
+            # from https://github.com/yasmina85/DSA-stories/blob/master/src/story_extractor.py
+            min_samples = 2
+        else:
+            min_samples = float(args.min_samples)
+
+        logger.info("applying eps = {}".format(eps))
+
         urimdata = cluster_by_simhash_distance(
             urimdata, args.cache_storage,
             simhash_function=get_tf_simhash,
             min_samples=int(args.min_samples),
-            eps=float(args.eps))
+            eps=eps)
 
     elif args.feature == "memento-datetime":
         logger.info("Clustering URI-Ms by Memento-Datetime")
+
         urimdata = cluster_by_memento_datetime(
             urimdata, args.cache_storage,
             min_samples=int(args.min_samples),
-            eps=float(args.eps))
+            eps=args.eps)
 
     elif args.feature == "tfidf" or args.feature == "tf-idf":
         logger.info("Clustering URI-Ms by TF-IDF")
+
+        # TODO: we need a sensible default
+        if args.eps is None:
+            eps = 0.5
+        else:
+            eps = float(args.eps)
+
+        logger.info("applying eps = {}".format(eps))
+
         urimdata = cluster_by_tfidf(
             urimdata, args.cache_storage,
             min_samples=int(args.min_samples),

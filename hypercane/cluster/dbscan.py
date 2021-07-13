@@ -10,6 +10,34 @@ module_logger = logging.getLogger('hypercane.cluster.dbscan')
 def shdist(a, b, **oo):
     return hamming(a, b) / 64
 
+def estimate_epsilon(X):
+
+    # method from https://towardsdatascience.com/machine-learning-clustering-dbscan-determine-the-optimal-value-for-epsilon-eps-python-example-3100091cfbc
+
+    from sklearn.neighbors import NearestNeighbors
+    import numpy as np
+
+    neigh = NearestNeighbors(n_neighbors=2)
+
+    nbrs = neigh.fit(X.T)
+
+    distances, indices = nbrs.kneighbors(X.T)
+
+    distances = np.sort(distances, axis=0)
+    distances = distances[:,1]
+
+    xdata = np.arange(0, len(distances))
+    ydata = distances
+
+    slopes = []
+
+    # the article says maximum curvature, which is where the slope is highest
+    for i in range(0, len(ydata) - 1):
+        slope = ( ydata[i + 1] - ydata[i] ) / (xdata[i + 1] - xdata[i])
+        slopes.append(slope)
+
+    return ydata[ slopes.index( max(slopes) ) ]
+
 def cluster_by_simhash_distance(urimdata, cache_storage, simhash_function=get_raw_simhash, min_samples=2, eps=0.3):
 
     import concurrent.futures
@@ -93,6 +121,9 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
     from datetime import datetime
     from sklearn.cluster import DBSCAN
     from ..utils import get_memento_http_metadata
+    from pprint import PrettyPrinter
+
+    pp = PrettyPrinter(indent=4)
 
     # Memento-Datetime values are not all Unique, but does it matter?
     # Two URI-Ms with the same Memento-Datetime will be in the same cluster.
@@ -128,7 +159,7 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
                 # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
                 # urim_to_mementodatetime[urim] = datetime.timestamp(mdt)
                 urim_to_mementodatetime[urim] = mdt.timestamp()
-                # module_logger.info("assigned timestamp {} to {}".format(urim_to_mementodatetime[urim], urim))
+                module_logger.info("assigned timestamp {} to {}".format(urim_to_mementodatetime[urim], urim))
             except Exception as exc:
                 module_logger.exception('URI-M [{}] generated an exception: [{}], skipping...'.format(urim, exc))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
@@ -143,7 +174,10 @@ def cluster_by_memento_datetime(urimdata, cache_storage, min_samples=5, eps=0.5)
 
         X = np.matrix(mdt_list)
 
-        db = DBSCAN(min_samples=min_samples).fit(X.T)
+        if eps is None:
+            eps = estimate_epsilon(X)
+
+        db = DBSCAN(eps=eps, min_samples=min_samples).fit(X.T)
 
         for index, label in enumerate(db.labels_):
             urim = clusters_to_urims[cluster][index]
