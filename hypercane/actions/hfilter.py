@@ -317,6 +317,12 @@ def exclude_containing_cluster_id(args):
         help="The ID of the cluster to exclude from the output."
     )
 
+    parser.add_argument('--match-subclusters',
+        required=False, default=False,
+        dest='match_subclusters',
+        help="Match subclusters with this cluster-id"
+    )
+
     args = process_input_args(args, parser)
     output_type = 'mementos'
 
@@ -336,7 +342,7 @@ def exclude_containing_cluster_id(args):
         session, discover_mementos_by_input_type
     )
 
-    filtered_urims = exclude_by_cluster_id(urimdata, args.cluster_id)
+    filtered_urims = exclude_by_cluster_id(urimdata, args.cluster_id, args.match_subclusters)
 
     logger.info("returning {} mementos that do not belong to cluster {}".format(len(filtered_urims), args.cluster_id))
 
