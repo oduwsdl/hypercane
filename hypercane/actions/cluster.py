@@ -83,7 +83,7 @@ def cluster_by_dbscan(args):
         discover_mementos_by_input_type
 
     from hypercane.cluster.dbscan import cluster_by_simhash_distance, \
-        cluster_by_memento_datetime, cluster_by_tfidf
+        cluster_by_memento_datetime, cluster_by_tfidf, cluster_by_lda_vector
 
     parser = argparse.ArgumentParser(
         description="Cluster the input using the dbscan algorithm.",
@@ -101,7 +101,7 @@ def cluster_by_dbscan(args):
     )
 
     parser.add_argument('--min-samples', dest='min_samples',
-        default=5,
+        default=2,
         help="The number of samples in a neighbordhood for a point to be considered as a core point. See: https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html"
     )
 
@@ -183,6 +183,14 @@ def cluster_by_dbscan(args):
         logger.info("Clustering URI-Ms by TF-IDF")
 
         urimdata = cluster_by_tfidf(
+            urimdata, args.cache_storage,
+            min_samples=int(args.min_samples),
+            eps=args.eps)
+
+    elif args.feature == "topic-vector":
+        logger.info("Clustering URI-Ms by Topic Vector")
+
+        urimdata = cluster_by_lda_vector(
             urimdata, args.cache_storage,
             min_samples=int(args.min_samples),
             eps=args.eps)
