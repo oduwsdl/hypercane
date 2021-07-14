@@ -210,7 +210,8 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
     from sklearn.feature_extraction.text import TfidfVectorizer
     from otmt.timemap_measures import full_tokenize
     from sklearn.cluster import DBSCAN
-
+    from nltk.corpus import stopwords
+    import string
 
     urim_to_cluster = {}
     clusters_to_urims = {}
@@ -259,11 +260,23 @@ def cluster_by_tfidf(urimdata, cache_storage, min_samples=2, eps=0.3):
                 module_logger.exception('URI-M [{}] generated an exception: [{}]'.format(urim, repr(exc)))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
+        stop_words = stopwords.words('english')
+        stop_words.extend(string.punctuation)
+        stop_words.extend([ "''", "``", "'s" ])
+
         module_logger.info("creating TF-IDF vectorizer from corpus")
-        tfidf_vectorizer = TfidfVectorizer(tokenizer=full_tokenize, stop_words=None)
+        tfidf_vectorizer = TfidfVectorizer(
+            tokenizer = ( lambda d: [w for w in full_tokenize(d) if w not in stop_words ] ),
+            stop_words=None)
         tfidf = tfidf_vectorizer.fit_transform(corpus)
-        
-        X = (tfidf * tfidf.T).toarray()
+
+        # X = (tfidf * tfidf.T).toarray()
+        X = tfidf.toarray()
+
+        module_logger.info("mean of data: {}".format(np.mean(X)))
+        module_logger.info("standard deviation of data: {}".format(np.std(X)))
+        module_logger.info("max of data: {}".format(np.max(X)))
+        module_logger.info("min of data: {}".format(np.min(X)))
 
         # with open("Xdata", 'w') as f:
         #     import json
