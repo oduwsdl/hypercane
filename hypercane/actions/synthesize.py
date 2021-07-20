@@ -507,6 +507,62 @@ def synthesize_bpfree_files(args):
 
     logger.info("Done generating directory of boilerplate-free files, output is at {}".format(args.output_directory))
 
+def remove_clusters(args):
+
+    import argparse
+    from hypercane.actions import get_logger, calculate_loglevel, \
+        process_input_args
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    parser = argparse.ArgumentParser(
+        description="Strip cluster information out of the input, producing at TSV without any cluster data.",
+        prog="hc synthesize remove-clusters"
+    )
+
+    args = process_input_args(args, parser)
+    output_type = 'mementos'
+
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    logger.info("Starting removal of cluster data from input")
+
+    if args.input_type == 'mementos':
+
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        NotImplementedError("Removing clusters only works for lists of URI-Ms")
+
+    logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
+
+    urimdata_output = {}
+
+    for urim in urimdata:
+
+        urimdata_output.setdefault(urim, {})
+
+        for key in urimdata[urim]:
+
+            if key != 'Cluster':
+                urimdata_output[urim][key] = urimdata[urim][key]
+
+    logger.info("removed cluster data, there will be {} URI-Ms in the output".format(len(urimdata)))
+
+    save_resource_data(args.output_filename, urimdata_output, 'mementos', list(urimdata.keys()))
+
+    logger.info("Removal of cluster information is complete,"
+        "output is available in {}".format(args.output_filename))
+
 def print_usage():
 
     print("""'hc synthesize' is used to synthesize a web archive collection into other formats, like WARC, JSON, or a set of files in a directory
@@ -533,5 +589,6 @@ supported_commands = {
     "files": synthesize_files,
     "bpfree-files": synthesize_bpfree_files,
     "raintale-story": raintale_story,
-    "combine": combine_files
+    "combine": combine_files,
+    "cluster-free": remove_clusters
 }

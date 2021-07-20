@@ -616,6 +616,7 @@ def print_usage():
     * top-entites-and-bm25 - score by the top k entities and BM25
     * distance-from-centroid - score by the distance of each memento from the center of its cluster
     * size - score by the size of each memento
+    * dsa2-scoring - score documents according to the scoring funcion in the DSA2 algorithm, favoring mementos with social card metadata
 
     Examples:
 
