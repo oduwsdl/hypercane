@@ -4,56 +4,58 @@ from argparse import RawTextHelpFormatter
 
 from hypercane.version import __appname__,__appversion__
 
+from . import default_required_args, default_optional_args
+
 sample_parser = argparse.ArgumentParser(prog="{}".format(sys.argv[0]),
     description='hc sample is used execute different sampling algorithms to selecting exemplars from a web archive collection',
     formatter_class=RawTextHelpFormatter
     )
 
-sample_parser.add_argument(
-    '-i', '--it', '--input-type', required=True, dest='input_type',
-    help="the input type, one of mementos, timemaps, original-resources, archiveit, trove, or pandora-collection",
-)
+for arg in default_required_args:
 
-sample_parser.add_argument(
-    '-a', '--ia', '--input-arguments', required=True, dest='input_arguments',
-    help="either a file containing a list of URIs, or an Archive-It collection identifier",
-)
+    if arg[4] is None:
 
-sample_parser.add_argument(
-    '-o', required=True, dest='output_filename',
-    help="the file to which we write output",
-)
+        sample_parser.add_argument(
+            arg[0],
+            required=True,
+            dest=arg[1],
+            help=arg[2],
+            action=arg[3]
+        )
 
-sample_parser.add_argument(
-    '-l', '--logfile', required=True, dest='logfile',
-    help="The path to a logging file. The log is printed to screen by default.",
-)
+    else:
 
-sample_parser.add_argument(
-    '-v', '--verbose', required=False, dest='verbose', action='store_true',
-    help="This will raise the logging level to debug for more verbose output.",
-)
+        sample_parser.add_argument(
+            arg[0],
+            required=True,
+            dest=arg[1],
+            help=arg[2],
+            action=arg[3],
+            choices=arg[4]
+        )
 
-sample_parser.add_argument(
-    '-q', '--quiet', required=False, dest='quiet', action='store_true',
-    help="This will lower the logging level to only show warnings or errors.",
-)
 
-sample_parser.add_argument(
-    '-cs', required=False, dest='cache_storage',
-    help="The path to the MongoDB database to use as a cache.",
-)
+for arg in default_optional_args:
 
-sample_parser.add_argument(
-    '-e', required=False, dest='errorfilename',
-    help="The path to filename that records URL processing failures.",
-)
+    if arg[4] is None:
+        sample_parser.add_argument(
+            arg[0],
+            required=False,
+            dest=arg[1],
+            help=arg[2],
+            action=arg[3]
+        )
+    else:
+        sample_parser.add_argument(
+            arg[0],
+            required=False,
+            dest=arg[1],
+            help=arg[2],
+            action=arg[3],
+            default=arg[4]
+        )
 
-# Wooey can't handle action='version' even though this is what argparse recommends
-# sample_parser.add_argument(
-#     '--version', action='version', version="{}/{}".format(__appname__, __appversion__),
-#     help="Show program's version number and exit.",
-# )
+sample_parser.add_argument('color', choices=['red', 'yellow', 'purple'])
 
 subparsers = sample_parser.add_subparsers(help='sampling methods')
 
