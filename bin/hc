@@ -1,19 +1,20 @@
 #!python
 
-import sys
-import importlib
-import errno
+# This is a wrapper for all Hypercane commands
 
-# we defer imports for performance
+import sys
+import os
+import hypercane.cli.sample
+
 supported_actions = {
-    "sample": "hypercane.actions.sample",
-    "report": "hypercane.actions.report",
-    "synthesize": "hypercane.actions.synthesize",
-    "identify": "hypercane.actions.identify",
-    "filter": "hypercane.actions.hfilter",
-    "cluster": "hypercane.actions.cluster",
-    "score": "hypercane.actions.score",
-    "order": "hypercane.actions.order"
+    "sample": hypercane.cli.sample.__file__,
+    # "report": "hypercane.actions.report",
+    # "synthesize": "hypercane.actions.synthesize",
+    # "identify": "hypercane.actions.identify",
+    # "filter": "hypercane.actions.hfilter",
+    # "cluster": "hypercane.actions.cluster",
+    # "score": "hypercane.actions.score",
+    # "order": "hypercane.actions.order"
 }
 
 def print_overall_usage():
@@ -35,7 +36,6 @@ For each of these actions, you can view additional help by typing --help after t
     hc sample --help
 """)
 
-
 if __name__ == '__main__':
 
     if len(sys.argv) > 1:
@@ -50,75 +50,20 @@ if __name__ == '__main__':
             from hypercane.version import __useragent__
             print(__useragent__)
         else:
-            try:
-                actionmodule = importlib.import_module(supported_actions[action])
-            except KeyError:
-                print("ERROR: unsupported action {}\n".format(action))
-                print_overall_usage()
-                sys.exit(errno.EINVAL)
 
-            if action == 'filter':
+            args = sys.argv[2:]
 
-                # print("args: {}".format(sys.argv))
+            scriptname = os.path.abspath(supported_actions[action])
 
-                command = sys.argv[2]
-
-                if command == '--help':
-
-                    actionmodule.print_usage()
-
-                elif command == 'include-only':
-
-                    criteria = sys.argv[3]
-
-                    if criteria == '-h' or criteria == '--help':
-
-                        actionmodule.print_include_usage()
-                    else:
-                        actionmodule.include_criteria[criteria](sys.argv[4:])
-
-                elif command == 'exclude':
-
-                    criteria = sys.argv[3]
-
-                    if criteria == '-h' or criteria == '--help':
-                        actionmodule.print_exclude_usage()
-                    else:
-                        actionmodule.exclude_criteria[criteria](sys.argv[4:])
-
+            arglist = ""
+            for arg in args:
+                if ' ' in arg:
+                    arglist += '"{}"'.format(arg) + ' '
                 else:
-                    print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
+                    arglist += arg + ' '
 
-            elif action in supported_actions:
-
-                commands = actionmodule.supported_commands
-
-                if len(sys.argv) > 2:
-
-                    command = sys.argv[2]
-
-                    # print("command: {}".format(command))
-
-                    if command in commands:
-
-                        actionmodule.supported_commands[command](
-                            sys.argv[3:])
-                    else:
-                        if command != '-h' and command != '--help':
-                            print("ERROR: command {} is not supported for action {}\n".format(
-                                command, action
-                            ))
-                        actionmodule.print_usage()
-
-                else:
-                    print("ERROR: action {} requires a command\n".format(action))
-                    actionmodule.print_usage()
-
-            else:
-                print("ERROR: unsupported action {}\n".format(action))
-                print_overall_usage()
-                sys.exit(errno.EINVAL)
+            os.system("python {} {}".format(scriptname, arglist))
 
     else:
-        print("ERROR: no action supplied\n")
+        print("hc: error: no action supplied\n")
         print_overall_usage()
