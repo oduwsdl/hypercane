@@ -1,8 +1,5 @@
-import sys
 import argparse
 from argparse import RawTextHelpFormatter
-
-from hypercane.version import __appname__,__appversion__
 
 sample_parser = argparse.ArgumentParser(prog="hc sample",
     description='hc sample is used execute different sampling algorithms to selecting exemplars from a web archive collection',
