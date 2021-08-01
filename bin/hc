@@ -4,13 +4,13 @@
 
 import sys
 import os
-import hypercane.cli.sample
+import hypercane.cli.sample, hypercane.cli.identify
 
 supported_actions = {
     "sample": hypercane.cli.sample.__file__,
     # "report": "hypercane.actions.report",
     # "synthesize": "hypercane.actions.synthesize",
-    # "identify": "hypercane.actions.identify",
+    "identify": hypercane.cli.identify.__file__,
     # "filter": "hypercane.actions.hfilter",
     # "cluster": "hypercane.actions.cluster",
     # "score": "hypercane.actions.score",
