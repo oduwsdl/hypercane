@@ -1,23 +1,23 @@
 import os
 
-import hypercane.actions.identify
+import hypercane.actions.order
 import hypercane.errors
 
 from hypercane.args import universal_gui_required_args, universal_gui_optional_args
-from hypercane.args.identify import identify_parser
+from hypercane.args.order import order_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
 
-identify_functions = {
-    "mementos": hypercane.actions.identify.discover_mementos,
-    "timemaps": hypercane.actions.identify.discover_timemaps,
-    "original-resources": hypercane.actions.identify.discover_original_resources
+order_functions = {
+    "pubdate-else-memento-datetime": hypercane.actions.order.pubdate_else_memento_datetime,
+    "memento-datetime": hypercane.actions.order.memento_datetime,
+    "score": hypercane.actions.order.score_sort
 }
 
 if __name__ == '__main__':
 
-    for item in identify_parser._subparsers._group_actions:
+    for item in order_parser._subparsers._group_actions:
         for key in item.choices:
 
             subparser = item.choices[key]
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                 argument_params = entry['argument_params']
                 optional.add_argument(*flags, **argument_params)
 
-    args = identify_parser.parse_args()
+    args = order_parser.parse_args()
 
     # setting expected arguments for GUI
     vars(args)['output_filename'] = "sampled-mementos.tsv"
@@ -54,6 +54,6 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    print("starting to identify {} in input".format(args.which))
-    identify_functions[args.which](args)
-    print("done identifying {}".format(args.which))
+    print("starting to order mementos by {}".format(args.which))
+    order_functions[args.which](args)
+    print("done ordering mementos")
