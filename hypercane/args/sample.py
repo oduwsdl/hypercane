@@ -2,7 +2,7 @@ import argparse
 from argparse import RawTextHelpFormatter
 
 sample_parser = argparse.ArgumentParser(prog="hc sample",
-    description='hc sample is used execute different sampling algorithms to selecting exemplars from a web archive collection',
+    description='hc sample executes different sampling algorithms to selecting exemplars from a web archive collection',
     formatter_class=RawTextHelpFormatter
     )
 
