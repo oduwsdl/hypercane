@@ -13,9 +13,9 @@
 {% block outer_content %}
     {{ block.super }}
     {% if not request.user.is_authenticated %}
-        <div class="jumbotron frontpage">
-          <h1 class="wooey">{% get_wooey_setting "WOOEY_SITE_NAME" %}</h1>
-          <p>{% get_wooey_setting "WOOEY_SITE_TAG" %}</p>
+        <div class="jumbotron frontpage hypercane-masthead">
+          <h1 class="hypercane-center-page">Hypercane</h1>
+          <p class="hypercane-subtitle">What gems will you find in web archives?</p>
         </div>
     {% endif %}
 {% endblock %}

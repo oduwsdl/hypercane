@@ -3,7 +3,7 @@ from argparse import RawTextHelpFormatter
 from datetime import datetime
 
 identify_parser = argparse.ArgumentParser(prog="hc identify",
-    description="'hc identify' is used discover resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
+    description="'hc identify' discovers resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
     formatter_class=RawTextHelpFormatter
 )
 

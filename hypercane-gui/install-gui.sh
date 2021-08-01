@@ -41,6 +41,9 @@ STATIC_DIR=${WOOEY_DIR}/${PROJECT_NAME}/static
 SETTINGS_DIR=${WOOEY_DIR}/${PROJECT_NAME}/settings
 PARENT_DIR=`dirname ${WOOEY_DIR}`
 
+echo PROJECT_NAME is ${PROJECT_NAME}
+echo PARENT_DIR is ${PARENT_DIR}
+
 if [ $OVERRIDE_VIRTUALENV_CHECK -eq 0 ]; then
 
     if [ -z $VIRTUAL_ENV ]; then
@@ -52,6 +55,7 @@ fi
 
 if [ $INSTALL_ALL -eq 0 ]; then
     echo "installing Hypercane"
+    pip install -r requirements.txt
     pip install . --use-feature=in-tree-build
     status=$?
     if [ $status -eq 2 ]; then

@@ -3,7 +3,7 @@
 {% load wooey_tags %}
 
 {% block breadcrumbs %}
-    <li><a href="#">{{ script.script_name }}</a></li>
+    <li><a href="#">WEEEEE! {{ script.script_name }}</a></li>
 {% endblock %}
 
 {% block left_sidebar %}{% endblock left_sidebar %}
@@ -38,7 +38,7 @@
               <div class="btn-group">
                 <button id="selected-subparser" type="button" class="btn btn-default">
                   {% with parser_name=form.parsers.0.1 %}
-                    {% if not parser_name %}{% trans "Main Parser Parameters" %}{% else %}{{ parser_name|title }}{% endif %}
+                    {% if not parser_name %}Selected Subparser{% else %}{{ parser_name|title }}{% endif %}
                   {% endwith %}
                 </button>
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -47,7 +47,7 @@
                 <ul class="dropdown-menu">
                   {% for parser_info, parser_groups in form.parsers.items %}
                     {% with parser_pk=parser_info.0 parser_name=parser_info.1 %}
-                      <li class="{% if forloop.first %}active{% endif %}"><a data-toggle="tab" data-parser-pk="{{ parser_pk }}" href="#parsergroup-{{ parser_pk }}">{% if not parser_name %}{% trans "Main Parser Parameters" %}{% else %}{{ parser_name|title }}{% endif %}</a></li>
+                      <li class="{% if forloop.first %}active{% endif %}"><a data-toggle="tab" data-parser-pk="{{ parser_pk }}" href="#parsergroup-{{ parser_pk }}">{% if not parser_name %}Choose Sub-action{% else %}{{ parser_name|title }}{% endif %}</a></li>
                       {% if forloop.first %}
                         <li role="separator" class="divider"></li>
                       {% endif %}
