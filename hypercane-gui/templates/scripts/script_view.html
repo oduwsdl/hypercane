@@ -47,10 +47,15 @@
                 <ul class="dropdown-menu">
                   {% for parser_info, parser_groups in form.parsers.items %}
                     {% with parser_pk=parser_info.0 parser_name=parser_info.1 %}
-                      <li class="{% if forloop.first %}active{% endif %}"><a data-toggle="tab" data-parser-pk="{{ parser_pk }}" href="#parsergroup-{{ parser_pk }}">{% if not parser_name %}Choose Sub-action{% else %}{{ parser_name|title }}{% endif %}</a></li>
+
+                      {% if parser_name %}
+                      <li class="{% if forloop.first %}active{% endif %}"><a data-toggle="tab" data-parser-pk="{{ parser_pk }}" href="#parsergroup-{{ parser_pk }}">{{ parser_name|title}}</a></li>
+                      {% endif %}
+
+                      <!-- <li class="{% if forloop.first %}active{% endif %}"><a data-toggle="tab" data-parser-pk="{{ parser_pk }}" href="#parsergroup-{{ parser_pk }}">{% if not parser_name %}Choose Sub-action{% else %}{{ parser_name|title }}{% endif %}</a></li>
                       {% if forloop.first %}
                         <li role="separator" class="divider"></li>
-                      {% endif %}
+                      {% endif %} -->
                     {% endwith %}
                   {% endfor %}
                 </ul>
