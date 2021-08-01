@@ -1,7 +1,5 @@
 import logging
 
-from datetime import datetime
-
 module_logger = logging.getLogger("hypercane.actions.sample")
 
 def discover_timemaps(args):

@@ -1,4 +1,6 @@
-import sys
+import logging
+
+module_logger = logging.getLogger("hypercane.actions.order")
 
 def memento_datetime(args):
 
