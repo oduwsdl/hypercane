@@ -5,7 +5,7 @@
 import sys
 import os
 import hypercane.cli.sample, hypercane.cli.identify, \
-    hypercane.cli.order
+    hypercane.cli.order, hypercane.cli.cluster
 
 supported_actions = {
     "sample": hypercane.cli.sample.__file__,
@@ -13,7 +13,7 @@ supported_actions = {
     # "synthesize": "hypercane.actions.synthesize",
     "identify": hypercane.cli.identify.__file__,
     # "filter": "hypercane.actions.hfilter",
-    # "cluster": "hypercane.actions.cluster",
+    "cluster": hypercane.cli.cluster.__file__,
     # "score": "hypercane.actions.score",
     "order": hypercane.cli.order.__file__
 }
