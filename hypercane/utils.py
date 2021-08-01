@@ -139,18 +139,13 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
         memento_compliant_archive = True
 
-        if 'memento-datetime' not in r.headers:
-            # short-circuit here because memento_resource_factory may throw an unnecessary exception
+        try:
+            mr = memento_resource_factory(urim, session)
+        except NotAMementoError:
+            # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
             module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
             memento_compliant_archive = False
-        else:
-            try:
-                mr = memento_resource_factory(urim, session)
-            except NotAMementoError:
-                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
-                module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
-                memento_compliant_archive = False
-            # TODO: MementoMetaRedirectParsingError is not handled here and it fires before NotAMementoError
+        # TODO: MementoMetaRedirectParsingError is not handled here and it fires before NotAMementoError
 
         for field in metadata_fields:
 
