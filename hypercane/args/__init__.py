@@ -8,7 +8,7 @@ universal_cli_required_args = [
             'required': True,
             'dest': 'input_type',
             'help': "The input type, one of mementos, timemaps, original-resources, archiveit, trove, or pandora-collection.",
-            'choices': ['mementos', 'timemaps', 'original-resources', 'archive-it', 'pandora-subject', 'pandora-collection', 'trove']
+            'choices': ['mementos', 'timemaps', 'original-resources', 'archiveit', 'pandora-subject', 'pandora-collection', 'trove']
         }
     },
     {   'flags': [ '-a', '-ia', '--input-arguments'],
