@@ -5,16 +5,17 @@
 import sys
 import os
 import hypercane.cli.sample, hypercane.cli.identify, \
-    hypercane.cli.order, hypercane.cli.cluster
+    hypercane.cli.order, hypercane.cli.cluster, \
+    hypercane.cli.score, hypercane.cli.synthesize
 
 supported_actions = {
     "sample": hypercane.cli.sample.__file__,
     # "report": "hypercane.actions.report",
-    # "synthesize": "hypercane.actions.synthesize",
+    "synthesize": hypercane.cli.synthesize.__file__,
     "identify": hypercane.cli.identify.__file__,
     # "filter": "hypercane.actions.hfilter",
     "cluster": hypercane.cli.cluster.__file__,
-    # "score": "hypercane.actions.score",
+    "score": hypercane.cli.score.__file__,
     "order": hypercane.cli.order.__file__
 }
 
