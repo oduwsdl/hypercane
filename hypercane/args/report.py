@@ -46,17 +46,17 @@ terms_parser.add_argument('--added-stopwords', help="If specified, add stopwords
     dest='added_stopword_filename', default=None
 )
 
-entities_parser = subparsers.add_parser('entities', help="Provide a report containing the terms from the collection and their associated frequencies.")
+entities_parser = subparsers.add_parser('entities', help="Provide a report containing the entities from the collection and their associated frequencies.")
 entities_parser.set_defaults(which='entities', exec=report_entities)
 
 entities_parser.add_argument('--entity-types', 
-    help="The types of entities to report, from https://spacy.io/api/annotation#named-entities",
+    help="A comma-separated list of the types of entities to report, from https://spacy.io/api/annotation#named-entities",
     dest='entity_types',
     default=default_entity_types_str,
     type=str
 )
 
-seedstatistics_parser = subparsers.add_parser('seed-statistics', help="Provide a report containing the terms from the collection and their associated frequencies.")
+seedstatistics_parser = subparsers.add_parser('seed-statistics', help="Provide a report containing statistics on the original-resources derived from the input.")
 seedstatistics_parser.set_defaults(which='seed-statistics', exec=report_seedstats)
 
 growth_parser = subparsers.add_parser('growth', help="Provide a report containing statistics growth of mementos derived from the input.")
@@ -106,7 +106,7 @@ generatequeries_parser.add_argument('--term-count',
 )
 
 generatequeries_parser.add_argument('--entity-types', 
-    help="The types of entities to report, from https://spacy.io/api/annotation#named-entities -- only applies to 'topNentities', ignored otherwise", 
+    help="A comma-separated list of the types of entities to report, from https://spacy.io/api/annotation#named-entities -- only applies to 'topNentities', ignored otherwise", 
     dest='entity_types',
     default=default_entity_types_str, 
     type=str

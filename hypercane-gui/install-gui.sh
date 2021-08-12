@@ -56,6 +56,7 @@ fi
 if [ $INSTALL_ALL -eq 0 ]; then
     echo "installing Hypercane"
     pip install -r requirements.txt
+    python -m spacy download en_core_web_sm
     pip install . --use-feature=in-tree-build
     status=$?
     if [ $status -eq 2 ]; then
@@ -69,6 +70,8 @@ else
         echo "Hypercane already installed, skipping install of Hypercane"
     else
         echo "installing Hypercane"
+        pip install -r requirements.txt
+        python -m spacy download en_core_web_sm
         pip install . --use-feature=in-tree-build
     fi
 fi
