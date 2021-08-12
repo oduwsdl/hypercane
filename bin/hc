@@ -6,11 +6,12 @@ import sys
 import os
 import hypercane.cli.sample, hypercane.cli.identify, \
     hypercane.cli.order, hypercane.cli.cluster, \
-    hypercane.cli.score, hypercane.cli.synthesize
+    hypercane.cli.score, hypercane.cli.synthesize, \
+    hypercane.cli.report
 
 supported_actions = {
     "sample": hypercane.cli.sample.__file__,
-    # "report": "hypercane.actions.report",
+    "report": hypercane.cli.report.__file__,
     "synthesize": hypercane.cli.synthesize.__file__,
     "identify": hypercane.cli.identify.__file__,
     # "filter": "hypercane.actions.hfilter",
