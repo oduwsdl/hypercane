@@ -1,6 +1,8 @@
 import argparse
 from argparse import RawTextHelpFormatter
 
+import hypercane.actions.sample
+
 sample_parser = argparse.ArgumentParser(prog="hc sample",
     description='hc sample executes different sampling algorithms to selecting exemplars from a web archive collection',
     formatter_class=RawTextHelpFormatter
@@ -10,7 +12,10 @@ subparsers = sample_parser.add_subparsers(help='sampling methods', dest='samplin
 subparsers.required = True
 
 truerandom_parser = subparsers.add_parser('true-random', help="sample probabilistically by randomly sampling k mementos from the input")
-truerandom_parser.set_defaults(which='true-random')
+truerandom_parser.set_defaults(
+    which='true-random',
+    exec=hypercane.actions.sample.sample_with_true_random
+)
 
 truerandom_parser.add_argument(
     '-k', dest='sample_count', required=True,
@@ -43,7 +48,10 @@ truerandom_parser.add_argument(
 # )
 
 systematic_parser = subparsers.add_parser(name='systematic', help="returns every jth memento from the input")
-systematic_parser.set_defaults(which='systematic')
+systematic_parser.set_defaults(
+    which='systematic',
+    exec=hypercane.actions.sample.sample_with_systematic
+)
 
 systematic_parser.add_argument(
     '-j', dest='iteration', required=True,
