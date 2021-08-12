@@ -2,6 +2,8 @@ import argparse
 from argparse import RawTextHelpFormatter
 from datetime import datetime
 
+import hypercane.actions.identify
+
 identify_parser = argparse.ArgumentParser(prog="hc identify",
     description="'hc identify' discovers resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
     formatter_class=RawTextHelpFormatter
@@ -11,7 +13,10 @@ subparsers = identify_parser.add_subparsers(help='identifying methods', dest='id
 subparsers.required = True
 
 memento_parser = subparsers.add_parser('mementos', help="Discover the mementos in a web archive collection.")
-memento_parser.set_defaults(which='mementos')
+memento_parser.set_defaults(
+    which='mementos',
+    exec=hypercane.actions.identify.discover_mementos
+)
 
 memento_parser.add_argument('--timegates',
     default=[
@@ -31,7 +36,10 @@ memento_parser.add_argument('--accept-datetime', '--desired-datetime',
 )
 
 timemap_parser = subparsers.add_parser('timemaps', help="Discover the TimeMaps in a web archive collection.")
-timemap_parser.set_defaults(which='timemaps')
+timemap_parser.set_defaults(
+    which='timemaps',
+    exec=hypercane.actions.identify.discover_timemaps
+)
 
 # note: this is just for testing purposes, but do not remove this argument
 timemap_parser.add_argument('--faux-tms-acceptable', 
@@ -41,4 +49,7 @@ timemap_parser.add_argument('--faux-tms-acceptable',
     dest='faux_tms_acceptable')
 
 originalresource_parser = subparsers.add_parser('original-resources', help="Discover the original resources in a web archive collection.")
-originalresource_parser.set_defaults(which='original-resources')
+originalresource_parser.set_defaults(
+    which='original-resources',
+    exec=hypercane.actions.identify.discover_original_resources
+)
