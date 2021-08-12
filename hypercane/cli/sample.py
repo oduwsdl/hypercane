@@ -1,15 +1,9 @@
-import hypercane.actions.sample
 import hypercane.errors
 
 from hypercane.args import universal_cli_required_args, universal_cli_optional_args
 from hypercane.args.sample import sample_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
-
-sample_functions = {
-    "true-random": hypercane.actions.sample.sample_with_true_random,
-    "systematic": hypercane.actions.sample.sample_with_systematic
-}
 
 if __name__ == '__main__':
 
@@ -43,4 +37,4 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    sample_functions[args.which](args)
+    args.exec(args)
