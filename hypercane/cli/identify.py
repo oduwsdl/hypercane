@@ -1,16 +1,9 @@
-import hypercane.actions.identify
 import hypercane.errors
 
 from hypercane.args import universal_cli_required_args, universal_cli_optional_args
 from hypercane.args.identify import identify_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
-
-identify_functions = {
-    "mementos": hypercane.actions.identify.discover_mementos,
-    "timemaps": hypercane.actions.identify.discover_timemaps,
-    "original-resources": hypercane.actions.identify.discover_original_resources,
-}
 
 if __name__ == '__main__':
 
@@ -44,4 +37,4 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    identify_functions[args.which](args)
+    args.exec(args)
