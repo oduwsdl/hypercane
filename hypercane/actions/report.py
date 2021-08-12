@@ -1,7 +1,9 @@
 from hypercane.report.generate_queries import generate_lexical_signatures_from_documents_with_tfidf
-import sys
+import logging
 
 from datetime import datetime
+
+module_logger = logging.getLogger("hypercane.actions.score")
 
 def dtconverter(o):
 
@@ -166,11 +168,6 @@ def generate_blank_metadata(urirs):
 
 def discover_collection_metadata(args):
 
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
-
     from hypercane.utils import get_web_session
 
     from hypercane.identify import discover_resource_data_by_input_type, \
@@ -178,28 +175,16 @@ def discover_collection_metadata(args):
 
     import json
 
-    parser = argparse.ArgumentParser(
-        description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
-        prog="hc report metadata"
-        )
-
-    args = process_input_args(args, parser)
     output_type = 'original-resources'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection metadata discovery run.")
+    module_logger.info("Starting collection metadata discovery run.")
 
     if args.input_type in [ 'archiveit', 'pandora-subject', 'pandora-collection', 'trove' ]:
         metadata = generate_collection_metadata(args.input_type, args.input_arguments, session)
     else:
-        logger.warning("Metadata reports are only supported for Pandora Subjects, Pandora Collections, Archive-It Collections, and Trove Collections, proceeding to create JSON output for URI-Rs.")
+        module_logger.warning("Metadata reports are only supported for Pandora Subjects, Pandora Collections, Archive-It Collections, and Trove Collections, proceeding to create JSON output for URI-Rs.")
 
         urirdata = discover_resource_data_by_input_type(
             args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -210,45 +195,24 @@ def discover_collection_metadata(args):
     with open(args.output_filename, 'w') as metadata_file:
         json.dump(metadata, metadata_file, indent=4)
 
-    logger.info("Done with collection metadata discovery run, output is in {}.".format(args.output_filename))
+    module_logger.info("Done with collection metadata discovery run, output is in {}.".format(args.output_filename))
 
 def report_metadatastats(args):
 
     import sys
 
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
-
     from hypercane.utils import get_web_session
 
-    from hypercane.identify import discover_resource_data_by_input_type, \
-        discover_mementos_by_input_type, discover_original_resources_by_input_type
-
     from hypercane.report.metadatastats import get_pct_seeds_with_metadata, \
-        get_pct_seeds_with_specific_field, get_pct_seeds_with_title, \
-        get_pct_seeds_with_description, get_mean_default_field_score, \
-        get_metadata_compression_ratio, get_mean_raw_field_count
+        get_pct_seeds_with_title, get_pct_seeds_with_description, \
+        get_mean_default_field_score, get_metadata_compression_ratio, \
+        get_mean_raw_field_count
 
     import json
 
-    parser = argparse.ArgumentParser(
-        description="Discover the collection metadata in a web archive collection. Only Archive-It is supported at this time.",
-        prog="hc report metadata"
-        )
-
-    args = process_input_args(args, parser)
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection metadata statistics run.")
+    module_logger.info("Starting collection metadata statistics run.")
 
     output = {}
 
@@ -264,20 +228,15 @@ def report_metadatastats(args):
         output['mean non-normalized metadata count'] = get_mean_raw_field_count(metadata)
         output['metadata compression ratio'] = get_metadata_compression_ratio(metadata)
     else:
-        logger.critical("Metadata statistics are only supported for Archive-It collections")
+        module_logger.critical("Metadata statistics are only supported for Archive-It collections")
         sys.exit(255)
 
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4)
 
-    logger.info("Done with collection metadata discovery run.")
+    module_logger.info("Done with collection metadata discovery run.")
 
 def report_image_data(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -289,33 +248,11 @@ def report_image_data(args):
 
     import json
 
-    parser = argparse.ArgumentParser(
-        description="Provide a report on the images from in the mementos discovered in the input.",
-        prog="hc report image-data"
-        )
-
-    parser.add_argument('--use-urirs', required=False,
-        dest='use_urirs', action='store_true',
-        help="Regardless of headers, assume the input are URI-Rs and do not try to archive or convert them to URI-Ms."
-    )
-
-    parser.add_argument('--output-format', required=False,
-        dest="output_format", default="json",
-        help="Choose the output format, valid formats are JSON and JSONL"
-    )
-
-    args = process_input_args(args, parser)
     output_type = 'mementos'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection image data run")
+    module_logger.info("Starting collection image data run")
 
     if args.use_urirs == True:
         uridata = discover_resource_data_by_input_type(
@@ -340,49 +277,20 @@ def report_image_data(args):
     elif args.output_format == 'jsonl':
         output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)
 
-    logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
+    module_logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
 
 def report_ranked_terms(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_mementos_by_input_type
 
-    import json
-
-    parser = argparse.ArgumentParser(
-        description="Provide a report containing the terms from the collection and their associated frequencies.",
-        prog="hc report terms"
-        )
-
-    parser.add_argument('--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
-
-    parser.add_argument('--sumgrams', '--use-sumgrams', help="If specified, generate sumgrams rather than n-grams.",
-        action='store_true', default=False, dest='use_sumgrams'
-    )
-    
-    parser.add_argument('--added-stopwords', help="If specified, add stopwords from this file.",
-        dest='added_stopword_filename', default=None
-    )
-
-    args = process_input_args(args, parser)
     output_type = 'mementos'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection image data run")
+    module_logger.info("Starting collection image data run")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -431,14 +339,9 @@ def report_ranked_terms(args):
                 f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
 
 
-    logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
+    module_logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
 
 def report_entities(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -447,33 +350,13 @@ def report_entities(args):
 
     from hypercane.report.entities import generate_entities
 
-    import json
-
-    parser = argparse.ArgumentParser(
-        description="Provide a report containing the terms from the collection and their associated frequencies.",
-        prog="hc report entities"
-        )
-
-    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
-    default_entity_types_str = ','.join( default_entity_types)
-
-    # TODO: make this work, how is this type=int ?
-    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities", dest='entity_types', default=default_entity_types_str, type=str)
-
-    args = process_input_args(args, parser)
     output_type = 'mementos'
 
     submitted_entity_types = [ e for e in args.entity_types.split(',') ]
 
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection image data run")
+    module_logger.info("Starting entity run")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -490,14 +373,9 @@ def report_entities(args):
             f.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(term, frequency, probability, df, idf, tfidf))
 
 
-    logger.info("Done with collection term frequency report, output is in {}".format(args.output_filename))
+    module_logger.info("Done with collection entity report, output is in {}".format(args.output_filename))
 
 def report_seedstats(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -510,23 +388,11 @@ def report_seedstats(args):
 
     import json
 
-    parser = argparse.ArgumentParser(
-        description="Provide a report containing statistics on the original-resources derived from the input.",
-        prog="hc report seed-statistics"
-        )
-
-    args = process_input_args(args, parser)
     output_type = 'original-resources'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection original resource statistics run")
+    module_logger.info("Starting collection original resource statistics run")
 
     urirs = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -544,14 +410,9 @@ def report_seedstats(args):
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4)
 
-    logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
+    module_logger.info("Done with collection original resource statistics report, output is in {}".format(args.output_filename))
 
 def report_growth_curve_stats(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -569,27 +430,11 @@ def report_growth_curve_stats(args):
 
     from sklearn.metrics import auc
 
-    parser = argparse.ArgumentParser(
-        description="Provide a report containing statistics growth of mementos derived from the input.",
-        prog="hc report growth"
-        )
-
-    parser.add_argument('--growth-curve-file', dest='growthcurve_filename',
-        help="If present, draw a growth curve and write it to the filename specified.",
-        default=None, required=False)
-
-    args = process_input_args(args, parser)
     output_type = 'original-resources'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection original resource statistics run")
+    module_logger.info("Starting collection original resource statistics run")
 
     urits = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -624,26 +469,21 @@ def report_growth_curve_stats(args):
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4, default=dtconverter)
 
-    logger.info("Done with collection growth statistics, report saved to {}".format(args.output_filename))
+    module_logger.info("Done with collection growth statistics, report saved to {}".format(args.output_filename))
 
     if args.growthcurve_filename is not None:
 
-        logger.info("Beginning to render collection growth curve...")
+        module_logger.info("Beginning to render collection growth curve...")
 
         draw_both_axes_pct_growth(
             mdts_pct, urims_pct, urirs_pct,
             args.growthcurve_filename
         )
 
-        logger.info("Growth curve saved to {}".format(args.growthcurve_filename))
+        module_logger.info("Growth curve saved to {}".format(args.growthcurve_filename))
 
 
 def report_html_metadata(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -652,30 +492,11 @@ def report_html_metadata(args):
 
     from hypercane.report.per_page_metadata import output_page_metadata_as_ors
 
-    import json
-
-    parser = argparse.ArgumentParser(
-        description="Provide a report on the HTML metadata of the mementos discovered in the input.",
-        prog="hc report html-metadata"
-        )
-
-    parser.add_argument('--use-urirs', required=False,
-        dest='use_urirs', action='store_true',
-        help="Regardless of headers, assume the input are URI-Rs and do not try to archive or convert them to URI-Ms."
-    )
-
-    args = process_input_args(args, parser)
     output_type = 'mementos'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection html metadata run")
+    module_logger.info("Starting collection html metadata run")
 
     if args.use_urirs == True:
         uridata = discover_resource_data_by_input_type(
@@ -690,14 +511,9 @@ def report_html_metadata(args):
 
     output_page_metadata_as_ors(uridata, args.cache_storage, args.output_filename)
 
-    logger.info("Done with html metadata data run, output is at {}".format(args.output_filename))
+    module_logger.info("Done with html metadata data run, output is at {}".format(args.output_filename))
 
 def report_http_status(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -706,23 +522,11 @@ def report_http_status(args):
 
     from hypercane.report.http_status import output_http_status_as_tsv
 
-    parser = argparse.ArgumentParser(
-        description="Provide a report on all URI-Ms, their HTTP response status (before redirects), whether they are a redirect, datetime of check, and memento header information.",
-        prog="hc report http-status"
-        )
-
-    args = process_input_args(args, parser)
     output_type = 'mementos'
-
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
 
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting collection HTTP status data run")
+    module_logger.info("Starting collection HTTP status data run")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,
@@ -731,14 +535,9 @@ def report_http_status(args):
 
     output_http_status_as_tsv(urimdata, args.cache_storage, args.output_filename)
 
-    logger.info("Done with http status report, output is at {}".format(args.output_filename))
+    module_logger.info("Done with http status report, output is at {}".format(args.output_filename))
 
 def report_generated_queries(args):
-
-    import argparse
-
-    from hypercane.actions import process_input_args, get_logger, \
-        calculate_loglevel
 
     from hypercane.utils import get_web_session
 
@@ -754,51 +553,15 @@ def report_generated_queries(args):
             generate_queries_from_metadata_with_topentities, \
             generate_lexical_signature_from_metadata
 
-    parser = argparse.ArgumentParser(
-        description="Apply techniques to generate queries from the text of the input documents.",
-        prog="hc report generated-queries"
-        )
-
-    parser.add_argument('--query-count', dest='query_count',
-        help="create this many queries per document, only applies to 'doc2query-T5', ignored otherwise", default=5, required=False, type=int
-    )
-
-    parser.add_argument('--use-metadata', dest='use_metadata', action='store_true',
-        help="use collection metadata to generate queries instead of documents from input, requires that input be a collection type"
-    )
-
-    parser.add_argument('--generation-method', dest='generation_method',
-        help="apply the given generation method for queries, valid values are 'topNentities', 'doc2query-T5', 'lexical-signature'",
-        default='doc2query-T5', required=False
-    )
-
-    parser.add_argument('--term-count', dest='term_count',
-        help="create queries with a maximum of this many terms",
-        default=10, required=False, type=int
-    )
-
-    default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT', 'WORK_OF_ART', 'LAW']
-    default_entity_types_str = ','.join( default_entity_types)
-
-    # TODO: make this work, how is this type=int ?
-    parser.add_argument('--entity-types', help="The types of entities to report, from https://spacy.io/api/annotation#named-entities -- only applies to 'topNentities', ignored otherwise", dest='entity_types', default=default_entity_types_str, type=str)
-
     # TODO: generate query per cluster
 
-    args = process_input_args(args, parser)
     output_type = 'mementos'
 
     submitted_entity_types = [ e for e in args.entity_types.split(',') ]
 
-    logger = get_logger(
-        __name__,
-        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-        args.logfile
-    )
-
     session = get_web_session(cache_storage=args.cache_storage)
 
-    logger.info("Starting query generation based on input mementos with method {}".format(args.generation_method))
+    module_logger.info("Starting query generation based on input mementos with method {}".format(args.generation_method))
 
     if args.use_metadata == True:
 
@@ -845,47 +608,4 @@ def report_generated_queries(args):
     with open(args.output_filename, 'w') as f:
         json.dump(querydata, f, indent=4)
 
-    logger.info("Done with http status report, output is at {}".format(args.output_filename))
-
-def print_usage():
-
-    print("""'hc report' is used to print reports about web archive collections
-
-    Supported commands:
-    * metadata - for discovering the metadata associated with seeds
-    * image-data - for generating a report of the images associated with the mementos found in the input
-    * terms - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the terms in the collection
-    * entities - generates corpus term frequency, probability, document frequency, inverse document frequency, and corpus TF-IDF for the named entities in the collection
-    * seed-statistics - calculates metrics on the original resources discovered from the input
-    * growth - calculates metrics based on the growth of the TimeMaps discovered from the input
-    * metadata-statistics - statistics about the metadata for this collection (Archive-It only)
-    * html-metadata - a listing of all URI-Ms and associated HTML metadata containing a NAME or PROPERTY attribute
-    * http-status - a TSV listing of all URI-Ms, their HTTP response status (before redirects), whether they are a redirect, datetime of check, and memento header information
-    * generate-queries - generate a series of queries from the text in the input documents
-
-
-    Examples:
-
-    hc report metadata -i archiveit -a 8788 -o 8788-metadata.json -cs mongodb://localhost/cache
-
-    hc report metadata -i trove -a 13742 -o 13742-metadata.json -cs mongodb://localhost/cache
-
-    hc report entities -i mementos -a memento-file.tsv -o entity-report.json
-
-    hc report seed-statistics -i original-resources -a urirs.tsv -o seedstats.json
-
-""")
-
-supported_commands = {
-    "metadata": discover_collection_metadata,
-    "image-data": report_image_data,
-    "terms": report_ranked_terms,
-    "entities": report_entities,
-    "seed-statistics": report_seedstats,
-    "growth": report_growth_curve_stats,
-    "metadata-statistics": report_metadatastats,
-    "html-metadata": report_html_metadata,
-    "http-status": report_http_status,
-    "generate-queries": report_generated_queries
-}
-
+    module_logger.info("Done with http status report, output is at {}".format(args.output_filename))

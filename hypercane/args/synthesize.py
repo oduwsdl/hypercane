@@ -6,7 +6,7 @@ synthesize_parser = argparse.ArgumentParser(prog="hc synthesize",
     formatter_class=RawTextHelpFormatter
 )
 
-subparsers = synthesize_parser.add_subparsers(help='synthesizing outputs', dest="synthesizing output ('e.g., warcs, raintale-story")
+subparsers = synthesize_parser.add_subparsers(help='synthesizing outputs', dest="synthesizing output (e.g., warcs, raintale-story)")
 subparsers.required = True
 
 warcs_parser = subparsers.add_parser('warcs', help="Create WARCs from the mementos in the input.")
