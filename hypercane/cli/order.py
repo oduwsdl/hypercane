@@ -1,16 +1,9 @@
-import hypercane.actions.order
 import hypercane.errors
 
 from hypercane.args import universal_cli_required_args, universal_cli_optional_args
 from hypercane.args.order import order_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
-
-order_functions = {
-    "pubdate-else-memento-datetime": hypercane.actions.order.pubdate_else_memento_datetime,
-    "memento-datetime": hypercane.actions.order.memento_datetime,
-    "score": hypercane.actions.order.score_sort,
-}
 
 if __name__ == '__main__':
 
@@ -44,4 +37,4 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    order_functions[args.which](args)
+    args.exec(args)
