@@ -1,6 +1,8 @@
 import argparse
 from argparse import RawTextHelpFormatter
 
+import hypercane.actions.cluster
+
 cluster_parser = argparse.ArgumentParser(prog="hc cluster",
     description="'hc cluster' employs techniques to cluster a list of URI-Ms",
     formatter_class=RawTextHelpFormatter
@@ -10,7 +12,10 @@ subparsers = cluster_parser.add_subparsers(help='clustering methods', dest="clus
 subparsers.required = True
 
 timeslice_parser = subparsers.add_parser('time-slice', help="slice the collection into buckets by Memento-Datetime, as in AlNoamany's Algorithm")
-timeslice_parser.set_defaults(which='time-slice')
+timeslice_parser.set_defaults(
+    which='time-slice',
+    exec=hypercane.actions.cluster.time_slice
+)
 
 timeslice_parser.add_argument('-k', dest='k',
     default=None, type=int,
@@ -18,7 +23,10 @@ timeslice_parser.add_argument('-k', dest='k',
 )
 
 dbscan_parser = subparsers.add_parser('dbscan', help="cluster the user-supplied feature using the DBSCAN algorithm")
-dbscan_parser.set_defaults(which='dbscan')
+dbscan_parser.set_defaults(
+    which='dbscan',
+    exec=hypercane.actions.cluster.cluster_by_dbscan
+)
 
 dbscan_parser.add_argument('--feature', dest='feature',
     default='tf-simhash',
@@ -36,7 +44,10 @@ dbscan_parser.add_argument('--min-samples', dest='min_samples',
 )
 
 lda_parser = subparsers.add_parser('lda', help="cluster the collection via LDA topic modeling")
-lda_parser.set_defaults(which='lda')
+lda_parser.set_defaults(
+    which='lda',
+    exec=hypercane.actions.cluster.cluster_by_lda
+)
 
 lda_parser.add_argument('--num_topics', dest='num_topics',
     default=20, required=False, type=int,
@@ -54,7 +65,10 @@ lda_parser.add_argument('--iterations', dest='num_iterations',
 )
 
 kmeans_parser = subparsers.add_parser('kmeans', help="cluster the user-supplied feature using K-means clustering")
-kmeans_parser.set_defaults(which='kmeans')
+kmeans_parser.set_defaults(
+    which='kmeans',
+    exec=hypercane.actions.cluster.cluster_by_kmeans
+)
 
 kmeans_parser.add_argument('--feature', dest='feature',
     default='memento-datetime',
@@ -67,7 +81,13 @@ kmeans_parser.add_argument('-k', dest='k',
 )
 
 domainname_parser = subparsers.add_parser('domainname', help="cluster the URI-Ms by domainname")
-domainname_parser.set_defaults(which='domainname')
+domainname_parser.set_defaults(
+    which='domainname',
+    exec=hypercane.actions.cluster.cluster_by_domain_name
+)
 
 originalresource_parser = subparsers.add_parser('original-resource', help="cluster the URI-Ms by URI-R")
-originalresource_parser.set_defaults(which='original-resource')
+originalresource_parser.set_defaults(
+    which='original-resource',
+    exec=hypercane.actions.cluster.cluster_by_urir
+)
