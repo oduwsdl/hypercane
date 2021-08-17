@@ -495,7 +495,15 @@ def generate_raw_urim(urim):
             # other: http://localhost:8080/solrwayback/services/web/20080418011213/http://planetblacksburg.com/
             # not sure how to get from here to downloadRaw
             raw_urim = otmt.generate_raw_urim(urim) # this is just a noop
-            
+
+    # TODO: we need a better way to handle all of the different raw URI-Ms across all DSA tools
+    elif 'webarchive.nla.gov.au' in urim:
+
+        from mementoembed.mementoresource import wayback_pattern
+
+        raw_urim = urim.replace("webarchive.nla.gov.au", "web.archive.org.au")
+        raw_urim = wayback_pattern.sub(r'\1id_/', raw_urim)
+
     else:
         # OTMT handles all standard Wayback id_ tricks
         raw_urim = otmt.generate_raw_urim(urim)

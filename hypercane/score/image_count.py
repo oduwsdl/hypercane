@@ -6,10 +6,13 @@ module_logger = logging.getLogger('hypercane.score.image_count')
 
 def get_image_count(urim, session):
 
+    from hypercane.utils import generate_raw_urim
+
     r = None
 
     try:
-        r = session.get(urim)
+        raw_urim = generate_raw_urim(urim)
+        r = session.get(raw_urim)
 
     except requests.exceptions.RequestException:
         module_logger.warning("Failed to download memento at URI-M {} ".format(urim))
