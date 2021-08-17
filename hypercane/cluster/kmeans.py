@@ -53,7 +53,11 @@ def cluster_by_memento_datetime(urimdata, cache_storage, k):
 
         for urim in clusters_to_urims[cluster]:
             module_logger.info("examining URI-M {}".format(urim))
-            mdt_list.append(urim_to_mementodatetime[urim])
+
+            try:
+                mdt_list.append(urim_to_mementodatetime[urim])
+            except KeyError:
+                module_logger.exception("URI-M [{}] was not found in downloads, skipping...".format(urim))
 
         X = np.matrix(mdt_list)
 

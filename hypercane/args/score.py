@@ -44,7 +44,7 @@ dsa2_scoring_parser.set_defaults(
 )
 
 dsa2_scoring_parser.add_argument('--card-weight', dest='card_weight',
-    default=-0.50, type=float,
+    default=0.50, type=float,
     help="The weight for how well a page can produce a card."
 )
 
