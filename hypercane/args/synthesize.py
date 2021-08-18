@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import hypercane.actions.synthesize
 
 synthesize_parser = argparse.ArgumentParser(prog="hc synthesize",
-    description="'hc synthesize' synthesize a web archive collection into other formats, like WARC, JSON, or a set of files in a directory.",
+    description="'synthesize' synthesize a web archive collection into other formats, like WARC, JSON, or a set of files in a directory.",
     formatter_class=RawTextHelpFormatter
 )
 

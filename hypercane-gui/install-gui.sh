@@ -135,13 +135,14 @@ if [ $JUST_TEMPLATES -eq 1 ]; then
     cd ${WOOEY_DIR}
 
     echo "adding scripts to Wooey"
-    oldIFS=$IFS
-    # do not edit the spacing with these '', it is significant!
-    IFS='
-'
-    for script in `ls ${SCRIPT_DIR}/scripts/*.py`; do
-        echo "adding script ${script}"
-        python ./manage.py addscript "${script}"
-    done
-    IFS=$oldIFS
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter include-only.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter exclude.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/cluster.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/score.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/order.py"
+
 fi

@@ -10,7 +10,7 @@ default_entity_types = ['PERSON', 'NORP', 'FAC', 'ORG', 'GPE', 'LOC', 'PRODUCT',
 default_entity_types_str = ','.join( default_entity_types)
 
 report_parser = argparse.ArgumentParser(prog="hc report",
-    description="'hc report' prints reports about web archive collections",
+    description="'report' prints reports about web archive collections, including story metadata",
     formatter_class=RawTextHelpFormatter
 )
 

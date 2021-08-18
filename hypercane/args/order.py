@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import hypercane.actions.order
 
 order_parser = argparse.ArgumentParser(prog="hc order",
-    description="'hc order' orders the memento list input by some feature or function.",
+    description="'order' orders the memento list input by some feature or function.",
     formatter_class=RawTextHelpFormatter
 )
 
