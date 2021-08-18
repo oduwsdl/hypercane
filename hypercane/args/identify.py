@@ -5,7 +5,7 @@ from datetime import datetime
 import hypercane.actions.identify
 
 identify_parser = argparse.ArgumentParser(prog="hc identify",
-    description="'hc identify' discovers resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
+    description="'identify' discovers resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
     formatter_class=RawTextHelpFormatter
 )
 

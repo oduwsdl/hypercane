@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import hypercane.actions.cluster
 
 cluster_parser = argparse.ArgumentParser(prog="hc cluster",
-    description="'hc cluster' employs techniques to cluster a list of URI-Ms",
+    description="'cluster' employs techniques to imbue sets of mementos with meaning",
     formatter_class=RawTextHelpFormatter
 )
 

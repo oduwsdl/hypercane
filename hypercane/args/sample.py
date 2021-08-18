@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import hypercane.actions.sample
 
 sample_parser = argparse.ArgumentParser(prog="hc sample",
-    description='hc sample executes different sampling algorithms to selecting exemplars from a web archive collection',
+    description="'sample' produces a list of exemplars from a collection by applying an existing algorithm",
     formatter_class=RawTextHelpFormatter
     )
 

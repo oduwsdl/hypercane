@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import hypercane.actions.score
 
 score_parser = argparse.ArgumentParser(prog="hc score",
-    description='hc sample scores the mementos in the input',
+    description="'score' scores the mementos in the input",
     formatter_class=RawTextHelpFormatter
 )
 
