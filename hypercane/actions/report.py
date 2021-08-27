@@ -229,7 +229,7 @@ def report_metadatastats(args):
         output['metadata compression ratio'] = get_metadata_compression_ratio(metadata)
     else:
         module_logger.critical("Metadata statistics are only supported for Archive-It collections")
-        sys.exit(255)
+        raise NotImplementedError("Metadata statistics are only supported for Archive-It collections")
 
     with open(args.output_filename, 'w') as report_file:
         json.dump(output, report_file, indent=4)
