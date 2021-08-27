@@ -43,15 +43,15 @@ if __name__ == '__main__':
 
     # setting expected arguments for GUI
     if args.which == 'raintale-story':
-        vars(args)['output_filename'] = "output.json"
+        vars(args)['output_filename'] = "hypercane-synthesize-output.json"
     
     elif args.which == 'combine':
-        vars(args)['output_filename'] = "output.json"
+        vars(args)['output_filename'] = "hypercane-synthesize-output.tsv"
 
     else:
-        vars(args)['output_directory'] = "output"
+        vars(args)['output_directory'] = "hypercane-synthesize-output"
 
-    vars(args)['logfile'] = "sample.log"
+    vars(args)['logfile'] = "hypercane-status.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.input_file.name

@@ -45,8 +45,8 @@ if __name__ == '__main__':
     args = score_parser.parse_args()
 
     # setting expected arguments for GUI
-    vars(args)['output_filename'] = "sampled-mementos.tsv"
-    vars(args)['logfile'] = "sample.log"
+    vars(args)['output_filename'] = "hypercane-score-output.tsv"
+    vars(args)['logfile'] = "hypercane-status.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.input_file.name

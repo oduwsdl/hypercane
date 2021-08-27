@@ -46,13 +46,81 @@
                         <span class="sr-only">{% trans "Toggle Dropdown" %}</span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
+                        {% for file in job_info.all_files %}
+
+                            {% if job_info.job.script_version.script.script_name == 'report' %}
+
+                                {% if 'hypercane-report-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Report Output</a></li>
+                                {% endif %}
+                                {% if '.png' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-picture"></span> Report Image</a></li>
+                                {% endif %}
+
+                            {% elif 'sample' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-sample-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Sample Output</a></li>
+                                {% endif %}
+
+                            {% elif 'identify' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-identify-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Identify Output</a></li>
+                                {% endif %}
+
+                            {% elif 'cluster' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-cluster-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Cluster Output</a></li>
+                                {% endif %}
+
+                            {% elif 'score' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-score-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Score Output</a></li>
+                                {% endif %}
+
+                            {% elif 'synthesize' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-synthesize-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Score Output</a></li>
+                                {% endif %}
+                            
+                            {% endif %}
+
+                        {% endfor %}
+                        {% for file in job_info.all_files reversed %}
+
+                            {% if 'hypercane-errors.dat' in file.url %}
+
+                            <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Errors File</a></li>
+
+                            {% endif %}
+
+                            {% if 'hypercane-status.log' in file.url %}
+
+                            <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Log File</a></li>
+
+                            {% endif %}
+
+                        {% endfor %}
+
                         {% for archive in job_info.archives %}
-                            <li><a href="{{ archive.url }}"><span class="glyphicon glyphicon-compressed"></span> {% if archive.url|endswith:"zip" %}.zip{% else %}.tar.gz{% endif %}</a></li>
+                            <li><a href="{{ archive.url }}"><span class="glyphicon glyphicon-compressed"></span> {% if archive.url|endswith:"zip" %}All Output as .zip{% else %}All Output as .tar.gz{% endif %}</a></li>
                         {% endfor %}
                     </ul>
                 </div>
 
+                <!-- <div class="btn-group status-completed-toggle">
+                    <button class="btn btn-primary" role="button" name="download" value="download" id="download-btn">
+                        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> {% trans "Download" %}
+                    </button>
+                </div> -->
+
                 <div class="btn-group status-completed-toggle">
+
+
                     <a href="{{ job_info.archives.0.url }}" role="button" class="btn btn-success">
                         {% url 'wooey:celery_results_uuid' job_info.job.uuid as permalink %}
                         {% absolute_url permalink as permalink %}
@@ -78,7 +146,7 @@
                     <a href="{%  url 'wooey:wooey_script_clone' slug=job_info.job.script_version.script.slug job_id=job_info.job.id %}" role="button" class="btn btn-primary">
                         <span class="glyphicon glyphicon-copy" aria-hidden="true"></span> {% trans "Clone" %}
                     </a>
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                    <!-- <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                         <span class="caret"></span>
                         <span class="sr-only">{% trans "Clone Job to Previous Script Versions" %}</span>
                     </button>
@@ -99,7 +167,7 @@
                                 </li>
                             {% endfor %}
                         {% endfor %}
-                    </ul>
+                    </ul> -->
                 </div>
 
                 {% include 'wooey/modals/permalink_modal.html' %}
@@ -296,6 +364,10 @@
                 createConsoles();
             }
 
+        });
+
+        $(document).on('click', '#download-btn', function() {
+            
         });
     </script>
 {% endif %}
