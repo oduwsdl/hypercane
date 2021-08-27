@@ -1,22 +1,16 @@
 import os
 
-import hypercane.actions.sample
+import hypercane.actions.report
 import hypercane.errors
 
 from hypercane.args import universal_gui_required_args, universal_gui_optional_args
-from hypercane.args.sample import sample_parser
+from hypercane.args.report import report_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
-
-sample_functions = {
-    "true-random": hypercane.actions.sample.sample_with_true_random,
-    "systematic": hypercane.actions.sample.sample_with_systematic
-}
-
 if __name__ == '__main__':
 
-    for item in sample_parser._subparsers._group_actions:
+    for item in report_parser._subparsers._group_actions:
         for key in item.choices:
 
             subparser = item.choices[key]
@@ -35,11 +29,12 @@ if __name__ == '__main__':
                 argument_params = entry['argument_params']
                 optional.add_argument(*flags, **argument_params)
 
-    args = sample_parser.parse_args()
+    args = report_parser.parse_args()
 
     # setting expected arguments for GUI
+    # TODO: reports come in different formats
     vars(args)['output_filename'] = "sampled-mementos.tsv"
-    vars(args)['logfile'] = "sample.log"
+    vars(args)['logfile'] = "report.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.input_file.name
@@ -54,5 +49,5 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to create sample with method {}".format(args.which))
-    sample_functions[args.which](args)
+    args.exec(args)
     print("done creating sample")
