@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # setting expected arguments for GUI
     # TODO: reports come in different formats
-    vars(args)['output_filename'] = "sampled-mementos.tsv"
+    vars(args)['output_filename'] = "hypercane-report{}".format(args.output_extension)
     vars(args)['logfile'] = "report.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
@@ -48,6 +48,6 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    print("starting to create sample with method {}".format(args.which))
+    print("starting to create report with method {}".format(args.which))
     args.exec(args)
-    print("done creating sample")
+    print("done creating report")

@@ -18,10 +18,10 @@ subparsers = report_parser.add_subparsers(help='reports', dest="report (e.g., me
 subparsers.required = True
 
 metadata_parser = subparsers.add_parser('metadata', help="Discover the collection metadata in a web archive collection.")
-metadata_parser.set_defaults(which='metadata', exec=discover_collection_metadata)
+metadata_parser.set_defaults(which='metadata', output_extension='.json', exec=discover_collection_metadata)
 
 imagedata_parser = subparsers.add_parser('image-data', help="Provide a report on the images from in the mementos discovered in the input.")
-imagedata_parser.set_defaults(which='image-data', exec=report_image_data)
+imagedata_parser.set_defaults(which='image-data', output_extension='.json', exec=report_image_data)
 
 imagedata_parser.add_argument('--use-urirs', required=False,
     dest='use_urirs', action='store_true',
@@ -34,7 +34,7 @@ imagedata_parser.add_argument('--output-format', required=False,
 )
 
 terms_parser = subparsers.add_parser('terms', help="Provide a report containing the terms from the collection and their associated frequencies.")
-terms_parser.set_defaults(which='terms', exec=report_ranked_terms)
+terms_parser.set_defaults(which='terms', output_extension='.tsv', exec=report_ranked_terms)
 
 terms_parser.add_argument('--ngram-length', help="The size of the n-grams", dest='ngram_length', default=1, type=int)
 
@@ -47,7 +47,7 @@ terms_parser.add_argument('--added-stopwords', help="If specified, add stopwords
 )
 
 entities_parser = subparsers.add_parser('entities', help="Provide a report containing the entities from the collection and their associated frequencies.")
-entities_parser.set_defaults(which='entities', exec=report_entities)
+entities_parser.set_defaults(which='entities', output_extension='.tsv', exec=report_entities)
 
 entities_parser.add_argument('--entity-types', 
     help="A comma-separated list of the types of entities to report, from https://spacy.io/api/annotation#named-entities",
@@ -57,20 +57,20 @@ entities_parser.add_argument('--entity-types',
 )
 
 seedstatistics_parser = subparsers.add_parser('seed-statistics', help="Provide a report containing statistics on the original-resources derived from the input.")
-seedstatistics_parser.set_defaults(which='seed-statistics', exec=report_seedstats)
+seedstatistics_parser.set_defaults(which='seed-statistics', output_extension='.json', exec=report_seedstats)
 
 growth_parser = subparsers.add_parser('growth', help="Provide a report containing statistics growth of mementos derived from the input.")
-growth_parser.set_defaults(which='growth', exec=report_growth_curve_stats)
+growth_parser.set_defaults(which='growth', output_extension='.json', exec=report_growth_curve_stats)
 
 growth_parser.add_argument('--growth-curve-file', dest='growthcurve_filename',
     help="If present, draw a growth curve and write it to the filename specified.",
     default=None, required=False)
 
 metadatastatistics_parser = subparsers.add_parser('metadata-statistics', help="Discover the collection metadata in a web archive collection.")
-metadatastatistics_parser.set_defaults(which='metadata-statistics', exec=report_metadatastats)
+metadatastatistics_parser.set_defaults(which='metadata-statistics', output_extension='.json', exec=report_metadatastats)
 
 htmlmetadata_parser = subparsers.add_parser('html-metadata', help="Provide a report on the HTML metadata of the mementos discovered in the input.")
-htmlmetadata_parser.set_defaults(which='html-metadata', exec=report_html_metadata)
+htmlmetadata_parser.set_defaults(which='html-metadata', output_extension='.json', exec=report_html_metadata)
 
 htmlmetadata_parser.add_argument('--use-urirs', required=False,
     dest='use_urirs', action='store_true',
@@ -81,7 +81,7 @@ httpstatus_parser = subparsers.add_parser('http-status', help="Provide a report 
 httpstatus_parser.set_defaults(which='http-status', exec=report_http_status)
 
 generatequeries_parser = subparsers.add_parser('generate-queries', help="Apply techniques to generate queries from the text of the input documents.")
-generatequeries_parser.set_defaults(which='generate-queries', exec=report_generated_queries)
+generatequeries_parser.set_defaults(which='generate-queries', output_extension='.json', exec=report_generated_queries)
 
 generatequeries_parser.add_argument('--query-count', 
     dest='query_count',
