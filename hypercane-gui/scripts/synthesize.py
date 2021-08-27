@@ -42,14 +42,11 @@ if __name__ == '__main__':
     args = synthesize_parser.parse_args()
 
     # setting expected arguments for GUI
-    if args.which == 'raintale-story':
-        vars(args)['output_filename'] = "hypercane-synthesize-output.json"
-    
-    elif args.which == 'combine':
-        vars(args)['output_filename'] = "hypercane-synthesize-output.tsv"
-
-    else:
+    if args.output_extension == 'directory':
         vars(args)['output_directory'] = "hypercane-synthesize-output"
+        # TODO: compress directory into a single file?
+    else:
+        vars(args)['output_filename'] = "hypercane-synthesize-output{}".format(args.output_extension)      
 
     vars(args)['logfile'] = "hypercane-status.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
