@@ -6,6 +6,8 @@ parser = argparse.ArgumentParser(prog="hc filter include-only",
     formatter_class=RawTextHelpFormatter
 )
 
-args = parser.parse_args()
+if __name__ == '__main__':
 
-print("Not implemented yet.")
+    args = parser.parse_args()
+
+    print("Not implemented yet.")

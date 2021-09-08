@@ -9,6 +9,8 @@ JUST_TEMPLATES=1
 OVERRIDE_VIRTUALENV_CHECK=0
 WOOEY_DIR=${SCRIPT_DIR}/../hypercane_with_wooey
 
+echo "using script directory '${SCRIPT_DIR}'"
+
 while test $# -gt 0; do
 
     case "$1" in
