@@ -4,6 +4,7 @@
 
 import sys
 import os
+import errno
 import hypercane.cli.sample, hypercane.cli.identify, \
     hypercane.cli.order, hypercane.cli.cluster, \
     hypercane.cli.score, hypercane.cli.synthesize, \
@@ -37,6 +38,8 @@ This is the list of supported actions:
     print("""
 For each of these actions, you can view additional help by typing --help after the action name, for example:
     hc sample --help
+
+Please read Hypercane's documentation at https://hypercane.readthedocs.io/en/latest/
 """)
 
 if __name__ == '__main__':
@@ -56,7 +59,14 @@ if __name__ == '__main__':
 
             args = sys.argv[2:]
 
-            scriptname = os.path.abspath(supported_actions[action])
+            try:
+                scriptname = os.path.abspath(supported_actions[action])
+            except KeyError:
+                print("hc: error: unknown action {}\n".format(action))
+                print_overall_usage()
+                sys.exit(errno.EINVAL)
+
+            print("scriptname: {}".format(scriptname))
 
             arglist = ""
             for arg in args:
@@ -70,3 +80,4 @@ if __name__ == '__main__':
     else:
         print("hc: error: no action supplied\n")
         print_overall_usage()
+        sys.exit(errno.EINVAL)

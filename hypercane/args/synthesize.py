@@ -55,7 +55,6 @@ raintalestory_parser.add_argument('--imagedata', dest='imagedata_filename',
 
 raintalestory_parser.add_argument('--termdata', dest='termdata_filename',
     help='A file containing term data, as produced by hc report terms',
-    output_extension='.tsv',
     required=False, default=None
 )
 
