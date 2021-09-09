@@ -8,12 +8,6 @@ from hypercane.args.sample import sample_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
-
-sample_functions = {
-    "true-random": hypercane.actions.sample.sample_with_true_random,
-    "systematic": hypercane.actions.sample.sample_with_systematic
-}
-
 if __name__ == '__main__':
 
     for item in sample_parser._subparsers._group_actions:
@@ -54,5 +48,5 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to create sample with method {}".format(args.which))
-    sample_functions[args.which](args)
+    args.exec(args)
     print("done creating sample")
