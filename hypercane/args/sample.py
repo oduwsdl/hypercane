@@ -1,8 +1,11 @@
+import sys
+import os
+import errno
 import argparse
 from argparse import RawTextHelpFormatter
 
 import hypercane.actions.sample
-
+from pathlib import Path
 
 sample_parser = argparse.ArgumentParser(prog="hc sample",
     description="'sample' produces a list of exemplars from a collection by applying an existing algorithm",
@@ -11,6 +14,81 @@ sample_parser = argparse.ArgumentParser(prog="hc sample",
 
 subparsers = sample_parser.add_subparsers(help='sampling methods', dest='sampling method (e.g., true-random, dsa1)')
 subparsers.required = True
+
+if sys.platform != "win32":
+    # assumes all other platforms support shell scripts
+    # recall that we cannot use a function to handle duplicate arguments because Wooey does not appear to support it
+
+    custom_script_data = {}
+
+    script_paths = []
+
+    hypercane_algorithm_extension = '.halg'
+
+    user_algorithm_dir = '{}/.hypercane/algorithms'.format( str(Path.home()) )
+
+    custom_algorithm_dirs = [
+        "{}/../packaged_algorithms".format(
+            os.path.dirname(os.path.realpath(__file__))
+        ),
+        user_algorithm_dir
+    ]
+
+    for algorithm_dir in custom_algorithm_dirs:
+
+        for filename in os.listdir(algorithm_dir):
+
+            base, ext = os.path.splitext(filename)
+
+            if ext == hypercane_algorithm_extension:
+                script_path = "{}/{}".format(
+                    algorithm_dir,
+                    filename
+                )
+                script_paths.append(script_path)
+
+    for script_path in script_paths:
+            
+        algorithm_name = os.path.basename(script_path).replace(hypercane_algorithm_extension, '')
+        helptext = "custom algorithm {}".format(algorithm_name)
+
+        with open(script_path) as f:
+
+            for line in f:
+                # print("examining line {}".format(line))
+                if line [0] != '#':
+                    continue
+                else:
+                    if 'algorithm name:' in line:
+                        algorithm_name = line.split(':')[1].strip()
+                    
+                    if 'algorithm description:' in line:
+                        algorithm_description = line.split(':', 1)[1].strip()
+                        helptext = algorithm_description
+
+        if algorithm_name in custom_script_data:
+            error_message = "Duplicate algorithm name {} found in script {}, please rename algorithm to avoid this clash!".format(algorithm_name, script_path)
+            print("ERROR: {} Refusing to Continue.".format(error_message))
+            sys.exit(errno.EINVAL)
+
+        if user_algorithm_dir in script_path:
+            helptext += " (custom user algorithm)"
+
+        custom_script_data[algorithm_name] = {
+            'script_path': script_path,
+            'helptext': helptext
+        }
+
+    for algorithm_name in sorted(custom_script_data):
+        custom_algorithm_parser = subparsers.add_parser(
+            name=algorithm_name,
+            help=custom_script_data[algorithm_name]['helptext']
+        )
+        custom_algorithm_parser.set_defaults(
+            which=algorithm_name,
+            exec=hypercane.actions.sample.sample_with_custom_algorithm,
+            script_path=custom_script_data[algorithm_name]['script_path']
+        )
 
 truerandom_parser = subparsers.add_parser('true-random', help="sample probabilistically by randomly sampling k mementos from the input")
 truerandom_parser.set_defaults(

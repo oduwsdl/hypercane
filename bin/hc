@@ -1,7 +1,6 @@
 #!python
 
 # This is a wrapper for all Hypercane commands
-
 import sys
 import os
 import errno
