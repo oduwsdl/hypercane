@@ -2,6 +2,8 @@ import sys
 import os
 import errno
 import argparse
+import tempfile
+import json
 from argparse import RawTextHelpFormatter
 
 import hypercane.actions.sample
@@ -52,20 +54,33 @@ if sys.platform != "win32":
             
         algorithm_name = os.path.basename(script_path).replace(hypercane_algorithm_extension, '')
         helptext = "custom algorithm {}".format(algorithm_name)
+        argjson = ""
 
         with open(script_path) as f:
 
+            argstate = 0
+            
             for line in f:
                 # print("examining line {}".format(line))
                 if line [0] != '#':
                     continue
                 else:
+
+                    if 'END ARGUMENT JSON' in line:
+                        argstate = 0
+
+                    if argstate == 1:
+                        argjson += line[1:] # get rid of initial #
+
                     if 'algorithm name:' in line:
                         algorithm_name = line.split(':')[1].strip()
                     
                     if 'algorithm description:' in line:
                         algorithm_description = line.split(':', 1)[1].strip()
                         helptext = algorithm_description
+
+                    if 'START ARGUMENT JSON' in line:
+                        argstate = 1
 
         if algorithm_name in custom_script_data:
             error_message = "Duplicate algorithm name {} found in script {}, please rename algorithm to avoid this clash!".format(algorithm_name, script_path)
@@ -77,8 +92,12 @@ if sys.platform != "win32":
 
         custom_script_data[algorithm_name] = {
             'script_path': script_path,
-            'helptext': helptext
+            'helptext': helptext,
+            'argjson': argjson
         }
+
+    # for alg in sorted(custom_script_data):
+    #     print(alg, custom_script_data[alg])
 
     for algorithm_name in sorted(custom_script_data):
         custom_algorithm_parser = subparsers.add_parser(
@@ -90,6 +109,20 @@ if sys.platform != "win32":
             exec=hypercane.actions.sample.sample_with_custom_algorithm,
             script_path=custom_script_data[algorithm_name]['script_path']
         )
+        custom_algorithm_parser.add_argument(
+            '--working-directory', dest='working_directory',
+            help='The directory in which intermediate error, log, and output files will be stored. Defaults to generated temporary directory.', default=tempfile.mkdtemp()
+        )
+
+        # print(algorithm_name)
+
+        if len(custom_script_data[algorithm_name]['argjson'].strip()) > 0:
+            argstruct = json.loads(custom_script_data[algorithm_name]['argjson'])
+
+            for arg in argstruct:
+                flags = arg['flags']
+                argument_params = arg['argument_params']
+                custom_algorithm_parser.add_argument(*flags, **argument_params)
 
 # probabilistic algorithms are listed after
 truerandom_parser = subparsers.add_parser('true-random', help="sample probabilistically by randomly sampling k mementos from the input")

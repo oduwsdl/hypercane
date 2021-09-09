@@ -28,7 +28,7 @@ def print_overall_usage():
 It is a complex toolchain requiring a supported action and additional arguments.
 
 For example:
-    hc sample dsa1 -i archiveit -a 8778 -o story-mementos.txt
+    hc sample DSA1 -i archiveit -a 8778 -o story-mementos.txt
 
 This is the list of supported actions:
 """)
@@ -73,9 +73,11 @@ if __name__ == '__main__':
 
         if action == "-h" or action == "--help":
             print_overall_usage()
+            sys.exit(0)
         elif action == "--version":
             from hypercane.version import __useragent__
             print(__useragent__)
+            sys.exit(0)
         else:
 
             if action == "filter":
@@ -112,7 +114,9 @@ if __name__ == '__main__':
                 else:
                     arglist += arg + ' '
 
-            os.system("python {} {}".format(scriptname, arglist))
+            retval = os.system("python {} {}".format(scriptname, arglist))
+            retval = retval >> 8
+            sys.exit(retval)
 
     else:
         print("hc: error: no action supplied\n")

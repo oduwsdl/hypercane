@@ -1,32 +1,74 @@
-import sys
-import hypercane.errors
-
 import logging
 
 module_logger = logging.getLogger("hypercane.actions.sample")
 
 def sample_with_custom_algorithm(args):
 
+    import sys
+    import os
+    import errno
+    import subprocess
+
     module_logger.info("Starting sampling with algorithm {}".format(args.which))
+   
+    # we will not honor crawl depth -- log this if specified
+    if args.crawl_depth > 1:
+        module_logger.warning("ignoring crawl depth setting of {}".format(args.crawl_depth))
+
+    if args.errorfilename == 'hypercane-errors.dat':
+        module_logger.warning(
+            "ignoring error filename of {}, individual error files for each step will be in {}".format(
+                args.errorfilename, args.working_directory))
+
+    other_args = ""
+    for argname, argvalue in vars(args).items():
+        if argname not in [
+            'input_type',
+            'input_arguments',
+            'cache_storage',
+            'working_directory',
+            'output_filename',
+            'logfile',
+            'verbose',
+            'quiet',
+            'crawl_depth',
+            'which',
+            'exec',
+            'script_path',
+            'errorfilename',
+            'sampling method (e.g., true-random, dsa1)'
+        ]:
+            if argvalue is not None:
+                other_args += argname + " " + argvalue
 
     module_logger.info("running custom script {}".format(args.script_path))
+    module_logger.info("log messages for each step may be stored in separate log files available in {}".format(args.working_directory))
+    module_logger.info("additional supplied to script: {}".format(other_args))
 
-    print("I didn't really run anything, we're justing checking plumbing...")
+    command = [
+        "/bin/bash",
+        args.script_path,
+        args.input_type,
+        args.input_arguments,
+        args.output_filename,
+        args.working_directory,
+        other_args
+    ]
 
-    # need
-    # input type
-    # input file
-    # output file
-    
-    # optional
-    # working directory -- maybe create a temp directory and save it to the log?
-    # number to sample -- not always valid
-    # log file
-    # verbosity
-    # errorfilename
-    
-    # we will not honor crawl depth -- log this if specified
-    module_logger.warning("ignoring crawl depth setting of {}".format(args.crawl_depth))
+    module_logger.info("running command line: {}".format(command))
+
+    cp = subprocess.run(command)
+
+    if cp.returncode != 0:
+        module_logger.critical("An error was encountered while executing the {} algorithm".format(args.which))
+    else:
+        module_logger.info("Done executing the {} algorithm".format(args.which))
+
+    if os.path.exists(args.output_filename):
+        module_logger.info("Output is available in {}".format(args.output_filename))
+    else:
+        module_logger.critical("FAILURE: Output filename {} is missing! Review output in {} to determine what may have gone wrong.".format(args.output_filename, args.working_directory))
+        sys.exit(errno.ENXIO)
 
     module_logger.info("Done sampling.")
 
