@@ -37,7 +37,7 @@ dsa1_scoring_parser.add_argument('--path-depth-weight', dest='path_depth_weight'
     help="The weight for the URI-R path depth score in the scoring."
 )
 
-dsa2_scoring_parser = subparsers.add_parser('dsa2-scoring', help="score the documents according to the scoring function of AlNoamany's Algorithm (https://doi.org/10.1145/3091478.3091508)")
+dsa2_scoring_parser = subparsers.add_parser('dsa2-scoring', help="score the documents according to the scoring function of DSA2, optimizing for documents that likely produce good surrogates")
 dsa2_scoring_parser.set_defaults(
     which='dsa2-scoring',
     exec=hypercane.actions.score.dsa2_scoring
