@@ -1,9 +1,63 @@
 #!/bin/bash
 # algorithm name: filtered-random
 # algorithm description: Filter the collection for off-topic mementos and exclude near duplicates before randomly sampling from remainder.
+# START ARGUMENT JSON
+# [
+#     {
+#         "flags": ["-k"],
+#         "argument_params": {
+#             "help": "How many items to sample.",
+#             "required": true
+#         }
+#     }
+# ]
+# END ARGUMENT JSON
+
+set -e
+
+INPUT_TYPE=$1
+INPUT_ARGUMENT=$2
+OUTPUT_FILE=$3
+WORKING_DIRECTORY=$4
+ADDITIONAL_ARGUMENTS=$5
+# cache storage?
+
+# echo "INPUT_TYPE: ${INPUT_TYPE}"
+# echo "INPUT_ARGUMENT: ${INPUT_ARGUMENT}"
+# echo "OUTPUT_FILE: ${OUTPUT_FILE}"
+# echo "WORKING_DIRECTORY: ${WORKING_DIRECTORY}"
+# echo "ADDITIONAL_ARGUMENTS: ${ADDITIONAL_ARGUMENTS}"
+
+arr=(${ADDITIONAL_ARGUMENTS})
+
+for i in "${!arr[@]}"; do
+
+    case "${arr[$i]}" in
+        k)
+        k=${arr[$i+1]}
+        ;;
+    esac
+
+done
+
+# identify timemaps
+TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
+TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
+hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
 
 # exclude off-topic
+ON_TOPIC_FILE=${WORKING_DIRECTORY}/on-topic.tsv
+OFF_TOPIC_LOG=${WORKING_DIRECTORY}/exclude-off-topic.log
+hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
 
 # exclude near-duplicates
+NON_DUPLICATE_FILE=${WORKING_DIRECTORY}/non-duplicates.tsv
+NON_DUPLICATE_LOG=${WORKING_DIRECTORY}/exclude-near-duplicates.log
+hc filter exclude near-duplicates -i mementos -a ${ON_TOPIC_FILE} -o ${NON_DUPLICATE_FILE} -l ${NON_DUPLICATE_LOG}
 
 # randomly sample k from the remainder
+RANDOM_OUTPUT=${WORKING_DIRECTORY}/random-sample.tsv
+RANDOM_OUTPUT_LOG=${WORKING_DIRECTORY}/sample-true-random.log
+hc sample true-random -i mementos -a ${NON_DUPLICATE_FILE} -o ${RANDOM_OUTPUT} -l ${RANDOM_OUTPUT_LOG} -k ${k}
+
+cp ${RANDOM_OUTPUT} ${OUTPUT_FILE}
