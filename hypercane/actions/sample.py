@@ -36,8 +36,10 @@ def sample_with_custom_algorithm(args):
             'exec',
             'script_path',
             'errorfilename',
-            'sampling method (e.g., true-random, dsa1)'
+            'sampling method (e.g., true-random, dsa1)',
+            'allow_noncompliant_archives'
         ]:
+            # print(argname)
             if argvalue is not None:
                 other_args += argname + " " + argvalue
 
