@@ -8,13 +8,6 @@ from hypercane.args.identify import identify_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
-
-identify_functions = {
-    "mementos": hypercane.actions.identify.discover_mementos,
-    "timemaps": hypercane.actions.identify.discover_timemaps,
-    "original-resources": hypercane.actions.identify.discover_original_resources
-}
-
 if __name__ == '__main__':
 
     for item in identify_parser._subparsers._group_actions:
@@ -55,5 +48,5 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to identify {} in input".format(args.which))
-    identify_functions[args.which](args)
+    args.exec(args)
     print("done identifying {}".format(args.which))
