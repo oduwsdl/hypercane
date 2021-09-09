@@ -1,0 +1,9 @@
+#!/bin/bash
+# algorithm name: simple-search-engine
+# algorithm description: Search for mementos with a specific pattern, score results by BM25, order by descending score.
+
+# filter to include-only mementos with the given pattern
+
+# score remainder with BM25
+
+# order by descending score

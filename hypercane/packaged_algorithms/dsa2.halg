@@ -1,3 +1,19 @@
 #!/bin/bash
 # algorithm name: DSA2
 # algorithm description: An implementation of the DSA2 algorithm from Jones' dissertation.
+
+# identify timemaps
+
+# exclude off-topic
+
+# exclude near-duplicates
+
+# cluster collection by k-means with memento-datetime as feature
+
+# cluster collection by LDA topic modeling
+
+# score by DSA2 scoring
+
+# filter to include only highest scoring from each cluster
+
+# order by publication date

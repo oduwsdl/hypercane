@@ -1,3 +1,23 @@
 #!/bin/bash
 # algorithm name: DSA3
 # algorithm description: An implementation of the DSA3 algorithm from Jones' dissertation.
+
+# identify timemaps
+
+# exclude off-topic
+
+# exclude near-duplicates
+
+# DBSCAN cluster collection by TF-IDF
+
+# exclude outliers
+
+# cluster collection by k-means with memento-datetime as feature
+
+# cluster collection by k-means with TF-IDF as feature
+
+# score by BM25 and top-named entities as query
+
+# filter to include only highest scoring from each cluster
+
+# order by publication date

@@ -1,0 +1,9 @@
+#!/bin/bash
+# algorithm name: filtered-random
+# algorithm description: Filter the collection for off-topic mementos and exclude near duplicates before randomly sampling from remainder.
+
+# exclude off-topic
+
+# exclude near-duplicates
+
+# randomly sample k from the remainder
