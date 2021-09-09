@@ -32,7 +32,6 @@ if __name__ == '__main__':
     args = report_parser.parse_args()
 
     # setting expected arguments for GUI
-    # TODO: reports come in different formats
     vars(args)['output_filename'] = "hypercane-report-output{}".format(args.output_extension)
     vars(args)['logfile'] = "hypercane-status.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
