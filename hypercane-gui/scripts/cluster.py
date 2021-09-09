@@ -8,17 +8,6 @@ from hypercane.args.cluster import cluster_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
-
-cluster_functions = {
-    "time-slice": hypercane.actions.cluster.time_slice,
-    "dbscan": hypercane.actions.cluster.cluster_by_dbscan,
-    "lda": hypercane.actions.cluster.cluster_by_lda,
-    "kmeans": hypercane.actions.cluster.cluster_by_kmeans,
-    "domainname": hypercane.actions.cluster.cluster_by_domain_name,
-    "original-resource": hypercane.actions.cluster.cluster_by_urir,
-
-}
-
 if __name__ == '__main__':
 
     for item in cluster_parser._subparsers._group_actions:
@@ -58,6 +47,6 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    print("starting to identify {} in input".format(args.which))
-    cluster_functions[args.which](args)
-    print("done identifying {}".format(args.which))
+    print("starting to cluster {} in input".format(args.which))
+    args.exec(args)
+    print("done clustering {}".format(args.which))
