@@ -8,14 +8,16 @@ import errno
 import hypercane.cli.sample, hypercane.cli.identify, \
     hypercane.cli.order, hypercane.cli.cluster, \
     hypercane.cli.score, hypercane.cli.synthesize, \
-    hypercane.cli.report
+    hypercane.cli.report, hypercane.cli.filter_includeonly, \
+    hypercane.cli.filter_exclude
 
 supported_actions = {
     "sample": hypercane.cli.sample.__file__,
     "report": hypercane.cli.report.__file__,
     "synthesize": hypercane.cli.synthesize.__file__,
     "identify": hypercane.cli.identify.__file__,
-    # "filter": "hypercane.actions.hfilter",
+    "filter include-only": hypercane.cli.filter_includeonly.__file__,
+    "filter exclude": hypercane.cli.filter_exclude.__file__,
     "cluster": hypercane.cli.cluster.__file__,
     "score": hypercane.cli.score.__file__,
     "order": hypercane.cli.order.__file__
@@ -42,6 +44,26 @@ For each of these actions, you can view additional help by typing --help after t
 Please read Hypercane's documentation at https://hypercane.readthedocs.io/en/latest/
 """)
 
+def print_filter_usage():
+
+    print("""'filter' filters a web archive colleciton by different criteria
+    
+    Supported commands:
+    * include-only - include mementos from the input that satisfy the given criteria
+    * exclude - exclude mementos from the input by the given criteria
+
+    Examples:
+
+    hc filter include-only language --lang en,es -i archiveit -a 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
+
+    hc filter exclude off-topic -i timemaps -a 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
+
+    hc filter exclude near-duplicates -i mementos -a ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
+
+    hc filter include-only rank "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
+
+    """)
+
 if __name__ == '__main__':
 
     if len(sys.argv) > 1:
@@ -57,7 +79,23 @@ if __name__ == '__main__':
             print(__useragent__)
         else:
 
-            args = sys.argv[2:]
+            if action == "filter":
+
+                subaction = sys.argv[2]
+
+                # print("subaction: {}".format(subaction))
+
+                if subaction == '--help' or subaction == '-h':
+                    print_filter_usage()
+                    sys.exit(0)
+
+                action = "{} {}".format(action, subaction)
+
+                args = sys.argv[3:]
+            else:
+                args = sys.argv[2:]
+
+            # print("action: {}".format(action))
 
             try:
                 scriptname = os.path.abspath(supported_actions[action])
@@ -66,7 +104,7 @@ if __name__ == '__main__':
                 print_overall_usage()
                 sys.exit(errno.EINVAL)
 
-            print("scriptname: {}".format(scriptname))
+            # print("scriptname: {}".format(scriptname))
 
             arglist = ""
             for arg in args:
