@@ -8,13 +8,6 @@ from hypercane.args.order import order_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
-
-order_functions = {
-    "pubdate-else-memento-datetime": hypercane.actions.order.pubdate_else_memento_datetime,
-    "memento-datetime": hypercane.actions.order.memento_datetime,
-    "score": hypercane.actions.order.score_sort
-}
-
 if __name__ == '__main__':
 
     for item in order_parser._subparsers._group_actions:
@@ -55,5 +48,5 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to order mementos by {}".format(args.which))
-    order_functions[args.which](args)
+    args.exec(args)
     print("done ordering mementos")
