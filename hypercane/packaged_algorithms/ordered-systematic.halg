@@ -1,0 +1,7 @@
+#!/bin/bash
+# algorithm name: order-by-memento-datetime-then-systematic-sample
+# algorithm description: Select exemplars from a web archive collection by first ordering a colleciton, then systematically sampling every jth memento from the remainder.
+
+# order by memento datetime
+
+# systematically sample every jth from the remainder

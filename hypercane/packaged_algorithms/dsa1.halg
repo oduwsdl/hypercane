@@ -1,3 +1,21 @@
 #!/bin/bash
 # algorithm name: DSA1
 # algorithm description: An implementation of the algorithm from AlNoamany's dissertation.
+
+# identify timemaps
+
+# exclude off-topic
+
+# exclude near-duplicates
+
+# include-only English
+
+# slice collection by memento-dateimte
+
+# apply DBSCAN to cluster by Simhash distance
+
+# score by DSA1 scoring
+
+# filter to include only highest scoring from each cluster
+
+# order by publication date

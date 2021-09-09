@@ -1,3 +1,19 @@
 #!/bin/bash
 # algorithm name: DSA4
 # algorithm description: An implementation of the DSA4 algorithm from Jones' dissertation.
+
+# identify timemaps
+
+# exclude off-topic
+
+# exclude near-duplicates
+
+# cluster collection by k-means with memento-datetime as feature
+
+# cluster collection by k-means with TF-IDF as feature
+
+# score by distance from -kmeans centroid
+
+# filter to include only highest scoring from each cluster
+
+# order by publication date
