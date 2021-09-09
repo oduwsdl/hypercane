@@ -22,12 +22,6 @@ WORKING_DIRECTORY=$4
 ADDITIONAL_ARGUMENTS=$5
 # cache storage?
 
-# echo "INPUT_TYPE: ${INPUT_TYPE}"
-# echo "INPUT_ARGUMENT: ${INPUT_ARGUMENT}"
-# echo "OUTPUT_FILE: ${OUTPUT_FILE}"
-# echo "WORKING_DIRECTORY: ${WORKING_DIRECTORY}"
-# echo "ADDITIONAL_ARGUMENTS: ${ADDITIONAL_ARGUMENTS}"
-
 arr=(${ADDITIONAL_ARGUMENTS})
 
 for i in "${!arr[@]}"; do
@@ -40,24 +34,49 @@ for i in "${!arr[@]}"; do
 
 done
 
+echo "executing filtered-random algorithm"
+
 # identify timemaps
 TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
 TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
-hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TIMEMAP_FILE} ]; then
+    echo "acquiring TimeMaps from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
+    hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+fi
 
 # exclude off-topic
 ON_TOPIC_FILE=${WORKING_DIRECTORY}/on-topic.tsv
 OFF_TOPIC_LOG=${WORKING_DIRECTORY}/exclude-off-topic.log
-hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ON_TOPIC_FILE} ]; then
+    echo "filtering to exclude off-topic mementos from input"
+    hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+fi
 
 # exclude near-duplicates
 NON_DUPLICATE_FILE=${WORKING_DIRECTORY}/non-duplicates.tsv
 NON_DUPLICATE_LOG=${WORKING_DIRECTORY}/exclude-near-duplicates.log
-hc filter exclude near-duplicates -i mementos -a ${ON_TOPIC_FILE} -o ${NON_DUPLICATE_FILE} -l ${NON_DUPLICATE_LOG}
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${NON_DUPLICATE_FILE} ]; then
+    echo "filtering to exclude near-duplicate mementos from remainder"
+    hc filter exclude near-duplicates -i mementos -a ${ON_TOPIC_FILE} -o ${NON_DUPLICATE_FILE} -l ${NON_DUPLICATE_LOG}
+fi
 
 # randomly sample k from the remainder
 RANDOM_OUTPUT=${WORKING_DIRECTORY}/random-sample.tsv
 RANDOM_OUTPUT_LOG=${WORKING_DIRECTORY}/sample-true-random.log
-hc sample true-random -i mementos -a ${NON_DUPLICATE_FILE} -o ${RANDOM_OUTPUT} -l ${RANDOM_OUTPUT_LOG} -k ${k}
 
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${RANDOM_OUTPUT} ]; then
+    echo "randomly sampling ${k} mementos from remainder"
+    hc sample true-random -i mementos -a ${NON_DUPLICATE_FILE} -o ${RANDOM_OUTPUT} -l ${RANDOM_OUTPUT_LOG} -k ${k}
+fi
+
+echo "copying output from ${RANDOM_OUTPUT} to ${OUTPUT_FILE}"
 cp ${RANDOM_OUTPUT} ${OUTPUT_FILE}
+
+echo "done executing filtered-random algorithm"

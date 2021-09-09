@@ -25,6 +25,15 @@ universal_cli_required_args = [
             'help': "The file to which we write output."
         }
     },
+    {
+        'flags': [ '--allow-noncompliant-archives' ],
+        'argument_params': {
+            'required': False,
+            'action': 'store_true',
+            'help': argparse.SUPPRESS,
+            'dest': 'allow_noncompliant_archives'
+        }
+    }
 ]
 
 universal_cli_optional_args = [
