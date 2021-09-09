@@ -15,6 +15,7 @@ sample_parser = argparse.ArgumentParser(prog="hc sample",
 subparsers = sample_parser.add_subparsers(help='sampling methods', dest='sampling method (e.g., true-random, dsa1)')
 subparsers.required = True
 
+# custom algorithms are listed first
 if sys.platform != "win32":
     # assumes all other platforms support shell scripts
     # recall that we cannot use a function to handle duplicate arguments because Wooey does not appear to support it
@@ -72,7 +73,7 @@ if sys.platform != "win32":
             sys.exit(errno.EINVAL)
 
         if user_algorithm_dir in script_path:
-            helptext += " (custom user algorithm)"
+            helptext += " (algorithm from {})".format(script_path)
 
         custom_script_data[algorithm_name] = {
             'script_path': script_path,
@@ -90,6 +91,7 @@ if sys.platform != "win32":
             script_path=custom_script_data[algorithm_name]['script_path']
         )
 
+# probabilistic algorithms are listed after
 truerandom_parser = subparsers.add_parser('true-random', help="sample probabilistically by randomly sampling k mementos from the input")
 truerandom_parser.set_defaults(
     which='true-random',
