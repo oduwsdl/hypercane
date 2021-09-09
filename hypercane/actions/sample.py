@@ -5,6 +5,31 @@ import logging
 
 module_logger = logging.getLogger("hypercane.actions.sample")
 
+def sample_with_custom_algorithm(args):
+
+    module_logger.info("Starting sampling with algorithm {}".format(args.which))
+
+    module_logger.info("running custom script {}".format(args.script_path))
+
+    print("I didn't really run anything, we're justing checking plumbing...")
+
+    # need
+    # input type
+    # input file
+    # output file
+    
+    # optional
+    # working directory -- maybe create a temp directory and save it to the log?
+    # number to sample -- not always valid
+    # log file
+    # verbosity
+    # errorfilename
+    
+    # we will not honor crawl depth -- log this if specified
+    module_logger.warning("ignoring crawl depth setting of {}".format(args.crawl_depth))
+
+    module_logger.info("Done sampling.")
+
 # def run_sample_with(parser, args, algorithm_name, algorithm_script):
 
 #     from sys import platform
