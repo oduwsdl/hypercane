@@ -3,20 +3,10 @@ import os
 import hypercane.actions.identify
 import hypercane.errors
 
-from copy import deepcopy
-
 from hypercane.args import universal_gui_required_args, universal_gui_optional_args
 from hypercane.args.synthesize import synthesize_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
-
-synthesize_functions = {
-    "warcs": hypercane.actions.synthesize.synthesize_warcs,
-    "files": hypercane.actions.synthesize.synthesize_files,
-    "bpfree-files": hypercane.actions.synthesize.synthesize_bpfree_files,
-    "raintale-story": hypercane.actions.synthesize.raintale_story,
-    "combine": hypercane.actions.synthesize.combine_files
-}
 
 if __name__ == '__main__':
 
@@ -63,5 +53,5 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to identify {} in input".format(args.which))
-    synthesize_parser[args.which](args)
+    args.exec(args)
     print("done identifying {}".format(args.which))
