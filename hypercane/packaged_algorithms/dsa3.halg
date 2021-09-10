@@ -114,9 +114,9 @@ KMEANS_TOPIC_CLUSTER_FILE=${WORKING_DIRECTORY}/dsa3-topic-cluster.tsv
 KMEANS_TOPIC_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa3-cluster-kmeans-topic.log
 
 # prevent extra work if we already have it from previous runs
-if [ ! -e ${KMEANS_TIME_CLUSTER_FILE} ]; then
-    echo "clustering mementos from remainder by time"
-    hc cluster kmeans -i mementos -a ${CLUSTER_FREE_FILE} -o ${KMEANS_TIME_CLUSTER_FILE} -l ${KMEANS_TIME_CLUSTER_LOG} -k $S_lexical --feature tfidf
+if [ ! -e ${KMEANS_TOPIC_CLUSTER_FILE} ]; then
+    echo "clustering mementos from remainder by TF-IDF"
+    hc cluster kmeans -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${KMEANS_TOPIC_CLUSTER_FILE} -l ${KMEANS_TOPIC_CLUSTER_LOG} -k $S_lexical --feature tfidf
 fi
 
 # score by BM25 and top-named entities as query
@@ -125,7 +125,7 @@ BM25_SCORING_LOG=${WORKING_DIRECTORY}/dsa3-scored-bm25-and-top-entities.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${BM25_SCORING_FILE} ]; then
-    echo "clustering mementos from remainder by time"
+    echo "scoring mementos by BM25 and top entities"
     hc score top-entities-and-bm25 -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${BM25_SCORING_FILE} -l ${BM25_SCORING_LOG}
 fi
 
