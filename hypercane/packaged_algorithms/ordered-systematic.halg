@@ -4,9 +4,10 @@
 # START ARGUMENT JSON
 # [
 #     {
-#         "flags": ["-j"],
+#         "flags": ["--iteration"],
 #         "argument_params": {
 #             "help": "How often to sample, e.g., -j 5 for every 5th item",
+#             "dest": "iteration",
 #             "required": true
 #         }
 #     }
@@ -27,18 +28,18 @@ arr=(${ADDITIONAL_ARGUMENTS})
 for i in "${!arr[@]}"; do
 
     case "${arr[$i]}" in
-        j)
+        iteration)
         j=${arr[$i+1]}
         ;;
     esac
 
 done
 
+echo "starting algorithm that orders by memento-datetime before systematically sampling every ${j} memento from the remainder"
+
 # order by memento datetime
 ORDERED_FILE=${WORKING_DIRECTORY}/mdt-ordered.tsv
 ORDERED_LOG=${WORKING_DIRECTORY}/ordered-mdt.log
-
-echo "starting algorithm that orders by memento-datetime before systematically sampling every ${j} memento from the remainder"
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${ORDERED_FILE} ]; then
