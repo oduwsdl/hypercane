@@ -37,6 +37,7 @@ if __name__ == '__main__':
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.input_file.name
+    vars(args)['working_directory'] = '.'
 
     logger = get_logger(
         __name__,
@@ -47,6 +48,6 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    print("starting to create sample with method {}".format(args.which))
+    print("starting to create sample with method {} using function {}".format(args.which, args.exec.__name__), flush=True)
     args.exec(args)
-    print("done creating sample")
+    print("done creating sample", flush=True)
