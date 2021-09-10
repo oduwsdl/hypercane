@@ -2,6 +2,8 @@
 # algorithm name: DSA3
 # algorithm description: An implementation of the DSA3 algorithm from Jones' dissertation.
 
+set -e
+
 INPUT_TYPE=$1
 INPUT_ARGUMENT=$2
 OUTPUT_FILE=$3
