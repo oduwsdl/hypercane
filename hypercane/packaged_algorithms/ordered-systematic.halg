@@ -1,7 +1,62 @@
 #!/bin/bash
-# algorithm name: order-by-memento-datetime-then-systematic-sample
+# algorithm name: order-by-memento-datetime-then-systematically-sample
 # algorithm description: Select exemplars from a web archive collection by first ordering a colleciton, then systematically sampling every jth memento from the remainder.
+# START ARGUMENT JSON
+# [
+#     {
+#         "flags": ["-j"],
+#         "argument_params": {
+#             "help": "How often to sample, e.g., -j 5 for every 5th item",
+#             "required": true
+#         }
+#     }
+# ]
+# END ARGUMENT JSON
+
+set -e
+
+INPUT_TYPE=$1
+INPUT_ARGUMENT=$2
+OUTPUT_FILE=$3
+WORKING_DIRECTORY=$4
+ADDITIONAL_ARGUMENTS=$5
+# cache storage?
+
+arr=(${ADDITIONAL_ARGUMENTS})
+
+for i in "${!arr[@]}"; do
+
+    case "${arr[$i]}" in
+        j)
+        j=${arr[$i+1]}
+        ;;
+    esac
+
+done
 
 # order by memento datetime
+ORDERED_FILE=${WORKING_DIRECTORY}/mdt-ordered.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/ordered-mdt.log
+
+echo "starting algorithm that orders by memento-datetime before systematically sampling every ${j} memento from the remainder"
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ORDERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc order memento-datetime -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${ORDERED_FILE} -l ${ORDERED_LOG}
+fi
 
 # systematically sample every jth from the remainder
+ORDERED_FILE=${WORKING_DIRECTORY}/sample-from-mdt-ordered.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/sample-from-ordered-mdt.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ORDERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc sample systematic -i mementos -a ${ORDERED_FILE} -o ${ORDERED_FILE} -l ${ORDERED_LOG} -j ${j}
+fi
+
+echo "copying output from ${ORDERED_FILE} to ${OUTPUT_FILE}"
+cp ${ORDERED_FILE} ${OUTPUT_FILE}
+
+echo "done executing algorithm that orders by memento-datetime before systematically sampling every ${j} memento from the remainder"
