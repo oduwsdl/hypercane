@@ -96,3 +96,10 @@ combine_parser.add_argument('--append-files', dest='append_files',
     help='the Hypercane files to append to the file specified by the -a command',
     nargs='*'
 )
+
+clusterfree_parser = subparsers.add_parser('cluster-free', help="Strip cluster information out of the input, producing at TSV without any cluster data.")
+clusterfree_parser.set_defaults(
+    which='cluster-free',
+    output_extension='.tsv',
+    exec=hypercane.actions.synthesize.remove_clusters
+)

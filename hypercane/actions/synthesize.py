@@ -346,3 +346,44 @@ def synthesize_bpfree_files(args):
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     module_logger.info("Done generating directory of boilerplate-free files, output is at {}".format(args.output_directory))
+
+def remove_clusters(args):
+
+    from hypercane.utils import get_web_session, save_resource_data
+    from hypercane.identify import discover_resource_data_by_input_type, \
+        discover_mementos_by_input_type
+
+    output_type = 'mementos'
+
+    session = get_web_session(cache_storage=args.cache_storage)
+
+    module_logger.info("Starting removal of cluster data from input")
+
+    if args.input_type == 'mementos':
+
+        urimdata = discover_resource_data_by_input_type(
+            args.input_type, output_type, args.input_arguments, args.crawl_depth,
+            session, discover_mementos_by_input_type
+        )
+    else:
+        NotImplementedError("Removing clusters only works for lists of URI-Ms")
+
+    module_logger.info("discovered {} URI-Ms from the input".format(len(urimdata)))
+
+    urimdata_output = {}
+
+    for urim in urimdata:
+
+        urimdata_output.setdefault(urim, {})
+
+        for key in urimdata[urim]:
+
+            if key != 'Cluster':
+                urimdata_output[urim][key] = urimdata[urim][key]
+
+    module_logger.info("removed cluster data, there will be {} URI-Ms in the output".format(len(urimdata)))
+
+    save_resource_data(args.output_filename, urimdata_output, 'mementos', list(urimdata.keys()))
+
+    module_logger.info("Removal of cluster information is complete,"
+        "output is available in {}".format(args.output_filename))

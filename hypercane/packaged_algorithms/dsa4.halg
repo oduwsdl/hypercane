@@ -53,9 +53,10 @@ if [ ! -e ${NON_DUPLICATE_FILE} ]; then
 fi
 
 # compute numbers of clusters
-N=`wc -l ${working_directory}/non-duplicates.tsv | awk '{ print $1 }'`
-N=`expr $N - 1`
-echo "`date '+%Y-%m-%d %H:%M:%S'` [INFO] before clustering, applying input of size $N" >> ${logfile}
+echo "computing number of clusters needed"
+N=`wc -l ${WORKING_DIRECTORY}/non-duplicates.tsv | awk '{ print $1 }'`
+N=`python -c "print($N - 1)"`
+echo "before clustering, applying input of size $N"
 
 if [ $N -gt 767 ]; then
     S=`python -c "from math import ceil,log; print(ceil(28 + log($N)))"`
@@ -65,6 +66,9 @@ fi
 
 echo "we have a computed a story goal of size of $S"
 
+S_temporal=`python -c "from math import ceil,sqrt; print(ceil(sqrt($S)))"`
+S_lexical=`python -c "from math import ceil,sqrt; print(ceil(sqrt($S)))"`
+
 # cluster collection by k-means with memento-datetime as feature
 KMEANS_TIME_CLUSTER_FILE=${WORKING_DIRECTORY}/dsa4-time-cluster.tsv
 KMEANS_TIME_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa4-cluster-kmeans-time.log
@@ -72,7 +76,7 @@ KMEANS_TIME_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa4-cluster-kmeans-time.log
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${KMEANS_TIME_CLUSTER_FILE} ]; then
     echo "clustering mementos from remainder by time"
-    hc cluster kmeans -i mementos -a ${CLUSTER_FREE_FILE} -o ${KMEANS_TIME_CLUSTER_FILE} -l ${KMEANS_TIME_CLUSTER_LOG} -k $S_temporal
+    hc cluster kmeans -i mementos -a ${NON_DUPLICATE_FILE} -o ${KMEANS_TIME_CLUSTER_FILE} -l ${KMEANS_TIME_CLUSTER_LOG} -k $S_temporal
 fi
 
 # cluster collection by k-means with TF-IDF as feature
@@ -80,9 +84,9 @@ KMEANS_TOPIC_CLUSTER_FILE=${WORKING_DIRECTORY}/dsa4-topic-cluster.tsv
 KMEANS_TOPIC_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa4-cluster-kmeans-topic.log
 
 # prevent extra work if we already have it from previous runs
-if [ ! -e ${KMEANS_TIME_CLUSTER_FILE} ]; then
-    echo "clustering mementos from remainder by time"
-    hc cluster kmeans -i mementos -a ${CLUSTER_FREE_FILE} -o ${KMEANS_TIME_CLUSTER_FILE} -l ${KMEANS_TIME_CLUSTER_LOG} -k $S_lexical --feature tfidf
+if [ ! -e ${KMEANS_TOPIC_CLUSTER_FILE} ]; then
+    echo "clustering mementos from remainder by topic"
+    hc cluster kmeans -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${KMEANS_TOPIC_CLUSTER_FILE} -l ${KMEANS_TOPIC_CLUSTER_LOG} -k $S_lexical --feature tfidf
 fi
 
 # score by distance from kmeans centroid
