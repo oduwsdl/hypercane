@@ -57,6 +57,9 @@ def execute_time_slice(urimdata, cache_storage, number_of_slices=None):
 
     module_logger.info("The collection will be divided into {} slices".format(number_of_slices))
 
+    if number_of_slices == 0 or len(mementos) == 0:
+        raise ValueError("Discovered 0 mementos in input, refusing to continue.")
+
     # divide the number of mementos by the number of slices to determine mementos/slice
     mementos_per_slice = math.ceil(len(mementos) / number_of_slices)
 
