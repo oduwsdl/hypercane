@@ -106,7 +106,7 @@ if sys.platform != "win32":
         )
         custom_algorithm_parser.set_defaults(
             which=algorithm_name,
-            exec=hypercane.actions.sample.sample_with_custom_algorithm,
+            exec=hypercane.actions.sample.sample_with_custom_script,
             script_path=custom_script_data[algorithm_name]['script_path']
         )
         custom_algorithm_parser.add_argument(

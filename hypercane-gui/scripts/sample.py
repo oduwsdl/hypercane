@@ -49,5 +49,6 @@ if __name__ == '__main__':
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
     print("starting to create sample with method {} using function {}".format(args.which, args.exec.__name__), flush=True)
+    print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
     args.exec(args)
     print("done creating sample", flush=True)
