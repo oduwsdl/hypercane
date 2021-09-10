@@ -85,7 +85,7 @@ LDA_TOPIC_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa2-cluster-lda-topic.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${LDA_TOPIC_CLUSTER_FILE} ]; then
-    echo "clustering mementos from remainder by time"
+    echo "clustering mementos from remainder by topic"
     hc cluster lda -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${LDA_TOPIC_CLUSTER_FILE} -l ${LDA_TOPIC_CLUSTER_LOG} --num_topics $S_lexical
 fi
 
