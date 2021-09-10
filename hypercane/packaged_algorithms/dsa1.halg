@@ -18,6 +18,8 @@ ADDITONAL_ARGUMENTS=$5
 # we store the main log file and other log files inside the working directory
 # we store the error filenames inside the working directory
 
+echo "starting DSA1 algorithm"
+
 # identify timemaps
 TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
 TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
@@ -49,8 +51,8 @@ if [ ! -e ${NON_DUPLICATE_FILE} ]; then
 fi
 
 # include-only English
-ONLY_ENGLISH_FILE=${WORKING_DIRECTORY}/only-english.tsv
-ONLY_ENGLISH_LOG=${WORKING_DIRECTORY}/include-only-english.log
+ONLY_ENGLISH_FILE=${WORKING_DIRECTORY}/dsa1-only-english.tsv
+ONLY_ENGLISH_LOG=${WORKING_DIRECTORY}/dsa1-include-only-english.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${ONLY_ENGLISH_FILE} ]; then
@@ -59,8 +61,8 @@ if [ ! -e ${ONLY_ENGLISH_FILE} ]; then
 fi
 
 # slice collection by memento-dateimte
-TIME_SLICE_FILE=${WORKING_DIRECTORY}/time-slice.tsv
-TIME_SLICE_LOG=${WORKING_DIRECTORY}/cluster-time-slice.log
+TIME_SLICE_FILE=${WORKING_DIRECTORY}/dsa1-time-slice.tsv
+TIME_SLICE_LOG=${WORKING_DIRECTORY}/dsa1-cluster-time-slice.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${TIME_SLICE_FILE} ]; then
@@ -69,8 +71,8 @@ if [ ! -e ${TIME_SLICE_FILE} ]; then
 fi
 
 # apply DBSCAN to cluster by Simhash distance
-DBSCAN_FILE=${WORKING_DIRECTORY}/dbscan.tsv
-DBSCAN_LOG=${WORKING_DIRECTORY}/cluster-dbscan.log
+DBSCAN_FILE=${WORKING_DIRECTORY}/dsa1-dbscan.tsv
+DBSCAN_LOG=${WORKING_DIRECTORY}/dsa1-cluster-dbscan.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${DBSCAN_FILE} ]; then
@@ -79,8 +81,8 @@ if [ ! -e ${DBSCAN_FILE} ]; then
 fi
 
 # score by DSA1 scoring
-SCORE_FILE=${WORKING_DIRECTORY}/score.tsv
-SCORE_LOG=${WORKING_DIRECTORY}/scored-dsa1-scoring.log
+SCORE_FILE=${WORKING_DIRECTORY}/dsa1-score.tsv
+SCORE_LOG=${WORKING_DIRECTORY}/dsa1-scored-dsa1-scoring.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${SCORE_FILE} ]; then
@@ -89,8 +91,8 @@ if [ ! -e ${SCORE_FILE} ]; then
 fi
 
 # filter to include only highest scoring from each cluster
-TOP_SCORING_FILE=${WORKING_DIRECTORY}/top-scoring.tsv
-TOP_SCORING_LOG=${WORKING_DIRECTORY}/filtered-top-scoring.log
+TOP_SCORING_FILE=${WORKING_DIRECTORY}/dsa1-top-scoring.tsv
+TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa1-filtered-top-scoring.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${TOP_SCORING_FILE} ]; then
@@ -99,11 +101,16 @@ if [ ! -e ${TOP_SCORING_FILE} ]; then
 fi
 
 # order by publication date
-ORDERED_FILE=${WORKING_DIRECTORY}/ordered.tsv
-ORDERED_LOG=${WORKING_DIRECTORY}/ordered-by-pubdate.log
+ORDERED_FILE=${WORKING_DIRECTORY}/dsa1ordered.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/dsa1-ordered-by-pubdate.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${ORDERED_FILE} ]; then
     echo "ordering mementos by publication date, falling back to memento-datetime"
     hc order pubdate-else-memento-datetime -i mementos -a ${TOP_SCORING_FILE} -o ${ORDERED_FILE} -l ${ORDERED_LOG}
 fi
+
+echo "copying output from ${ORDERED_FILE} to ${OUTPUT_FILE}"
+cp ${ORDERED_FILE} ${OUTPUT_FILE}
+
+echo "done executing DSA1 algorithm"
