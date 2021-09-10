@@ -92,9 +92,9 @@ urlcategoryscore_parser.set_defaults(
     exec=hypercane.actions.score.category_scoring
 )
 
-topentitesandbm25_parser = subparsers.add_parser('top-entites-and-bm25', help="score by the top k entities and BM25")
+topentitesandbm25_parser = subparsers.add_parser('top-entities-and-bm25', help="score by the top k entities and BM25")
 topentitesandbm25_parser.set_defaults(
-    which='top-entites-and-bm25',
+    which='top-entities-and-bm25',
     exec=hypercane.actions.score.score_by_top_entities_and_bm25
 )
 

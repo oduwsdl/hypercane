@@ -53,9 +53,10 @@ if [ ! -e ${NON_DUPLICATE_FILE} ]; then
 fi
 
 # compute numbers of clusters
-N=`wc -l ${working_directory}/non-duplicates.tsv | awk '{ print $1 }'`
-N=`expr $N - 1`
-echo "`date '+%Y-%m-%d %H:%M:%S'` [INFO] before clustering, applying input of size $N" >> ${logfile}
+echo "computing number of clusters needed"
+N=`wc -l ${WORKING_DIRECTORY}/non-duplicates.tsv | awk '{ print $1 }'`
+N=`python -c "print($N - 1)"`
+echo "before clustering, applying input of size $N"
 
 if [ $N -gt 767 ]; then
     S=`python -c "from math import ceil,log; print(ceil(28 + log($N)))"`
