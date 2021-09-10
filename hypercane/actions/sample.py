@@ -2,7 +2,7 @@ import logging
 
 module_logger = logging.getLogger("hypercane.actions.sample")
 
-def sample_with_custom_algorithm(args):
+def sample_with_custom_script(args):
 
     import sys
     import os
