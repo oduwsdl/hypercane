@@ -95,7 +95,7 @@ CENTROID_DISTANCE_SCORE_LOG=${WORKING_DIRECTORY}/dsa4-score-centroid-distance.lo
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${CENTROID_DISTANCE_SCORE_FILE} ]; then
-    echo "clustering mementos from remainder by time"
+    echo "scoring mementos by distance from centroid"
     hc score distance-from-centroid -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${CENTROID_DISTANCE_SCORE_FILE} -l ${CENTROID_DISTANCE_SCORE_LOG}
 fi
 
@@ -106,7 +106,7 @@ TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa4-filtered-top-scoring.log
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${TOP_SCORING_FILE} ]; then
     echo "filtering to include-only top scoring mementos"
-    hc filter include-only highest-score-per-cluster -i mementos -a ${SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
+    hc filter include-only highest-score-per-cluster -i mementos -a ${CENTROID_DISTANCE_SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
 fi
 
 # order by publication date

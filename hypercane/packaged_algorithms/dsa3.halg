@@ -136,7 +136,7 @@ TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa3-filtered-top-scoring.log
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${TOP_SCORING_FILE} ]; then
     echo "filtering to include-only top scoring mementos"
-    hc filter include-only highest-score-per-cluster -i mementos -a ${SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
+    hc filter include-only highest-score-per-cluster -i mementos -a ${BM25_SCORING_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
 fi
 
 # order by publication date
