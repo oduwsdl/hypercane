@@ -110,6 +110,24 @@ universal_gui_required_args = [
     }
 ]
 
+universal_by_cid_gui_required_args = [
+    {   'flags': [ '-i', '--input-type' ],
+        'argument_params' : {
+            'required': True,
+            'dest': 'input_type',
+            'help': 'The collection type, one of archiveit, pandora-subject, pandora-collection, or trove.',
+            'choices': ['archiveit', 'pandora-subject', 'pandora-collection', 'trove']
+        }    
+    },
+    {   'flags': [ '-a', '--input-arguments' ],
+        'argument_params' : {
+            'required': True,
+            'dest': 'collection_id',
+            'help': "A collection identifier.",
+        }
+    }
+]
+
 universal_gui_optional_args = [
     {   'flags': [ '-v', '--verbose' ],
         'argument_params': {

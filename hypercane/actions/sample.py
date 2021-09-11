@@ -38,7 +38,8 @@ def sample_with_custom_script(args):
             'script_path',
             'errorfilename',
             'sampling method (e.g., true-random, dsa1)',
-            'allow_noncompliant_archives'
+            'allow_noncompliant_archives',
+            'collection_id'
         ]:
             # print(argname)
             if argvalue is not None:

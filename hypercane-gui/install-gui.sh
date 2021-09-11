@@ -137,6 +137,9 @@ if [ $JUST_TEMPLATES -eq 1 ]; then
     cd ${WOOEY_DIR}
 
     echo "adding scripts to Wooey"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify by Collection ID.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample by Collection ID.py"
+    python ./manage.py addscript "${SCRIPT_DIR}/scripts/report by Collection ID.py"
     python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
     python ./manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
     python ./manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"

@@ -21,7 +21,7 @@ sample_cli_required_args = [
     {
         'flags': [ '--working-directory' ],
         'argument_params': {
-            'required': True,
+            'required': False,
             'dest': 'working_directory',
             'help': 'The directory in which intermediate error, log, and output files will be stored. Defaults to generated temporary directory. May not be used by all sample commands.',
             'default': tempfile.mkdtemp()
