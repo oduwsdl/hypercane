@@ -1,7 +1,7 @@
 import hypercane.errors
 
 from hypercane.args import universal_cli_required_args, universal_cli_optional_args
-from hypercane.args.sample import sample_parser
+from hypercane.args.sample import sample_parser, sample_cli_required_args
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
@@ -22,6 +22,11 @@ if __name__ == '__main__':
 
             optional = subparser.add_argument_group('optional arguments')
             for entry in universal_cli_optional_args:
+                flags = entry['flags']
+                argument_params = entry['argument_params']
+                optional.add_argument(*flags, **argument_params)
+
+            for entry in sample_cli_required_args:
                 flags = entry['flags']
                 argument_params = entry['argument_params']
                 optional.add_argument(*flags, **argument_params)

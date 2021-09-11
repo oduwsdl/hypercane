@@ -109,9 +109,8 @@ def extract_rank_key_from_input(urimdata):
             if len(foundkeys) == 1:
                 rankkey = foundkeys[0]
             else:
-                raise ValueError(
-                    "Too many score fields in the inputs."
-                )
+                rankkey = foundkeys[-1]
+
         else:
             raise ValueError(
                 "The input file does not contain score information."

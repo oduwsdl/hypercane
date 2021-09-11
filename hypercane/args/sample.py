@@ -17,6 +17,18 @@ sample_parser = argparse.ArgumentParser(prog="hc sample",
 subparsers = sample_parser.add_subparsers(help='sampling methods', dest='sampling method (e.g., true-random, dsa1)')
 subparsers.required = True
 
+sample_cli_required_args = [
+    {
+        'flags': [ '--working-directory' ],
+        'argument_params': {
+            'required': True,
+            'dest': 'working_directory',
+            'help': 'The directory in which intermediate error, log, and output files will be stored. Defaults to generated temporary directory. May not be used by all sample commands.',
+            'default': tempfile.mkdtemp()
+        }
+    }
+]
+
 # custom algorithms are listed first
 if sys.platform != "win32":
     # assumes all other platforms support shell scripts
@@ -109,10 +121,10 @@ if sys.platform != "win32":
             exec=hypercane.actions.sample.sample_with_custom_script,
             script_path=custom_script_data[algorithm_name]['script_path']
         )
-        custom_algorithm_parser.add_argument(
-            '--working-directory', dest='working_directory',
-            help='The directory in which intermediate error, log, and output files will be stored. Defaults to generated temporary directory.', default=tempfile.mkdtemp()
-        )
+        # custom_algorithm_parser.add_argument(
+        #     '--working-directory', dest='working_directory',
+        #     help='The directory in which intermediate error, log, and output files will be stored. Defaults to generated temporary directory.', default=tempfile.mkdtemp()
+        # )
 
         # print(algorithm_name)
 

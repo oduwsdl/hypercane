@@ -95,7 +95,7 @@ DSA2_SCORE_LOG=${WORKING_DIRECTORY}/dsa2-scoring.log
 
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${DSA2_SCORE_FILE} ]; then
-    echo "clustering mementos from remainder by time"
+    echo "scoring mementos by DSA2 scoring function"
     hc score dsa2-scoring -i mementos -a ${LDA_TOPIC_CLUSTER_FILE} -o ${DSA2_SCORE_FILE} -l ${DSA2_SCORE_LOG}
 fi
 
@@ -106,7 +106,7 @@ TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa2-filtered-top-scoring.log
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${TOP_SCORING_FILE} ]; then
     echo "filtering to include-only top scoring mementos"
-    hc filter include-only highest-score-per-cluster -i mementos -a ${SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
+    hc filter include-only highest-score-per-cluster -i mementos -a ${DSA2_SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
 fi
 
 # order by publication date
