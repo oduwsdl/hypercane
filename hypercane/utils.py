@@ -28,6 +28,9 @@ import re
 
 module_logger = logging.getLogger("hypercane.utils")
 
+class HypercaneStartUpError(Exception):
+    pass
+
 def get_web_session(cache_storage=None):
 
     proxies = None
@@ -43,6 +46,8 @@ def get_web_session(cache_storage=None):
 
     if cache_storage is not None:
 
+        module_logger.info("creating HTTP session with cached storage at {}".format(cache_storage))
+
         o = urlparse(cache_storage)
         if o.scheme == "mongodb":
             # these requests-cache internals gymnastics are necessary
@@ -55,7 +60,7 @@ def get_web_session(cache_storage=None):
         else:
             session = CachedSession(cache_name=cache_storage, extension='')
     else:
-        session = Session()
+        raise HypercaneStartUpError("Caching is required to use Hypercane. Please specify a MongoDB or SQLite database for caching through the -cs argument or HC_CACHE_STORAGE environment variable. If you are seeing this message in the Hypercane GUI, please notify your system administrator.")
 
     retry = Retry(
         total=10,
