@@ -7,6 +7,13 @@ DAEMONIZE_DJANGO=0
 WOOEY_DIR=${SCRIPT_DIR}/../hypercane_with_wooey
 DJANGO_PORT=8000
 
+if [ -z "${HC_CACHE_STORAGE}" ]; then
+    echo "ERROR: Cache Storage has not been set, refusing to continue."
+    exit 22
+else
+    echo "HC_CACHE_STORAGE is ${HC_CACHE_STORAGE}"
+fi
+
 while test $# -gt 0; do
 
     echo "looping..."
