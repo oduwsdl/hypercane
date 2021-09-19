@@ -1,16 +1,22 @@
 import os
+from datetime import datetime
 
 import hypercane.actions.identify
 import hypercane.errors
 
 from hypercane.args import universal_by_cid_gui_required_args, universal_gui_optional_args
-from hypercane.args.identify import identify_parser
+from hypercane.args.identify import gui_identify_by_collection_id_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
 
 if __name__ == '__main__':
 
-    for item in identify_parser._subparsers._group_actions:
+    for action in gui_identify_by_collection_id_parser._actions:
+        if action.dest == 'accept_datetime' or action.dest == 'timegates':
+            # these don't mean anything here
+            gui_identify_by_collection_id_parser._remove_action(action)
+
+    for item in gui_identify_by_collection_id_parser._subparsers._group_actions:
         for key in item.choices:
 
             subparser = item.choices[key]
@@ -29,7 +35,7 @@ if __name__ == '__main__':
                 argument_params = entry['argument_params']
                 optional.add_argument(*flags, **argument_params)
 
-    args = identify_parser.parse_args()
+    args = gui_identify_by_collection_id_parser.parse_args()
 
     # setting expected arguments for GUI
     vars(args)['output_filename'] = "hypercane-identify-output.tsv"
@@ -37,6 +43,11 @@ if __name__ == '__main__':
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.collection_id
+    vars(args)['accept_datetime'] = None
+    vars(args)['timegates'] = [
+        "https://timetravel.mementoweb.org/timegate/",
+        "https://web.archive.org/web/"
+    ]
 
     logger = get_logger(
         __name__,
