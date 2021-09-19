@@ -1,4 +1,6 @@
 import os
+import zipfile
+import shutil
 
 import hypercane.actions.identify
 import hypercane.errors
@@ -7,6 +9,12 @@ from hypercane.args import universal_gui_required_args, universal_gui_optional_a
 from hypercane.args.synthesize import synthesize_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
+
+def zipdir(path, ziph):
+    # code from https://www.tutorialspoint.com/How-to-zip-a-folder-recursively-using-Python
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file))
 
 if __name__ == '__main__':
 
@@ -52,6 +60,14 @@ if __name__ == '__main__':
     if args.errorfilename is not None:
         hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-    print("starting to identify {} in input".format(args.which))
+    print("starting to synthesize {} in input".format(args.which))
     args.exec(args)
-    print("done identifying {}".format(args.which))
+
+    if args.output_extension == 'directory':
+        print("compressing output into a single zip file")
+        outputZip = zipfile.ZipFile('hypercane-synthesize-output.zip', 'w')
+        zipdir(args.output_directory, outputZip)
+        outputZip.close()
+        shutil.rmtree(args.output_directory)
+
+    print("done synthesizing {}".format(args.which))
