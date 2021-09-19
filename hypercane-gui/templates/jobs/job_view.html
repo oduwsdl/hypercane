@@ -81,6 +81,12 @@
                                     <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Score Output</a></li>
                                 {% endif %}
 
+                            {% elif 'order' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-order-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Order Output</a></li>
+                                {% endif %}
+
                             {% elif 'synthesize' in job_info.job.script_version.script.script_name %}
 
                                 {% if 'hypercane-synthesize-output' in file.url %}
