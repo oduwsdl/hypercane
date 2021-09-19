@@ -79,11 +79,18 @@ cd ${WOOEY_DIR}
 python ./manage.py migrate
 cd ${startdir}
 
-echo "updating schema at database ${DBNAME} for defect"
+echo "updating schema at database ${DBNAME} for defects"
 
 psql ${DBNAME} <<EOF
 ALTER TABLE wooey_scriptversion ALTER COLUMN script_path TYPE varchar(255);
+CREATE TABLE IF NOT EXISTS "wooey_cache_table" (
+    "cache_key" VARCHAR(255) NOT NULL PRIMARY KEY,
+    "value" TEXT NOT NULL,
+    "expires" TIMESTAMP NOT NULL
+);
+ALTER TABLE "wooey_cache_table" OWNER TO ${DBUSER}
 EOF
+
 
 echo "restarting Hypercane"
 "${SCRIPT_DIR}/stop-gui.sh"
