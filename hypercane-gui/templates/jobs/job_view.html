@@ -69,6 +69,12 @@
                                     <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Identify Output</a></li>
                                 {% endif %}
 
+                            {% elif 'filter' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'hypercane-filter-output' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Filter Output</a></li>
+                                {% endif %}
+
                             {% elif 'cluster' in job_info.job.script_version.script.script_name %}
 
                                 {% if 'hypercane-cluster-output' in file.url %}

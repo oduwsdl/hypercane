@@ -37,6 +37,7 @@ if __name__ == '__main__':
     vars(args)['errorfilename'] = "hypercane-errors.dat"
     vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
     vars(args)['input_arguments'] = args.input_file.name
+    vars(args)['allow_noncompliant_archives'] = False
 
     logger = get_logger(
         __name__,
