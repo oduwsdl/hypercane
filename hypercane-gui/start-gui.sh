@@ -46,7 +46,7 @@ cd ${WOOEY_DIR}
 echo "Starting celery"
 # TODO: make this work, it is the preferred way of daemonizing celery
 # celery multi start worker1 -A hypercane_with_wooey -c 1 --beat -l info --logfile=celery-wooey.log --pidfile=celery-wooey.pid
-celery -A ${CELERY_PROJECT_NAME} worker -c 1 --beat -l info > celery-output.log 2>&1 &
+celery -A ${CELERY_PROJECT_NAME} worker --beat -l info > celery-output.log 2>&1 &
 celery_pid=$!
 echo "Celery PID is ${celery_pid}"
 echo $celery_pid > celery-wooey.pid
@@ -64,3 +64,4 @@ else
     python ./manage.py runserver 0:${DJANGO_PORT}
 fi
 
+# TODO: set Debug=False in django_settings.py
