@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "Installing GUI inside environment at $VIRTUAL_ENV"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -58,6 +60,7 @@ fi
 if [ $INSTALL_ALL -eq 0 ]; then
     echo "installing Hypercane"
     pip install -r requirements.txt
+    pip install psycopg2
     python -m spacy download en_core_web_sm
     pip install . --use-feature=in-tree-build
     status=$?
