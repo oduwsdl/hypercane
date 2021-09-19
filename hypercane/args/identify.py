@@ -53,3 +53,36 @@ originalresource_parser.set_defaults(
     which='original-resources',
     exec=hypercane.actions.identify.discover_original_resources
 )
+
+gui_identify_by_collection_id_parser = argparse.ArgumentParser(prog="hc identify",
+    description="'identify' discovers resource identifiers in a web archive collection, a list of TimeMaps, original resources, or mementos",
+    formatter_class=RawTextHelpFormatter
+)
+
+gui_subparsers = gui_identify_by_collection_id_parser.add_subparsers(help='identifying methods', dest='identifying method (timemaps, mementos, or original-resources)')
+gui_subparsers.required = True
+
+gui_identify_by_collection_id_memento_parser = gui_subparsers.add_parser('mementos', help="Discover the mementos in a web archive collection.")
+gui_identify_by_collection_id_memento_parser.set_defaults(
+    which='mementos',
+    exec=hypercane.actions.identify.discover_mementos
+)
+
+gui_identify_by_collection_id_timemap_parser = gui_subparsers.add_parser('timemaps', help="Discover the TimeMaps in a web archive collection.")
+gui_identify_by_collection_id_timemap_parser.set_defaults(
+    which='timemaps',
+    exec=hypercane.actions.identify.discover_timemaps
+)
+
+# # note: this is just for testing purposes, but do not remove this argument
+# gui_identify_by_collection_id_timemap_parser.add_argument('--faux-tms-acceptable', 
+#     # help="accept faux URI-Ts as output; if you do not understand this, you likely do not want this option",
+#     help=argparse.SUPPRESS,
+#     action='store_true', required=False,
+#     dest='faux_tms_acceptable')
+
+gui_identify_by_collection_id_originalresource_parser = gui_subparsers.add_parser('original-resources', help="Discover the original resources in a web archive collection.")
+gui_identify_by_collection_id_originalresource_parser.set_defaults(
+    which='original-resources',
+    exec=hypercane.actions.identify.discover_original_resources
+)
