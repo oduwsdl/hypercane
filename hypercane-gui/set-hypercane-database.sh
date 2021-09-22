@@ -122,8 +122,8 @@ EOF
 
 
 echo "restarting Hypercane"
-"${SCRIPT_DIR}/stop-gui.sh"
-"${SCRIPT_DIR}/start-gui.sh"
+"${SCRIPT_DIR}/stop-hypercane-gui.sh"
+"${SCRIPT_DIR}/start-hypercane-gui.sh"
 echo "Hypercane should be restarted"
 
 # add Hypercane scripts
