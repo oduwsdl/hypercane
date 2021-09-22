@@ -139,18 +139,7 @@ if [ $JUST_TEMPLATES -eq 1 ]; then
     echo "changing to ${WOOEY_DIR}"
     cd ${WOOEY_DIR}
 
-    echo "adding scripts to Wooey"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify by Collection ID.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample by Collection ID.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/report by Collection ID.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter include-only.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter exclude.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/cluster.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/score.py"
-    python ./manage.py addscript "${SCRIPT_DIR}/scripts/order.py"
+    # adding scripts to Wooey
+    "${SCRIPT_DIR}/add-hypercane-scripts.sh"
 
 fi

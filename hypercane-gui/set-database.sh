@@ -7,7 +7,7 @@ echo "configuring Hypercane GUI for Postgres database"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WOOEY_DIR="${SCRIPT_DIR}/../hypercane_with_wooey"
 
-# echo "WOOEY_DIR is ${WOOEY_DIR}"
+echo "WOOEY_DIR is ${WOOEY_DIR}"
 
 if [ -z "${HC_CACHE_STORAGE}" ]; then
     echo "ERROR: Cache Storage has not been set, refusing to continue."
@@ -126,20 +126,7 @@ echo "restarting Hypercane"
 "${SCRIPT_DIR}/start-gui.sh"
 echo "Hypercane should be restarted"
 
-echo "adding scripts to Wooey"
-echo "changing to ${WOOEY_DIR}"
-cd ${WOOEY_DIR}
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/identify by Collection ID.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/sample by Collection ID.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/report by Collection ID.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/identify.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/filter include-only.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/filter exclude.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/cluster.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/score.py"
-python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/order.py"
+# add Hypercane scripts
+"${SCRIPT_DIR}/add-hypercane-scripts.sh"
 
 echo "the Postgres database and Hypercane connection settings are set up now"
