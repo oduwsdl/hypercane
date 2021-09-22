@@ -7,6 +7,18 @@ echo "configuring Hypercane GUI for Postgres database"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WOOEY_DIR="${SCRIPT_DIR}/../hypercane_with_wooey"
 
+echo "verifying the existence of the postgres client 'psql'"
+set +e
+which sping
+status=$?
+
+if [ ${status} -ne 0 ]; then
+    echo "Could not locate 'psql' in the PATH, cannot continue."
+    exit 22
+fi
+
+set -e
+
 echo "WOOEY_DIR is ${WOOEY_DIR}"
 
 if [ -z "${HC_CACHE_STORAGE}" ]; then
