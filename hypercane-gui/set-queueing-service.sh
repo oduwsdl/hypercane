@@ -48,9 +48,14 @@ fi
 settings_file=${WOOEY_DIR}/hypercane_with_wooey/settings/user_settings.py
 
 cat >> ${settings_file} <<- EOF
-CELERY_BROKER_URL = ${AMQP_URL}
+CELERY_BROKER_URL = "${AMQP_URL}"
 CELERY_BROKER_POOL_LIMIT = ${POOL_LIMIT}
 CELERYD_CONCURRENCY = ${CELERYD_CONCURRENCY}
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TASK_ACKS_LATE = True
 EOF
+
+echo "restarting Hypercane"
+"${SCRIPT_DIR}/stop-gui.sh"
+"${SCRIPT_DIR}/start-gui.sh"
+echo "Hypercane should be restarted"
