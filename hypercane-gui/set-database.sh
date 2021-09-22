@@ -2,12 +2,19 @@
 
 set -e
 
-echo "configuring Postgres database for Hypercane GUI"
+echo "configuring Hypercane GUI for Postgres database"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WOOEY_DIR="${SCRIPT_DIR}/../hypercane_with_wooey"
 
-echo "WOOEY_DIR is ${WOOEY_DIR}"
+# echo "WOOEY_DIR is ${WOOEY_DIR}"
+
+if [ -z "${HC_CACHE_STORAGE}" ]; then
+    echo "ERROR: Cache Storage has not been set, refusing to continue."
+    exit 22
+else
+    echo "HC_CACHE_STORAGE is ${HC_CACHE_STORAGE}"
+fi
 
 while test $# -gt 0; do
 
@@ -53,7 +60,29 @@ if [ -z ${DBPASSWORD} ]; then
     read -s DBPASSWORD
 fi
 
-echo "got password of $DBPASSWORD"
+# echo "got password of $DBPASSWORD"
+echo "testing database connection"
+
+echo "" | psql -h ${DBHOST} -p ${DBPORT} -U ${DBUSER} ${DBNAME}
+status=$?
+
+if [ ${status} -ne 0 ]; then
+    echo "There was an issue connecting to 'postgresql://${DBUSER}:${DBHOST}:${DBPORT}/${DBNAME}', please verify the supplied database information."
+fi
+
+echo "verifying that database is empty"
+export PGPASSWORD="${DBPASSWORD}"
+
+tablecount=`echo "\dS" | psql -h ${DBHOST} -p ${DBPORT} -U ${DBUSER} ${DBNAME} | grep -P "^[ ]+public" | grep "| table" | wc -l | tr -d '[:space:]'`
+
+echo "discovered $tablecount tables in the database"
+
+if [ $tablecount != 0 ]; then
+    echo "This script is meant to be run for a new empty database. The database at 'postgresql://${DBHOST}:${DBPORT}/${DBNAME}' contains tables from a previous install. Please drop the tables or specify a different database."
+    exit
+else
+    echo "database is empty, continuing"
+fi
 
 settings_file=${WOOEY_DIR}/hypercane_with_wooey/settings/user_settings.py
 
@@ -81,7 +110,7 @@ cd ${startdir}
 
 echo "updating schema at database ${DBNAME} for defects"
 
-psql ${DBNAME} <<EOF
+psql -h ${DBHOST} -p ${DBPORT} -U ${DBUSER} ${DBNAME} <<EOF
 ALTER TABLE wooey_scriptversion ALTER COLUMN script_path TYPE varchar(255);
 CREATE TABLE IF NOT EXISTS "wooey_cache_table" (
     "cache_key" VARCHAR(255) NOT NULL PRIMARY KEY,
@@ -100,17 +129,17 @@ echo "Hypercane should be restarted"
 echo "adding scripts to Wooey"
 echo "changing to ${WOOEY_DIR}"
 cd ${WOOEY_DIR}
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify by Collection ID.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample by Collection ID.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/report by Collection ID.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/identify.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter include-only.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/filter exclude.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/cluster.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/score.py"
-python ./manage.py addscript "${SCRIPT_DIR}/scripts/order.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/identify by Collection ID.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/sample by Collection ID.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/report by Collection ID.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/sample.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/report.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/synthesize.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/identify.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/filter include-only.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/filter exclude.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/cluster.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/score.py"
+python ${WOOEY_DIR}/manage.py addscript "${SCRIPT_DIR}/scripts/order.py"
 
-echo "the Postgres connection should be set up now"
+echo "the Postgres database and Hypercane connection settings are set up now"
