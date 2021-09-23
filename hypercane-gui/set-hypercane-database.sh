@@ -14,7 +14,7 @@ status=$?
 
 if [ ${status} -ne 0 ]; then
     echo "Could not locate 'psql' in the PATH, cannot continue."
-    exit 22
+    exit 2
 fi
 
 set -e
