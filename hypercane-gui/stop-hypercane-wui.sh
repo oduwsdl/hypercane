@@ -2,21 +2,20 @@
 
 echo "beginning the steps to shut down Hypercane GUI"
 
-WOOEY_DIR=hypercane_with_wooey
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+WOOEY_DIR=${SCRIPT_DIR}/../hypercane_with_wooey
 
-cd ${WOOEY_DIR}
-
-django_pid=`cat django-wooey.pid`
+django_pid=`cat "${WOOEY_DIR}/django-wooey.pid"`
 echo "stopping Django at PID ${django_pid}"
 kill ${django_pid}
 echo "Django should be stopped"
-rm django-wooey.pid
+rm "${WOOEY_DIR}/django-wooey.pid"
 
-celery_pid=`cat celery-wooey.pid`
+celery_pid=`cat "${WOOEY_DIR}/celery-wooey.pid"`
 echo "stopping Celery at PID ${celery_pid}"
 kill ${celery_pid}
-# ps -ef | grep celery | grep -v grep | awk '{ print $2 }' | tr '\n' ' ' | xargs kill
+
 echo "Celery should be stopped"
-rm celery-wooey.pid
+rm "${WOOEY_DIR}/celery-wooey.pid"
 
 echo "Hypercane GUI processes should be shut down"

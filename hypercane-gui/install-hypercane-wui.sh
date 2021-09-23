@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Installing GUI inside environment at $VIRTUAL_ENV"
+echo "Installing WUI inside environment at $VIRTUAL_ENV"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 INSTALL_ALL=1
