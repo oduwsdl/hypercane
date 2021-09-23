@@ -60,31 +60,24 @@ function run_command() {
 
     set +e
 
-    # printf "running: "
-    # echo "eval \"$command_to_run\" > $command_output_file"
-
-    # echo
-
     eval "$command_to_run" > $command_output_file 2>&1
     status=$?
 
-    # echo $command_output
-
+    printf "\b\b\b\b\b\b"
     if [ $status -ne 0 ]; then
-        printf "\b\b\b\b\b"
-        printf "FAIL]\n"
+        
+        printf "[FAIL]\n"
         echo
         cat "$command_output_file"
         echo
         echo "${text_to_print} FAILED"
+        exit 2
     fi
 
-    printf "\b\b\b\b\b"
-
     if [ $newline == "nonewline" ]; then
-        printf " OK ]"
+        printf "[ OK ]"
     else
-        printf " OK ]\n"
+        printf "[ OK ]\n"
     fi
 
     set -e
