@@ -5,7 +5,7 @@ set -e
 function test_command(){
     command=$1
 
-    printf "checking for $command [    ]"
+    printf "checking for command: $command [    ]"
 
     set +e
     which $command > /dev/null
@@ -26,7 +26,7 @@ function test_command(){
 
 function test_access() {
     directory=$1
-    printf "verifying that `whoami` has write access to $directory [    ]"
+    printf "verifying that user `whoami` has write access to $directory [    ]"
 
     set +e
     touch ${directory}/hypercane-install-testfile.deleteme > /dev/null 2>&1
@@ -216,10 +216,11 @@ function create_generic_startup_scripts() {
     printf "creating startup wrapper [    ]"
 
     set +e
-    cat <<EOF > ${INSTALL_DIRECTORY}/start-hypercane-gui.sh
+    cat <<EOF > ${INSTALL_DIRECTORY}/start-hypercane-wui.sh
 #!/bin/bash
 source /etc/hypercane.conf
-${INSTALL_DIRECTORY}/hypercane-gui/start-hypercane-gui.sh
+export HC_CACHE_STORAGE
+${INSTALL_DIRECTORY}/hypercane-gui/start-hypercane-wui.sh --django-port ${DJANGO_PORT}
 EOF
     status=$?
 
@@ -239,7 +240,6 @@ EOF
     set +e
     cat <<EOF > ${INSTALL_DIRECTORY}/stop-hypercane-wui.sh
 #!/bin/bash
-source /etc/hypercane.conf
 ${INSTALL_DIRECTORY}/hypercane-gui/stop-hypercane-wui.sh
 EOF
     status=$?
@@ -255,6 +255,8 @@ EOF
     fi
     set -e
 
+    run_command "setting permissions on startup wrapper" "chmod 0755 ${INSTALL_DIRECTORY}/start-hypercane-wui.sh"
+    run_command "setting permissions on shutdown wrapper" "chmod 0755 ${INSTALL_DIRECTORY}/stop-hypercane-wui.sh"
 }
 
 function create_systemd_startup() {
@@ -312,21 +314,26 @@ function perform_install() {
     GUI_TARBALL=`cat ${command_output_file}`
 
     run_command "installing Hypercane CLI and libraries in virtualenv" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && pip install ${CLI_TARBALL})"
-    run_command "extracting Hypercane GUI" "tar -C ${INSTALL_DIRECTORY} -x -v -z -f ${GUI_TARBALL}"
+    run_command "extracting Hypercane WUI" "tar -C ${INSTALL_DIRECTORY} -x -v -z -f ${GUI_TARBALL}"
 
     create_hc_wrapper_script "${WRAPPER_SCRIPT_PATH}"
 
-    run_command "setting permissions on Hypercane CLI wrapper script" "chmod 0755 /usr/local/bin/hc"
-    run_command "storing MongoDB URL in /etc/hypercane.conf" "${INSTALL_DIRECTORY}/hypercane-gui/set-mongodb-url.sh ${HC_CACHE_STORAGE}"
+    run_command "setting permissions on Hypercane CLI wrapper script" "chmod 0755 ${WRAPPER_SCRIPT_PATH}/hc"
+    run_command "setting permissions on Hypercane database configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-hypercane-database.sh"
+    run_command "setting permissions on Hypercane queueing service configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-hypercane-queueing-service.sh"
+    run_command "setting permissions on Hypercane caching database configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh"
+    run_command "storing MongoDB URL in /etc/hypercane.conf" "${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh ${HC_CACHE_STORAGE}"
+
+    run_command "creating Hypercane WUI" "${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh"
 
     check_for_systemctl
     if [ $systemctl_check -ne 0 ]; then
-        check_for_initd
+        check_for_checkconfig
         if [ $checkconfig_check -ne 0 ]; then
             create_generic_startup_scripts
             echo "Useful notes:"
-            echo "* to start the Hypercane GUI, run ${INSTALL_DIRECTORY}/hypercane-gui/start-hypercane-wui.sh"
-            echo "* to stop the Hypercane GUI, run ${INSTALL_DIRECTORY}/hypercane-gui/stop-hypercane-wui.sh"
+            echo "* to start the Hypercane GUI, run ${INSTALL_DIRECTORY}/start-hypercane-wui.sh"
+            echo "* to stop the Hypercane GUI, run ${INSTALL_DIRECTORY}/stop-hypercane-wui.sh"
 
             # TODO: check for macOS and create an icon or something in /Applications for the user to start it there
         else
