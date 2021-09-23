@@ -1,0 +1,11 @@
+[Unit]
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/opt/wooey-raintale/venv/bin/celery -A hypercane_with_wooey worker --beat -l info
+User=${HYPERCANE_USER}
+WorkingDirectory=/opt/wooey-raintale/raintale_with_wooey
+
+[Install]
+WantedBy=multi-user.target
