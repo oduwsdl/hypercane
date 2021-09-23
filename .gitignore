@@ -120,6 +120,9 @@ venv.bak/
 _site
 .bundle
 
+# Hypercane installer
+./installer
+
 # hand testing of Hypercane
 hand-testing/
 hypercane_with_wooey/

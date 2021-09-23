@@ -1,0 +1,11 @@
+[Unit]
+After=hypercane-celery.service
+Requires=hypercane-celery.service
+
+[Service]
+ExecStart=/opt/hypercane-service/venv/bin/python manage.py runserver ${HYPERCANE_HOST}:${HYPERCANE_PORT}
+User=dsaui
+WorkingDirectory=/opt/hypercane-service/hypercane_with_wooey
+
+[Install]
+WantedBy=multi-user.target
