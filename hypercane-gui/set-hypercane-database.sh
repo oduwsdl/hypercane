@@ -2,31 +2,35 @@
 
 set -e
 
-echo "configuring Hypercane GUI for Postgres database"
+function test_command(){
+    command=$1
+
+    printf "checking for command: $command [    ]"
+
+    set +e
+    which $command > /dev/null
+    status=$?
+
+    if [ $status -ne 0 ]; then
+        printf "\b\b\b\b\b"
+        printf "FAIL]\n"
+        echo "the command '$command' is required to install Hypercane; it was not detected in your PATH"
+        exit 2
+    fi
+
+    printf "\b\b\b\b\b"
+    printf " OK ]\n"
+
+    set -e
+}
+
+echo "Configuring Hypercane WUI for Postgres database"
+echo
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 WOOEY_DIR="${SCRIPT_DIR}/../hypercane_with_wooey"
 
-echo "verifying the existence of the postgres client 'psql'"
-set +e
-which sping
-status=$?
-
-if [ ${status} -ne 0 ]; then
-    echo "Could not locate 'psql' in the PATH, cannot continue."
-    exit 2
-fi
-
-set -e
-
-echo "WOOEY_DIR is ${WOOEY_DIR}"
-
-if [ -z "${HC_CACHE_STORAGE}" ]; then
-    echo "ERROR: Cache Storage has not been set, refusing to continue."
-    exit 22
-else
-    echo "HC_CACHE_STORAGE is ${HC_CACHE_STORAGE}"
-fi
+test_command "psql"
 
 while test $# -gt 0; do
 
@@ -72,7 +76,6 @@ if [ -z ${DBPASSWORD} ]; then
     read -s DBPASSWORD
 fi
 
-# echo "got password of $DBPASSWORD"
 echo "testing database connection"
 
 echo "" | psql -h ${DBHOST} -p ${DBPORT} -U ${DBUSER} ${DBNAME}
@@ -132,13 +135,10 @@ CREATE TABLE IF NOT EXISTS "wooey_cache_table" (
 ALTER TABLE "wooey_cache_table" OWNER TO ${DBUSER}
 EOF
 
-
-echo "restarting Hypercane"
-"${SCRIPT_DIR}/stop-hypercane-gui.sh"
-"${SCRIPT_DIR}/start-hypercane-gui.sh"
-echo "Hypercane should be restarted"
-
 # add Hypercane scripts
 "${SCRIPT_DIR}/add-hypercane-scripts.sh"
 
-echo "the Postgres database and Hypercane connection settings are set up now"
+echo
+echo "You must restart the Hypercane WUI service to start using the queueing service"
+echo
+echo "Done configuring Hypercane for Postgres"
