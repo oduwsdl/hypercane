@@ -175,6 +175,7 @@ function create_generic_startup_scripts() {
 #!/bin/bash
 source /etc/hypercane.conf
 export HC_CACHE_STORAGE
+source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate
 ${INSTALL_DIRECTORY}/hypercane-gui/start-hypercane-wui.sh --django-port ${DJANGO_PORT}
 EOF
     status=$?
@@ -195,6 +196,7 @@ EOF
     set +e
     cat <<EOF > ${INSTALL_DIRECTORY}/stop-hypercane-wui.sh
 #!/bin/bash
+source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate
 ${INSTALL_DIRECTORY}/hypercane-gui/stop-hypercane-wui.sh
 EOF
     status=$?
@@ -279,7 +281,7 @@ function perform_install() {
     run_command "setting permissions on Hypercane caching database configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh"
     run_command "storing MongoDB URL in /etc/hypercane.conf" "${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh ${HC_CACHE_STORAGE}"
 
-    run_command "creating Hypercane WUI" "${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh"
+    run_command "creating Hypercane WUI" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && ${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh)"
     # TODO: set Debug=False in django_settings.py
 
     check_for_systemctl
