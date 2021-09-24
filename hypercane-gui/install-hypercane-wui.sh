@@ -62,14 +62,18 @@ if [ $INSTALL_ALL -eq 0 ]; then
     pip install -r requirements.txt
     pip install psycopg2
     python -m spacy download en_core_web_sm
+    set +e
     pip install . --use-feature=in-tree-build
     status=$?
+    set -e
     if [ $status -eq 2 ]; then
         pip install .
     fi
 else
+    set +e
     pip freeze | grep hypercane > /dev/null
     status=$?
+    set -e
 
     if [ $status -eq 0 ]; then
         echo "Hypercane already installed, skipping install of Hypercane"
@@ -81,12 +85,16 @@ else
     fi
 fi
 
+echo "moving on to Django"
+
 if [ $INSTALL_ALL -eq 0 ]; then
     echo "installing specific Django version"
     pip install Django==3.1.8 # see https://github.com/wooey/Wooey/issues/334
 else
+    set +e
     pip freeze | grep Django==3.1.8 > /dev/null
     status=$?
+    set -e
 
     if [ $status -eq 0 ]; then
         echo "Django already installed, skipping install of Django"
@@ -100,8 +108,10 @@ if [ $INSTALL_ALL -eq 0 ]; then
     echo "installing Wooey"
     pip install wooey
 else
+    set +e
     pip freeze | grep wooey > /dev/null
     status=$?
+    set -e
 
     if [ $status -eq 0 ]; then
         echo "Wooey already installed, skipping install of Wooey"
