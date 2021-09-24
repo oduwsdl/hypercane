@@ -30,7 +30,40 @@ The software is still volatile, so you will need to build your own docker image.
 
 This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed.
 
-# Running Hypercane
+## Using the self-extracting installer on a Unix/Linux system
+
+This installer only works on Unix and Linux.
+
+1. Install MongoDB on a system accessible to the server chosen for Hypercane and record the URL for this MonboDB install. Hypercane will no longer work without a caching database.
+2. Download the latest release of Hypercane
+3. Run `./install-hypercane.sh --mongodb-url [MONGODB_URL]` where MONGODB_URL is the URL recorded in step 1
+
+### Hypercane WUI
+
+Hypercane comes with a web user interface (WUI) providing a more user-friendly method of executing Hypercane. The WUI is a web application. Starting this web application depends on your Unix/Linux system.
+
+To start the Hypercane WUI on a generic Unix system:
+`/opt/hypercane/start-hypercane-wui.sh`
+
+#### Configuring the Hypercane WUI for Postgres
+
+By default, the Hypercane WUI uses SQLite, which does not perform well for multiple users logging into the same Hypercane WUI system. For optimial user experience, the Hypercane WUI can be connected to a Postgres database.
+
+1. Install Postgres on a system accessible to the server that the Hypercane WUI is running on. Record that system's host and the port Postgres is running on -- the default port is 5432.
+2. Log into postgres and create a database with postgres for Hypercane.
+3. Create a user and password.
+4. Grant all privileges on the database from step 2 in step 3.
+5. Run `/opt/hypercane/hypercane-gui/set-hypercane-database.sh --dbuser [DBUSER] --dbname [DBNAME] --dbhost [DBHOST] --dbport [DBPORT]` -- with DBUSER created from step 3, DBNAME replaced by the database you created in step 2, DBHOST and DBPORT recorded from step 1. The script will prompt you for the password.
+6. Restart Hypercane as appropriate for your system.
+
+#### Configuring the Hypercane WUI for RabbitMQ
+
+For optimal process control, the Hypercane WUI can use a queueing service like RabbitMQ.
+
+1. Install RabbitMQ on a system accessible to the server that the Hypercane WUI is running on. Record that system's hostname and the port that RabbitMQ is running on -- the default port is 5672.
+2. Run `/opt/hypercane/hypercane-gui/set-hypercane-queueing-service.sh --amqp-url amqp://[HOST]:[PORT]/` where HOST is the host of the RabbitMQ server and PORT is its port
+
+# Running the Hypercane CLI
 
 Hypercane allows you to perform **actions** on web archive collections, TimeMaps, or lists of Mementos.
 
