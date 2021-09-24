@@ -45,9 +45,11 @@ if sys.platform != "win32":
     custom_algorithm_dirs = [
         "{}/../packaged_algorithms".format(
             os.path.dirname(os.path.realpath(__file__))
-        ),
-        user_algorithm_dir
+        )
     ]
+
+    if os.path.exists(user_algorithm_dir):
+        custom_algorithm_dirs.append(user_algorithm_dir)
 
     for algorithm_dir in custom_algorithm_dirs:
 
