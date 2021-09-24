@@ -78,7 +78,7 @@ while [ $celery_proc_count -ne 0 ]; do
 
     printf "\n"
 
-    if [ $attempt_count -gt 10 ]; then
+    if [ $attempts_left -le 0 ]; then
         printf "no longer attempting graceful Celery shutdown with TERM signal, resorting to KILL signal"
 
         for pid in `echo ${celery_procs}`; do
@@ -89,6 +89,13 @@ while [ $celery_proc_count -ne 0 ]; do
 
     celery_proc_count=`ps -ef | grep ${celery_pid} | grep "hypercane_with_wooey" | grep -v grep | awk '{ print $2 }' | wc -l`
 
+    # when expr evaluates to 0, it returns a nonzero status
+    set +e
+    attempt_count=`expr $attempt_count + 1`
+    attempts_left=`expr 5 - $attempt_count`
+    set -e
+    echo "${attempts_left} attempts to stop Celery left"
+
 done
 
 celery_proc_count=`ps -ef | grep ${celery_pid} | grep "hypercane_with_wooey" | grep -v grep | awk '{ print $2 }' | wc -l`
@@ -96,6 +103,8 @@ celery_proc_count=`ps -ef | grep ${celery_pid} | grep "hypercane_with_wooey" | g
 if [ $celery_proc_count -gt 0 ]; then
     printf "attempt to kill Celery failed, you will need to manually kill the processes\n"
     exit 2
+else
+    printf "successfully stopped Celery\n"
 fi
 
 run_command "removing PID file at ${WOOEY_DIR}/celery-wooey.pid" "rm \"${WOOEY_DIR}/celery-wooey.pid\""
