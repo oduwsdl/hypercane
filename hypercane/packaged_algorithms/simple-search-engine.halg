@@ -1,0 +1,73 @@
+#!/bin/bash
+# algorithm name: simple-search-engine
+# algorithm description: Search for mementos with a specific pattern, score results by BM25, order by descending score.
+# START ARGUMENT JSON
+# [
+#     {
+#         "flags": ["--matching-term"],
+#         "argument_params": {
+#             "help": "term to search for",
+#             "dest": "matching_term",
+#             "required": true
+#         }
+#     }
+# ]
+# END ARGUMENT JSON
+
+set -e
+
+INPUT_TYPE=$1
+INPUT_ARGUMENT=$2
+OUTPUT_FILE=$3
+WORKING_DIRECTORY=$4
+ADDITIONAL_ARGUMENTS=$5
+# cache storage?
+
+arr=(${ADDITIONAL_ARGUMENTS})
+
+for i in "${!arr[@]}"; do
+
+    case "${arr[$i]}" in
+        matching-term)
+        matching_term=${arr[$i+1]}
+        ;;
+    esac
+
+done
+
+echo "starting algorithm that recreates a simple search engine"
+
+# filter to include-only mementos with the given pattern
+FILTERED_FILE=${WORKING_DIRECTORY}/only-contains-term.tsv
+FILTERED_LOG=${WORKING_DIRECTORY}/filter-include-only-term.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${FILTERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc order memento-datetime -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${FILTERED_FILE} -l ${FILTERED_LOG} --pattern "${matching_term}"
+fi
+
+# score remainder with BM25
+BM25_SCORED_FILE=${WORKING_DIRECTORY}/bm25-scored-by-term.tsv
+BM25_SCORED_LOG=${WORKING_DIRECTORY}/filter-include-only-term.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${BM25_SCORED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc score bm25 -i mementos -a ${FILTERED_FILE} -o ${BM25_SCORED_FILE} -l ${BM25_SCORED_LOG} --query "${matching_term}"
+fi
+
+# order by descending score
+ORDERED_FILE=${WORKING_DIRECTORY}/bm25-scored-by-term.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/filter-include-only-term.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ORDERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc order score -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${ORDERED_FILE} -l ${ORDERED_LOG} --descending --scoring-field "Score---BM25"
+fi
+
+echo "copying output from ${ORDERED_FILE} to ${OUTPUT_FILE}"
+cp ${ORDERED_FILE} ${OUTPUT_FILE}
+
+echo "done executing simple search engine"

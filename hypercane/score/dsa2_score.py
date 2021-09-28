@@ -1,5 +1,7 @@
 import logging
 
+from numpy.core.fromnumeric import size
+
 module_logger = logging.getLogger('hypercane.score.dsa2_score')
 
 def score_by_dsa2_score(urimdata, cache_storage, card_weight, size_weight, image_count_weight):
@@ -22,6 +24,10 @@ def score_by_dsa2_score(urimdata, cache_storage, card_weight, size_weight, image
     from .document_size import compute_boilerplate_free_character_size
     from .image_count import score_by_image_count
     from scipy.stats import zscore
+
+    module_logger.info("applying weights -- card weight: {}, size weight: {}, image count weight: {}".format(
+        card_weight, size_weight, image_count_weight
+    ))
 
     session = get_web_session(cache_storage)
 
@@ -68,9 +74,17 @@ def score_by_dsa2_score(urimdata, cache_storage, card_weight, size_weight, image
 
         urim = urimlist[i]
 
+        module_logger.info("({} * {}) + ({} * {}) + ({} * {})".format(
+            card_weight, all_card_scores[i],
+            size_weight, std_size_scores[i],
+            image_count_weight, std_image_scores[i]
+        ))
+
         dsa2_score = (card_weight * all_card_scores[i]) + \
             (size_weight * std_size_scores[i]) + \
             (image_count_weight * std_image_scores[i])
+
+        module_logger.info(" = {}".format(dsa2_score))
 
         urimdata[urim]["Score---DSA2-Score"] = dsa2_score
 

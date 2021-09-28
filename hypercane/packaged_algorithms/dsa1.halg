@@ -1,0 +1,118 @@
+#!/bin/bash
+# algorithm name: DSA1
+# algorithm description: An implementation of the algorithm from AlNoamany's dissertation.
+
+set -e
+
+INPUT_TYPE=$1
+INPUT_ARGUMENT=$2
+OUTPUT_FILE=$3
+WORKING_DIRECTORY=$4
+ADDITONAL_ARGUMENTS=$5
+# TODO: cache storage?
+
+# echo "INPUT_TYPE: ${INPUT_TYPE}"
+# echo "INPUT_ARGUMENT: ${INPUT_ARGUMENT}"
+# echo "OUTPUT_FILE: ${OUTPUT_FILE}"
+# echo "WORKING_DIRECTORY: ${WORKING_DIRECTORY}"
+# echo "ADDITIONAL_ARGUMENTS: ${ADDITIONAL_ARGUMENTS}"
+
+# we store the main log file and other log files inside the working directory
+# we store the error filenames inside the working directory
+
+echo "starting DSA1 algorithm"
+
+# identify timemaps
+TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
+TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TIMEMAP_FILE} ]; then
+    echo "acquiring TimeMaps from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
+    hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+fi
+
+# exclude off-topic
+ON_TOPIC_FILE=${WORKING_DIRECTORY}/on-topic.tsv
+OFF_TOPIC_LOG=${WORKING_DIRECTORY}/exclude-off-topic.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ON_TOPIC_FILE} ]; then
+    echo "filtering to exclude off-topic mementos from input"
+    hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+fi
+
+# exclude near-duplicates
+NON_DUPLICATE_FILE=${WORKING_DIRECTORY}/non-duplicates.tsv
+NON_DUPLICATE_LOG=${WORKING_DIRECTORY}/exclude-near-duplicates.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${NON_DUPLICATE_FILE} ]; then
+    echo "filtering to exclude near-duplicate mementos from remainder"
+    hc filter exclude near-duplicates -i mementos -a ${ON_TOPIC_FILE} -o ${NON_DUPLICATE_FILE} -l ${NON_DUPLICATE_LOG}
+fi
+
+# include-only English
+ONLY_ENGLISH_FILE=${WORKING_DIRECTORY}/dsa1-only-english.tsv
+ONLY_ENGLISH_LOG=${WORKING_DIRECTORY}/dsa1-include-only-english.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ONLY_ENGLISH_FILE} ]; then
+    echo "filtering to include only english language mementos from remainder"
+    hc filter include-only languages -i mementos -a ${NON_DUPLICATE_FILE} -o ${ONLY_ENGLISH_FILE} -l ${ONLY_ENGLISH_LOG} --lang en
+fi
+
+# slice collection by memento-dateimte
+TIME_SLICE_FILE=${WORKING_DIRECTORY}/dsa1-time-slice.tsv
+TIME_SLICE_LOG=${WORKING_DIRECTORY}/dsa1-cluster-time-slice.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TIME_SLICE_FILE} ]; then
+    echo "clustering mementos from remainder by time"
+    hc cluster time-slice -i mementos -a ${ONLY_ENGLISH_FILE} -o ${TIME_SLICE_FILE} -l ${TIME_SLICE_LOG}
+fi
+
+# apply DBSCAN to cluster by Simhash distance
+DBSCAN_FILE=${WORKING_DIRECTORY}/dsa1-dbscan.tsv
+DBSCAN_LOG=${WORKING_DIRECTORY}/dsa1-cluster-dbscan.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${DBSCAN_FILE} ]; then
+    echo "clustering mementos from remainder by Simhash"
+    hc cluster time-slice -i mementos -a ${TIME_SLICE_FILE} -o ${DBSCAN_FILE} -l ${DBSCAN_LOG}
+fi
+
+# score by DSA1 scoring
+SCORE_FILE=${WORKING_DIRECTORY}/dsa1-score.tsv
+SCORE_LOG=${WORKING_DIRECTORY}/dsa1-scored-dsa1-scoring.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${SCORE_FILE} ]; then
+    echo "scoring mementos by DSA1 scoring function"
+    hc score dsa1-scoring -i mementos -a ${DBSCAN_FILE} -o ${SCORE_FILE} -l ${SCORE_LOG}
+fi
+
+# filter to include only highest scoring from each cluster
+TOP_SCORING_FILE=${WORKING_DIRECTORY}/dsa1-top-scoring.tsv
+TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa1-filtered-top-scoring.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TOP_SCORING_FILE} ]; then
+    echo "filtering to include-only top scoring mementos"
+    hc filter include-only highest-score-per-cluster -i mementos -a ${SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
+fi
+
+# order by publication date
+ORDERED_FILE=${WORKING_DIRECTORY}/dsa1ordered.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/dsa1-ordered-by-pubdate.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ORDERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc order pubdate-else-memento-datetime -i mementos -a ${TOP_SCORING_FILE} -o ${ORDERED_FILE} -l ${ORDERED_LOG}
+fi
+
+echo "copying output from ${ORDERED_FILE} to ${OUTPUT_FILE}"
+cp ${ORDERED_FILE} ${OUTPUT_FILE}
+
+echo "done executing DSA1 algorithm"

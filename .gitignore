@@ -120,5 +120,10 @@ venv.bak/
 _site
 .bundle
 
+# Hypercane installer
+installer/install-hypercane.sh
+
 # hand testing of Hypercane
 hand-testing/
+hypercane_with_wooey/
+hypercane-errors.dat

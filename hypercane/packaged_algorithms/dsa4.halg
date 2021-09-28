@@ -1,0 +1,125 @@
+#!/bin/bash
+# algorithm name: DSA4
+# algorithm description: An implementation of the DSA4 algorithm from Jones' dissertation.
+
+set -e
+
+INPUT_TYPE=$1
+INPUT_ARGUMENT=$2
+OUTPUT_FILE=$3
+WORKING_DIRECTORY=$4
+ADDITONAL_ARGUMENTS=$5
+# TODO: cache storage?
+
+# echo "INPUT_TYPE: ${INPUT_TYPE}"
+# echo "INPUT_ARGUMENT: ${INPUT_ARGUMENT}"
+# echo "OUTPUT_FILE: ${OUTPUT_FILE}"
+# echo "WORKING_DIRECTORY: ${WORKING_DIRECTORY}"
+# echo "ADDITIONAL_ARGUMENTS: ${ADDITIONAL_ARGUMENTS}"
+
+# we store the main log file and other log files inside the working directory
+# we store the error filenames inside the working directory
+
+echo "starting DSA4 algorithm"
+
+# identify timemaps
+TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
+TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TIMEMAP_FILE} ]; then
+    echo "acquiring TimeMaps from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
+    hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+fi
+
+# exclude off-topic
+ON_TOPIC_FILE=${WORKING_DIRECTORY}/on-topic.tsv
+OFF_TOPIC_LOG=${WORKING_DIRECTORY}/exclude-off-topic.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ON_TOPIC_FILE} ]; then
+    echo "filtering to exclude off-topic mementos from input"
+    hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+fi
+
+# exclude near-duplicates
+NON_DUPLICATE_FILE=${WORKING_DIRECTORY}/non-duplicates.tsv
+NON_DUPLICATE_LOG=${WORKING_DIRECTORY}/exclude-near-duplicates.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${NON_DUPLICATE_FILE} ]; then
+    echo "filtering to exclude near-duplicate mementos from remainder"
+    hc filter exclude near-duplicates -i mementos -a ${ON_TOPIC_FILE} -o ${NON_DUPLICATE_FILE} -l ${NON_DUPLICATE_LOG}
+fi
+
+# compute numbers of clusters
+echo "computing number of clusters needed"
+N=`wc -l ${WORKING_DIRECTORY}/non-duplicates.tsv | awk '{ print $1 }'`
+N=`python -c "print($N - 1)"`
+echo "before clustering, applying input of size $N"
+
+if [ $N -gt 767 ]; then
+    S=`python -c "from math import ceil,log; print(ceil(28 + log($N)))"`
+else
+    S=`python -c "from math import ceil,sqrt; print(ceil(sqrt($N)))"`
+fi
+
+echo "we have a computed a story goal of size of $S"
+
+S_temporal=`python -c "from math import ceil,sqrt; print(ceil(sqrt($S)))"`
+S_lexical=`python -c "from math import ceil,sqrt; print(ceil(sqrt($S)))"`
+
+# cluster collection by k-means with memento-datetime as feature
+KMEANS_TIME_CLUSTER_FILE=${WORKING_DIRECTORY}/dsa4-time-cluster.tsv
+KMEANS_TIME_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa4-cluster-kmeans-time.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${KMEANS_TIME_CLUSTER_FILE} ]; then
+    echo "clustering mementos from remainder by time"
+    hc cluster kmeans -i mementos -a ${NON_DUPLICATE_FILE} -o ${KMEANS_TIME_CLUSTER_FILE} -l ${KMEANS_TIME_CLUSTER_LOG} -k $S_temporal
+fi
+
+# cluster collection by k-means with TF-IDF as feature
+KMEANS_TOPIC_CLUSTER_FILE=${WORKING_DIRECTORY}/dsa4-topic-cluster.tsv
+KMEANS_TOPIC_CLUSTER_LOG=${WORKING_DIRECTORY}/dsa4-cluster-kmeans-topic.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${KMEANS_TOPIC_CLUSTER_FILE} ]; then
+    echo "clustering mementos from remainder by topic"
+    hc cluster kmeans -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${KMEANS_TOPIC_CLUSTER_FILE} -l ${KMEANS_TOPIC_CLUSTER_LOG} -k $S_lexical --feature tfidf
+fi
+
+# score by distance from kmeans centroid
+CENTROID_DISTANCE_SCORE_FILE=${WORKING_DIRECTORY}/dsa4-centroid-distance-scoring.tsv
+CENTROID_DISTANCE_SCORE_LOG=${WORKING_DIRECTORY}/dsa4-score-centroid-distance.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${CENTROID_DISTANCE_SCORE_FILE} ]; then
+    echo "scoring mementos by distance from centroid"
+    hc score distance-from-centroid -i mementos -a ${KMEANS_TIME_CLUSTER_FILE} -o ${CENTROID_DISTANCE_SCORE_FILE} -l ${CENTROID_DISTANCE_SCORE_LOG}
+fi
+
+# filter to include only highest scoring from each cluster
+TOP_SCORING_FILE=${WORKING_DIRECTORY}/dsa4-top-scoring.tsv
+TOP_SCORING_LOG=${WORKING_DIRECTORY}/dsa4-filtered-top-scoring.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${TOP_SCORING_FILE} ]; then
+    echo "filtering to include-only top scoring mementos"
+    hc filter include-only highest-score-per-cluster -i mementos -a ${CENTROID_DISTANCE_SCORE_FILE} -o ${TOP_SCORING_FILE} -l ${TOP_SCORING_LOG}
+fi
+
+# order by publication date
+ORDERED_FILE=${WORKING_DIRECTORY}/dsa4-ordered.tsv
+ORDERED_LOG=${WORKING_DIRECTORY}/dsa4-ordered-by-pubdate.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${ORDERED_FILE} ]; then
+    echo "ordering mementos by publication date, falling back to memento-datetime"
+    hc order pubdate-else-memento-datetime -i mementos -a ${TOP_SCORING_FILE} -o ${ORDERED_FILE} -l ${ORDERED_LOG}
+fi
+
+echo "copying output from ${ORDERED_FILE} to ${OUTPUT_FILE}"
+cp ${ORDERED_FILE} ${OUTPUT_FILE}
+
+echo "done executing DSA4 algorithm"

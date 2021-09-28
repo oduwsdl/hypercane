@@ -36,4 +36,4 @@ def order_by_dsa1_publication_alg(urims, cache_storage):
 
     publication_datetime_to_urim.sort()
 
-    return publication_datetime_to_urim
+    return [ urim for dt, urim in publication_datetime_to_urim ]

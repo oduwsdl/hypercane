@@ -25,7 +25,8 @@ from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resource
 from ..utils import process_input_for_cluster_and_rank, get_memento_http_metadata
 import hypercane.errors
 from hypercane.version import __useragent__
-from mementoembed.mementoresource import MementoURINotAtArchiveFailure, MementoMetaRedirectParsingError
+from mementoembed.mementoresource import MementoURINotAtArchiveFailure, \
+    MementoMetaRedirectParsingError, MementoResourceError
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -326,6 +327,8 @@ def discover_timemaps_by_input_type(input_type, input_args, crawl_depth, session
                     metadata_fields=['timemap'])[0]
 
                 urits.append(urit)
+            except MementoResourceError as e:
+                module_logger.exception("Resource problem with {} , error: {} , skipping TimeMap discovery, reporting exception...".format(e, urim))
             except RetryError:
                 module_logger.exception("Exceeded the number of retries for {} , skipping TimeMap discovery, reporting exception...".format(urim))
             except KeyError:

@@ -23,11 +23,12 @@ def order_by_memento_datetime(urims, cache_storage):
                 urim = future_to_urim[future]
                 mdt = future.result()[0]
                 # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                module_logger.info("memento-datetime for {} is {} or {}".format(urim, mdt, datetime.timestamp(mdt)))
                 memento_datetime_to_urim.append( (datetime.timestamp(mdt), urim) )
             except Exception as exc:
                 module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
-    memento_datetime_to_urim.sort()
+    sorted_mementos = [ urim for mdt, urim in sorted( memento_datetime_to_urim, reverse=True ) ]
 
-    return memento_datetime_to_urim
+    return sorted_mementos

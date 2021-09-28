@@ -1,19 +1,25 @@
 #!python
 
+# This is a wrapper for all Hypercane commands
 import sys
-import importlib
+import os
 import errno
+import hypercane.cli.sample, hypercane.cli.identify, \
+    hypercane.cli.order, hypercane.cli.cluster, \
+    hypercane.cli.score, hypercane.cli.synthesize, \
+    hypercane.cli.report, hypercane.cli.filter_includeonly, \
+    hypercane.cli.filter_exclude
 
-# we defer imports for performance
 supported_actions = {
-    "sample": "hypercane.actions.sample",
-    "report": "hypercane.actions.report",
-    "synthesize": "hypercane.actions.synthesize",
-    "identify": "hypercane.actions.identify",
-    "filter": "hypercane.actions.hfilter",
-    "cluster": "hypercane.actions.cluster",
-    "score": "hypercane.actions.score",
-    "order": "hypercane.actions.order"
+    "sample": hypercane.cli.sample.__file__,
+    "report": hypercane.cli.report.__file__,
+    "synthesize": hypercane.cli.synthesize.__file__,
+    "identify": hypercane.cli.identify.__file__,
+    "filter include-only": hypercane.cli.filter_includeonly.__file__,
+    "filter exclude": hypercane.cli.filter_exclude.__file__,
+    "cluster": hypercane.cli.cluster.__file__,
+    "score": hypercane.cli.score.__file__,
+    "order": hypercane.cli.order.__file__
 }
 
 def print_overall_usage():
@@ -22,7 +28,7 @@ def print_overall_usage():
 It is a complex toolchain requiring a supported action and additional arguments.
 
 For example:
-    hc sample dsa1 -i archiveit -a 8778 -o story-mementos.txt
+    hc sample DSA1 -i archiveit -a 8778 -o story-mementos.txt
 
 This is the list of supported actions:
 """)
@@ -33,8 +39,29 @@ This is the list of supported actions:
     print("""
 For each of these actions, you can view additional help by typing --help after the action name, for example:
     hc sample --help
+
+Please read Hypercane's documentation at https://hypercane.readthedocs.io/en/latest/
 """)
 
+def print_filter_usage():
+
+    print("""'filter' filters a web archive colleciton by different criteria
+    
+    Supported commands:
+    * include-only - include mementos from the input that satisfy the given criteria
+    * exclude - exclude mementos from the input by the given criteria
+
+    Examples:
+
+    hc filter include-only language --lang en,es -i archiveit -a 8788 -o english-and-spanish-docs.tsv -cs mongodb://localhost/cache
+
+    hc filter exclude off-topic -i timemaps -a 8788-timemaps.tsv -o ontopic-mementos.tsv -cs mongodb://localhost/cache
+
+    hc filter exclude near-duplicates -i mementos -a ontopic-mementos.tsv -o novel-content.tsv -cs mongodb://localhost/cache
+
+    hc filter include-only rank "=1" -i mementos -a file-with-scored-mementos.tsv -o filtered-mementos.tsv -cs mongodb://localhost/cache
+
+    """)
 
 if __name__ == '__main__':
 
@@ -46,79 +73,52 @@ if __name__ == '__main__':
 
         if action == "-h" or action == "--help":
             print_overall_usage()
+            sys.exit(0)
         elif action == "--version":
             from hypercane.version import __useragent__
             print(__useragent__)
+            sys.exit(0)
         else:
-            try:
-                actionmodule = importlib.import_module(supported_actions[action])
-            except KeyError:
-                print("ERROR: unsupported action {}\n".format(action))
-                print_overall_usage()
-                sys.exit(errno.EINVAL)
 
-            if action == 'filter':
+            if action == "filter":
 
-                # print("args: {}".format(sys.argv))
+                subaction = sys.argv[2]
 
-                command = sys.argv[2]
+                # print("subaction: {}".format(subaction))
 
-                if command == '--help':
+                if subaction == '--help' or subaction == '-h':
+                    print_filter_usage()
+                    sys.exit(0)
 
-                    actionmodule.print_usage()
+                action = "{} {}".format(action, subaction)
 
-                elif command == 'include-only':
-
-                    criteria = sys.argv[3]
-
-                    if criteria == '-h' or criteria == '--help':
-
-                        actionmodule.print_include_usage()
-                    else:
-                        actionmodule.include_criteria[criteria](sys.argv[4:])
-
-                elif command == 'exclude':
-
-                    criteria = sys.argv[3]
-
-                    if criteria == '-h' or criteria == '--help':
-                        actionmodule.print_exclude_usage()
-                    else:
-                        actionmodule.exclude_criteria[criteria](sys.argv[4:])
-
-                else:
-                    print("ERROR: action filter requires either an 'include-only' or 'exclude' command")
-
-            elif action in supported_actions:
-
-                commands = actionmodule.supported_commands
-
-                if len(sys.argv) > 2:
-
-                    command = sys.argv[2]
-
-                    # print("command: {}".format(command))
-
-                    if command in commands:
-
-                        actionmodule.supported_commands[command](
-                            sys.argv[3:])
-                    else:
-                        if command != '-h' and command != '--help':
-                            print("ERROR: command {} is not supported for action {}\n".format(
-                                command, action
-                            ))
-                        actionmodule.print_usage()
-
-                else:
-                    print("ERROR: action {} requires a command\n".format(action))
-                    actionmodule.print_usage()
-
+                args = sys.argv[3:]
             else:
-                print("ERROR: unsupported action {}\n".format(action))
+                args = sys.argv[2:]
+
+            # print("action: {}".format(action))
+
+            try:
+                scriptname = os.path.abspath(supported_actions[action])
+            except KeyError:
+                print("hc: error: unknown action {}\n".format(action))
                 print_overall_usage()
                 sys.exit(errno.EINVAL)
+
+            # print("scriptname: {}".format(scriptname))
+
+            arglist = ""
+            for arg in args:
+                if ' ' in arg:
+                    arglist += '"{}"'.format(arg) + ' '
+                else:
+                    arglist += arg + ' '
+
+            retval = os.system("python {} {}".format(scriptname, arglist))
+            retval = retval >> 8
+            sys.exit(retval)
 
     else:
-        print("ERROR: no action supplied\n")
+        print("hc: error: no action supplied\n")
         print_overall_usage()
+        sys.exit(errno.EINVAL)

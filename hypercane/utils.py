@@ -28,6 +28,9 @@ import re
 
 module_logger = logging.getLogger("hypercane.utils")
 
+class HypercaneStartUpError(Exception):
+    pass
+
 def get_web_session(cache_storage=None):
 
     proxies = None
@@ -43,6 +46,8 @@ def get_web_session(cache_storage=None):
 
     if cache_storage is not None:
 
+        module_logger.info("creating HTTP session with cached storage at {}".format(cache_storage))
+
         o = urlparse(cache_storage)
         if o.scheme == "mongodb":
             # these requests-cache internals gymnastics are necessary
@@ -55,7 +60,7 @@ def get_web_session(cache_storage=None):
         else:
             session = CachedSession(cache_name=cache_storage, extension='')
     else:
-        session = Session()
+        raise HypercaneStartUpError("Caching is required to use Hypercane. Please specify a MongoDB or SQLite database for caching through the -cs argument or HC_CACHE_STORAGE environment variable. If you are seeing this message in the Hypercane GUI, please notify your system administrator.")
 
     retry = Retry(
         total=10,
@@ -139,18 +144,13 @@ def get_memento_http_metadata(urim, cache_storage, metadata_fields=[]):
 
         memento_compliant_archive = True
 
-        if 'memento-datetime' not in r.headers:
-            # short-circuit here because memento_resource_factory may throw an unnecessary exception
+        try:
+            mr = memento_resource_factory(urim, session)
+        except NotAMementoError:
+            # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
             module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
             memento_compliant_archive = False
-        else:
-            try:
-                mr = memento_resource_factory(urim, session)
-            except NotAMementoError:
-                # TODO: this is dangerous, how do we protect the system from users who submit URI-Rs by accident?
-                module_logger.warning("URI-M {} does not appear to come from a Memento-Compliant archive, resorting to heuristics which may be inaccurate...".format(urim))
-                memento_compliant_archive = False
-            # TODO: MementoMetaRedirectParsingError is not handled here and it fires before NotAMementoError
+        # TODO: MementoMetaRedirectParsingError is not handled here and it fires before NotAMementoError
 
         for field in metadata_fields:
 
@@ -500,7 +500,15 @@ def generate_raw_urim(urim):
             # other: http://localhost:8080/solrwayback/services/web/20080418011213/http://planetblacksburg.com/
             # not sure how to get from here to downloadRaw
             raw_urim = otmt.generate_raw_urim(urim) # this is just a noop
-            
+
+    # TODO: we need a better way to handle all of the different raw URI-Ms across all DSA tools
+    elif 'webarchive.nla.gov.au' in urim:
+
+        from mementoembed.mementoresource import wayback_pattern
+
+        raw_urim = urim.replace("webarchive.nla.gov.au", "web.archive.org.au")
+        raw_urim = wayback_pattern.sub(r'\1id_/', raw_urim)
+
     else:
         # OTMT handles all standard Wayback id_ tricks
         raw_urim = otmt.generate_raw_urim(urim)
