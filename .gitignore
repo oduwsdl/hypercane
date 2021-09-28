@@ -121,6 +121,7 @@ _site
 .bundle
 
 # Hypercane installer
+installer/
 installer/install-hypercane.sh
 
 # hand testing of Hypercane
