@@ -325,5 +325,3 @@ def score_by_size(args):
     save_resource_data(args.output_filename, urimdata, 'mementos', list(urimdata.keys()))
 
     module_logger.info("Finished scoring by size with feature {}, output is at {}".format(args.feature, args.output_filename))
-
-# TODO: score documents by TextRank as implemented in an older version of gensim
