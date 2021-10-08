@@ -84,20 +84,22 @@ def download_urits_and_extract_urims(uritlist, session):
 
             try:
                 r = futures[workinguri].result()
+
+                if r.status_code == 200:
+                    timemap_content = convert_LinkTimeMap_to_dict(r.text)
+
+                    try:
+                        urims = extract_urims_from_TimeMap(timemap_content)
+                    except KeyError as e:
+                        module_logger.exception(
+                            "Skipping TimeMap {}, encountered problem extracting URI-Ms from TimeMap: {}".format(workinguri, repr(e)))
+                        hypercane.errors.errorstore.add(workinguri, traceback.format_exc())
+
+                    urimlist.extend(urims)
+
             except RequestException:
+                module_logger.exception("Skipping URI {} because it could not be processed".format(workinguri))                
                 pass
-
-            if r.status_code == 200:
-                timemap_content = convert_LinkTimeMap_to_dict(r.text)
-
-                try:
-                    urims = extract_urims_from_TimeMap(timemap_content)
-                except KeyError as e:
-                    module_logger.exception(
-                        "Skipping TimeMap {}, encountered problem extracting URI-Ms from TimeMap: {}".format(workinguri, repr(e)))
-                    hypercane.errors.errorstore.add(workinguri, traceback.format_exc())
-
-                urimlist.extend(urims)
 
             working_list.remove(workinguri)
             del futures[workinguri]
