@@ -221,19 +221,35 @@ function create_systemd_startup() {
 
     set +e
     cat <<EOF > /etc/systemd/system/hypercane-celery.service
-ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/celery -A raintale_with_wooey worker -c 1 --beat -l info
+[Unit]
+Description=The Hypercane Celery service
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/celery -A hypercane_with_wooey worker --beat -l info
 User=${HYPERCANE_USER}
 WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
     printf "creating systemd Hypercane Django service file [    ]"
 
     set +e
-    cat <<EOF > /etc/systemd/system/hypercane-celery.service
+    cat <<EOF > /etc/systemd/system/hypercane-django.service
+[Unit]
+After=hypercane-celery.service
+Requires=hypercane-celery.service
+
+[Service]
 ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/python manage.py runserver ${DJANGO_IP}:${DJANGO_PORT}
 User=${HYPERCANE_USER}
 WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
 EnvironmentFile=/etc/hypercane.conf
+
+[Install]
+WantedBy=multi-user.target
 EOF
 }
 
