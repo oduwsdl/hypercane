@@ -36,7 +36,7 @@ This installer only works on Unix and Linux.
 
 1. Install MongoDB on a system accessible to the server chosen for Hypercane and record the URL for this MonboDB install. Hypercane will no longer work without a caching database.
 2. Download the latest release of Hypercane
-3. Run `./install-hypercane.sh --mongodb-url [MONGODB_URL]` where MONGODB_URL is the URL recorded in step 1
+3. Run `./install-hypercane.sh -- --mongodb-url [MONGODB_URL]` where MONGODB_URL is the URL recorded in step 1
 
 ### Hypercane WUI
 

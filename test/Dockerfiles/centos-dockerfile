@@ -1,0 +1,17 @@
+FROM centos:8
+
+RUN dnf install -y python38 which
+RUN alternatives --set python /usr/bin/python3
+
+# for Python packages that insist on compiling during 'pip install'
+RUN dnf group install -y "Development Tools"
+RUN dnf install -y python38-devel python38-libs python38-Cython
+
+WORKDIR /app
+RUN pip3 install virtualenv
+COPY ./installer/install-hypercane.sh .
+RUN ./install-hypercane.sh -- --mongodb-url mongodb://localhost/csHypercane
+
+# CMD [ "/opt/hypercane/start-hypercane-wui.sh"]
+
+CMD "/bin/bash"

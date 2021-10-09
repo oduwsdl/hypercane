@@ -270,7 +270,9 @@ function perform_install() {
     run_command "discovering Hypercane GUI archive" "ls hypercane-gui-*.tar.gz"
     GUI_TARBALL=`cat ${command_output_file}`
 
-    run_command "installing Hypercane CLI and libraries in virtualenv" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && pip install ${CLI_TARBALL})"
+    # in some environments --no-cache-dir avoids the enormous memory consumption of pytorch installation
+    # see: https://github.com/pytorch/pytorch/issues/1022
+    run_command "installing Hypercane CLI and libraries in virtualenv" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && pip install --no-cache-dir ${CLI_TARBALL})"
     run_command "extracting Hypercane WUI" "tar -C ${INSTALL_DIRECTORY} -x -v -z -f ${GUI_TARBALL}"
 
     create_hc_wrapper_script "${WRAPPER_SCRIPT_PATH}"
