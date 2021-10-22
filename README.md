@@ -94,6 +94,13 @@ To discover the list of commands associated with an action, use the `--help` com
 6. When done, exit from the hypercane container by running `exit`
 7. To stop and remove all the services (such as the cache), run `docker-compose down`
 
+## Running Hypercane with Docker Image for CentOS 8 Systemd Testing
+
+1. Create a virtualenv
+2. Clone this repository
+3. Type `./test/docker-testing/create-docker-images.sh` (this takes a long time)
+4. Type `docker run --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 hypercane-wui-centos:dev`
+
 # The Future of Hypercane
 
 We are working on additional sampling algorithms and options for the advanced actions. Please feel free to submit issues and pull requests at https://github.com/oduwsdl/hypercane.

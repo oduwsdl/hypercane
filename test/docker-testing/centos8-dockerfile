@@ -1,0 +1,29 @@
+FROM centos-systemd:8
+
+RUN dnf install -y python38 which
+RUN alternatives --set python /usr/bin/python3
+
+# for Python packages that insist on compiling during 'pip install'
+RUN dnf group install -y "Development Tools"
+RUN dnf install -y python38-devel python38-libs python38-Cython
+
+WORKDIR /app
+RUN pip3 install virtualenv
+COPY ./installer/install-hypercane.sh .
+RUN ./install-hypercane.sh -- --mongodb-url mongodb://localhost/csHypercane
+
+# for testing Hypercane's capabilities
+COPY ./test/docker-testing/mongodb-org.repo /etc/yum.repos.d/mongodb-org.repo
+RUN dnf install -y mongodb-org
+RUN mongod &
+
+# can't seem to get this to work for testing system startup/shutdown,
+# saving lines here in case we want to revisit this
+RUN systemctl enable hypercane-celery.service
+RUN systemctl enable hypercane-django.service
+
+EXPOSE 8000
+
+# just to keep it running during testing
+# ENTRYPOINT ["tail", "-f", "/dev/null"]
+CMD ["/usr/sbin/init"]

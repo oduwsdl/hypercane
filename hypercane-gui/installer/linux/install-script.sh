@@ -146,11 +146,32 @@ function check_for_systemctl() {
     set -e
 }
 
+function check_for_systemd() {
+    printf "checking for systemd [    ]"
+
+    printf "\b\b\b\b\b\b"
+
+    # not all systemd servers have this directory
+    # checkdir="/run/systemd/system"
+
+    # Ubuntu 21.04 and Centos 8 have this directory
+    checkdir="/etc/systemd/system"
+
+    if [[ -e ${checkdir} ]]; then
+        printf "[ OK ]\n"
+        systemd_check=0
+    else
+        printf "[ NO ]\n"
+        systemd_check=1
+    fi
+
+}
+
 function check_for_checkconfig() {
     printf "checking for checkconfig -- does this server use initd runlevels instead of systemd? [    ]"
 
     set +e
-    which systemctl
+    which systemctl > /dev/null
     status=$?
     SYSTEMD_SERVER=$status
 
@@ -234,6 +255,17 @@ WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
 WantedBy=multi-user.target
 EOF
 
+    status=$?
+    set -e
+
+    printf "\b\b\b\b\b\b"
+    if [ $status -eq 0 ]; then
+        printf "[ OK ]\n"
+    else
+        printf "[FAIL]\n"
+        exit 2
+    fi
+
     printf "creating systemd Hypercane Django service file [    ]"
 
     set +e
@@ -251,6 +283,16 @@ EnvironmentFile=/etc/hypercane.conf
 [Install]
 WantedBy=multi-user.target
 EOF
+    status=$?
+    set -e
+
+    printf "\b\b\b\b\b\b"
+    if [ $status -eq 0 ]; then
+        printf "[ OK ]\n"
+    else
+        printf "[FAIL]\n"
+        exit 2
+    fi
 }
 
 function perform_install() {
@@ -302,8 +344,14 @@ function perform_install() {
     run_command "creating Hypercane WUI" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && ${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh)"
     # TODO: set Debug=False in django_settings.py
 
-    check_for_systemctl
-    if [ $systemctl_check -ne 0 ]; then
+    if [ $FORCE_SYSTEMD -eq 0 ]; then
+        create_systemd_startup
+    fi
+
+    # check_for_systemctl
+    # if [ $systemctl_check -ne 0 ]; then
+    check_for_systemd
+    if [ $systemd_check -ne 0 ]; then
         check_for_checkconfig
         if [ $checkconfig_check -ne 0 ]; then
             create_generic_startup_scripts
@@ -329,9 +377,10 @@ echo
 
 INSTALL_DIRECTORY="/opt/hypercane"
 DJANGO_PORT=8000
-DJANGO_IP="127.0.0.1"
+DJANGO_IP="0.0.0.0"
 HYPERCANE_USER="root"
 WRAPPER_SCRIPT_PATH="/usr/local/bin"
+FORCE_SYSTEMD=1
 
 while test $# -gt 0; do
 
@@ -355,6 +404,14 @@ while test $# -gt 0; do
         --hypercane-user)
         shift
         HYPERCANE_USER=$1
+        ;;
+        --force-systemd)
+        shift
+        FORCE_SYSTEMD=0
+        ;;
+        --force-initd)
+        shift
+        FORCE_INITD=0
         ;;
         --django_IP)
         shift
