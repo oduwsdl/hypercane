@@ -98,8 +98,15 @@ To discover the list of commands associated with an action, use the `--help` com
 
 1. Create a virtualenv
 2. Clone this repository
-3. Type `./test/docker-testing/create-docker-images.sh` (this takes a long time)
+3. Type `./test/docker-testing/create-centos8-docker-images.sh` (this takes a long time)
 4. Type `docker run --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 hypercane-wui-centos:dev`
+
+## Running Hypercane with Docker Image for Ubuntu 21.04 Systemd Testing
+
+1. Create a virtualenv
+2. Clone this repository
+3. Type `./test/docker-testing/create-ubuntu2104-docker-images.sh` (this takes a long time)
+4. Type `docker run --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 hypercane-wui-ubuntu:dev`
 
 # The Future of Hypercane
 

@@ -1,0 +1,29 @@
+FROM ubuntu-systemd:21.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update
+RUN apt install -y python3 python3-dev python3-pip
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+RUN apt install -y build-essential
+
+# installing MongoDB for testing Hypercane's capabilities
+# from: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+RUN apt-get install -y wget gnupg
+RUN wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add -
+RUN  echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+RUN apt-get update 
+RUN apt-get install -y mongodb-org
+RUN mkdir -p /data/db
+RUN mongod &
+
+WORKDIR /app
+RUN pip install virtualenv
+COPY ./installer/install-hypercane.sh .
+RUN ./install-hypercane.sh -- --mongodb-url mongodb://localhost/csHypercane
+
+RUN systemctl enable hypercane-celery.service
+RUN systemctl enable hypercane-django.service
+
+EXPOSE 8000
+
+CMD ["/lib/systemd/systemd"]

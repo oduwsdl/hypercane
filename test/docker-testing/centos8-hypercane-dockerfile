@@ -17,13 +17,9 @@ COPY ./test/docker-testing/mongodb-org.repo /etc/yum.repos.d/mongodb-org.repo
 RUN dnf install -y mongodb-org
 RUN mongod &
 
-# can't seem to get this to work for testing system startup/shutdown,
-# saving lines here in case we want to revisit this
 RUN systemctl enable hypercane-celery.service
 RUN systemctl enable hypercane-django.service
 
 EXPOSE 8000
 
-# just to keep it running during testing
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
 CMD ["/usr/sbin/init"]

@@ -11,7 +11,6 @@ if [ ! -e ${SCRIPT_DIR}/../../installer/install-hypercane.sh ]; then
     ${SCRIPT_DIR}/../../hypercane-gui/installer/linux/create-installer.sh
 fi
 
-docker build -f ${SCRIPT_DIR}/centos8-systemd-dockerfile -t centos-systemd:8 .
-docker build -f ${SCRIPT_DIR}/centos8-dockerfile -t hypercane-wui-centos:dev .
-# docker build -f ${SCRIPT_DIR}/ubuntu2104-dockerfile -t hypercane-wui-ubuntu:dev .
-# docker build -f ${SCRIPT_DIR}/ubuntu2004-systemd-dockerfile -t hypercane-wui-ubuntu-2004-systemd:dev .
+docker build -f ${SCRIPT_DIR}/ubuntu2104-systemd-dockerfile -t ubuntu-systemd:21.04 .
+docker build -f ${SCRIPT_DIR}/ubuntu2104-hypercane-dockerfile -t hypercane-wui-ubuntu:dev .
+
