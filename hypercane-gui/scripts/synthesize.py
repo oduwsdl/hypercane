@@ -9,6 +9,7 @@ from hypercane.args import universal_gui_required_args, universal_gui_optional_a
 from hypercane.args.synthesize import synthesize_parser
 from hypercane.version import __useragent__
 from hypercane.actions import get_logger, calculate_loglevel
+from hypercane.utils import get_hc_cache_storage
 
 def zipdir(path, ziph):
     # code from https://www.tutorialspoint.com/How-to-zip-a-folder-recursively-using-Python
@@ -48,7 +49,7 @@ if __name__ == '__main__':
 
     vars(args)['logfile'] = "hypercane-status.log"
     vars(args)['errorfilename'] = "hypercane-errors.dat"
-    vars(args)['cache_storage'] = os.environ.get('HC_CACHE_STORAGE')
+    vars(args)['cache_storage'] = get_hc_cache_storage()
     vars(args)['input_arguments'] = args.input_file.name
 
     logger = get_logger(

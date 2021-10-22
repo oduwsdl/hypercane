@@ -31,6 +31,28 @@ module_logger = logging.getLogger("hypercane.utils")
 class HypercaneStartUpError(Exception):
     pass
 
+def get_hc_cache_storage():
+
+    hc_cache_storage = None
+
+    if os.environ.get('HC_CACHE_STORAGE') is None:
+
+        global_config = "/etc/hypercane.conf"
+
+        if os.path.exists(global_config):
+            
+            with open(global_config) as f:
+
+                for line in f:
+
+                    if '=' in line:
+                        var, val = line.split('=')
+
+                        if var == 'HC_CACHE_STORAGE':
+                            hc_cache_storage = val
+
+    return hc_cache_storage
+
 def get_web_session(cache_storage=None):
 
     proxies = None
