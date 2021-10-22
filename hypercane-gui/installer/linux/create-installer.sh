@@ -50,6 +50,8 @@ function run_command() {
     command_to_run=$2
     newline=$3
 
+    # echo "executing: ${command_to_run}"
+
     if [ -z $newline ]; then
         newline="yes"
     fi
@@ -102,10 +104,18 @@ run_command "cleaning Hypercane CLI and library build environment" "(cd ${CLI_SR
 run_command "cleaning Hypercane CLI and library build environment" "(cd ${CLI_SRC_DIR} && rm -rf build dist 2>&1)"
 run_command "cleaning installer directory" "rm -rf ${CLI_SRC_DIR}/installer"
 run_command "building Hypercane CLI and library install" "(cd ${CLI_SRC_DIR} && python ./setup.py sdist 2>&1)"
-run_command "extracting normalized Hypercane version" "cat '${command_output_file}' | grep 'Normalizing .* to .*' | sed 's/.* Normalizing [^ ]* to //g'" "nonewline"
 
-normalized_hypercane_version=`cat ${command_output_file} | sed "s/'//g"`
-echo " --- Normalized Hypercane version is ${normalized_hypercane_version}"
+# TODO: once this has been verified to work, replace normalized_hypercane_version with just hypercane_version
+normalized_hypercane_version=${hypercane_version}
+# run_command "extracting normalized Hypercane version" "cat '${command_output_file}' | grep 'Normalizing .* to .*' | sed 's/.* Normalizing [^ ]* to //g'" "nonewline"
+
+# normalized_hypercane_version=`cat ${command_output_file} | sed "s/'//g"`
+
+# if [ -z ${normalized_hypercane_version} ]; then
+#     normalized_hypercane_version=${hypercane_version}
+# fi
+
+# echo " --- Normalized Hypercane version is ${normalized_hypercane_version}"
 
 run_command "verifying Hypercane CLI and library tarball" "ls ${CLI_SRC_DIR}/dist/hypercane-${normalized_hypercane_version}.tar.gz" "nonewline"
 echo " --- ${CLI_SRC_DIR}/dist/hypercane-${normalized_hypercane_version}.tar.gz exists"
