@@ -48,7 +48,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 DAEMONIZE_DJANGO=0
 WOOEY_DIR=${SCRIPT_DIR}/../hypercane_with_wooey
 DJANGO_PORT=8000
-DJANGO_IP=127.0.0.1
+DJANGO_IP=0.0.0.0
 
 run_command "verifying that HC_CACHE_STORAGE is set to a MongoDB URL" "test -n \"${HC_CACHE_STORAGE}\"" "set HC_CACHE_STORAGE as per the documentation before starting the Hypercane WUI (e.g., export HC_CACHE_STORAGE=\"mongodb://localhost/mycachedb\")"
 
@@ -137,7 +137,7 @@ if [ ${DAEMONIZE_DJANGO} -eq 0 ]; then
 else
     # for development, so all future output comes from Django and goes to the screen
     printf "starting Hypercane Django Service with output to screen \n"
-    python ./manage.py runserver 0:${DJANGO_PORT}
+    python ./manage.py runserver ${DJANGO_IP}:${DJANGO_PORT}
 fi
 
 echo

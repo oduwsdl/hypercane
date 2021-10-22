@@ -243,7 +243,7 @@ function create_systemd_startup() {
     set +e
     cat <<EOF > /etc/systemd/system/hypercane-celery.service
 [Unit]
-Description=The Hypercane Celery service
+Description=The Hypercane WUI Celery service
 After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
@@ -271,6 +271,7 @@ EOF
     set +e
     cat <<EOF > /etc/systemd/system/hypercane-django.service
 [Unit]
+Description=The Hypercane WUI Django service
 After=hypercane-celery.service
 Requires=hypercane-celery.service
 
@@ -279,6 +280,7 @@ ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/python manage.py runserv
 User=${HYPERCANE_USER}
 WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
 EnvironmentFile=/etc/hypercane.conf
+PassEnvironment=HC_CACHE_STORAGE
 
 [Install]
 WantedBy=multi-user.target
