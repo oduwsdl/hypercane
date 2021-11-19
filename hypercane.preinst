@@ -1,0 +1,5 @@
+getent group dsa >/dev/null || groupadd -r dsa
+getent passwd hypercane >/dev/null || \
+    useradd -r -g dsa -d /opt/hypercane -s /sbin/nologin \
+    -c "Hypercane service account" hypercane
+exit 0

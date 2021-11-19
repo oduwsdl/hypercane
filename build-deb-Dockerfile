@@ -1,0 +1,43 @@
+FROM ubuntu:21.04
+
+ARG hypercane_version
+ARG DEBIAN_FRONTEND=noninteractive
+
+# dpkg build dependencies
+RUN apt-get update -y
+RUN apt-get install -y python3 python3-virtualenv sed grep tar python-is-python3 npm
+
+# build the dpkg - directions from https://www.internalpointers.com/post/build-binary-deb-package-practical-guide
+WORKDIR /buildapp
+RUN mkdir hypercane_amd64
+RUN mkdir -p hypercane_amd64/opt/hypercane
+RUN mkdir -p hypercane_amd64/usr/bin
+RUN mkdir -p hypercane_amd64/etc/systemd/system
+RUN mkdir -p debbuild
+COPY installer/generic-unix/install-hypercane.sh .
+RUN ./install-hypercane.sh -- --install-directory /buildapp/hypercane_amd64/opt/hypercane --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path /buildapp/hypercane_amd64/usr/bin/
+# TODO: fix this, building a DEB should not mangle a system
+RUN mv /etc/systemd/system/hypercane-celery.service /buildapp/hypercane_amd64/etc/systemd/system/
+RUN mv /etc/systemd/system/hypercane-django.service /buildapp/hypercane_amd64/etc/systemd/system/
+RUN find /buildapp/hypercane_amd64/opt/hypercane/hypercane-virtualenv/bin -type f -exec sed -i "s?/buildapp/hypercane_amd64??g" {} \;
+RUN echo 'HC_CACHE_STORAGE=mongodb://mongodb/csHC' > /buildapp/hypercane_amd64/etc/hypercane.conf
+RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/etc/systemd/system/hypercane-celery.service
+RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/etc/systemd/system/hypercane-django.service
+RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/usr/bin/hc
+RUN sed -i "s?^python ?/opt/hypercane/hypercane-virtualenv/bin/python ?g" /buildapp/hypercane_amd64/opt/hypercane/hypercane-gui/add-hypercane-scripts.sh
+RUN sed -i "s?^python ?/opt/hypercane/hypercane-virtualenv/bin/python ?g" /buildapp/hypercane_amd64/opt/hypercane/hypercane-gui/set-hypercane-database.sh
+RUN mkdir hypercane_amd64/DEBIAN
+COPY hypercane.control .
+COPY hypercane.preinst hypercane_amd64/DEBIAN/preinst
+RUN chmod 0755 hypercane_amd64/DEBIAN/preinst
+COPY hypercane.postinst hypercane_amd64/DEBIAN/postinst
+RUN chmod 0755 hypercane_amd64/DEBIAN/postinst
+
+RUN sed "s?{{ hypercane_version }}?${hypercane_version}?g" /buildapp/hypercane.control > hypercane_amd64/DEBIAN/control
+RUN printf "#!/bin/bash\ndpkg-deb --root-owner-group --build hypercane_amd64 debbuild/hypercane-${hypercane_version}.deb" > /buildapp/build-deb.sh
+RUN chmod 0700 /buildapp/build-deb.sh
+
+CMD ["/buildapp/build-deb.sh"]
+
+# keep running for debugging
+# ENTRYPOINT [ "tail", "-f", "/dev/null"]
