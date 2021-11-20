@@ -133,6 +133,8 @@ hypercane-errors.dat
 installer/
 release/
 source-distro/
+!test/installer
+!hypercane-gui/installer
 
 # directory for comparing functions
 difftest
