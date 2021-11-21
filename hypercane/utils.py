@@ -51,6 +51,9 @@ def get_hc_cache_storage():
                         if var == 'HC_CACHE_STORAGE':
                             hc_cache_storage = val
 
+    else:
+        hc_cache_storage = os.environ.get('HC_CACHE_STORAGE')
+
     return hc_cache_storage
 
 def get_web_session(cache_storage=None):

@@ -70,6 +70,10 @@ rm -rf $RPM_BUILD_ROOT
 su -l hypercane -s /bin/bash /opt/hypercane/hypercane-gui/add-hypercane-scripts.sh
 /usr/bin/systemctl enable hypercane-celery.service
 /usr/bin/systemctl enable hypercane-django.service
+# download NLTK data
+su -l hypercane -s /bin/bash -c '/opt/hypercane/hypercane-virtualenv/bin/python -m nltk.downloader stopwords'
+su -l hypercane -s /bin/bash -c '/opt/hypercane/hypercane-virtualenv/bin/python -m nltk.downloader punkt'
+su -l hypercane -s /bin/bash -c '/opt/hypercane/hypercane-virtualenv/bin/python -m spacy download en_core_web_sm'
 
 %preun
 /usr/bin/systemctl stop hypercane-django.service
