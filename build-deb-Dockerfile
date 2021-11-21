@@ -15,12 +15,12 @@ RUN mkdir -p hypercane_amd64/usr/bin
 RUN mkdir -p hypercane_amd64/etc/systemd/system
 RUN mkdir -p debbuild
 COPY installer/generic-unix/install-hypercane.sh .
-RUN ./install-hypercane.sh -- --install-directory /buildapp/hypercane_amd64/opt/hypercane --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path /buildapp/hypercane_amd64/usr/bin/ --mongodb-url mongodb://mongodb/csHC
+RUN ./install-hypercane.sh -- --install-directory /buildapp/hypercane_amd64/opt/hypercane --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path /buildapp/hypercane_amd64/usr/bin/ --mongodb-url mongodb://127.0.0.1:27017/hypercane_cache_storage
 # TODO: fix this, building a DEB should not mangle a system
 RUN mv /etc/systemd/system/hypercane-celery.service /buildapp/hypercane_amd64/etc/systemd/system/
 RUN mv /etc/systemd/system/hypercane-django.service /buildapp/hypercane_amd64/etc/systemd/system/
 RUN find /buildapp/hypercane_amd64/opt/hypercane/hypercane-virtualenv/bin -type f -exec sed -i "s?/buildapp/hypercane_amd64??g" {} \;
-RUN echo 'HC_CACHE_STORAGE=mongodb://mongodb/csHC' > /buildapp/hypercane_amd64/etc/hypercane.conf
+RUN echo 'HC_CACHE_STORAGE=mongodb://127.0.0.1:27017/hypercane_cache_storage' > /buildapp/hypercane_amd64/etc/hypercane.conf
 RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/etc/systemd/system/hypercane-celery.service
 RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/etc/systemd/system/hypercane-django.service
 RUN sed -i "s?/buildapp/hypercane_amd64??g" /buildapp/hypercane_amd64/usr/bin/hc

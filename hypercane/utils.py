@@ -66,23 +66,28 @@ def get_web_session(cache_storage=None):
             'https': https_proxy
         }
 
-    if cache_storage is not None:
+    if cache_storage is None:
 
-        module_logger.info("creating HTTP session with cached storage at {}".format(cache_storage))
+        system_cache_storage = get_hc_cache_storage()
 
-        o = urlparse(cache_storage)
-        if o.scheme == "mongodb":
-            # these requests-cache internals gymnastics are necessary
-            # because it will not create a database with the desired name otherwise
-            dbname = o.path.replace('/', '')
-            dbconn = MongoClient(cache_storage)
-            session = CachedSession(backend='mongodb')
-            session.cache = MongoCache(connection=dbconn, db_name=dbname)
-            session.cache_storage = cache_storage
+        if system_cache_storage is None:
+            raise HypercaneStartUpError("Caching is required to use Hypercane. Please specify a MongoDB or SQLite database for caching through the -cs argument or HC_CACHE_STORAGE environment variable. If you are seeing this message in the Hypercane GUI, please notify your system administrator.")
         else:
-            session = CachedSession(cache_name=cache_storage, extension='')
+            cache_storage = system_cache_storage
+
+    module_logger.info("creating HTTP session with cached storage at {}".format(cache_storage))
+
+    o = urlparse(cache_storage)
+    if o.scheme == "mongodb":
+        # these requests-cache internals gymnastics are necessary
+        # because it will not create a database with the desired name otherwise
+        dbname = o.path.replace('/', '')
+        dbconn = MongoClient(cache_storage)
+        session = CachedSession(backend='mongodb')
+        session.cache = MongoCache(connection=dbconn, db_name=dbname)
+        session.cache_storage = cache_storage
     else:
-        raise HypercaneStartUpError("Caching is required to use Hypercane. Please specify a MongoDB or SQLite database for caching through the -cs argument or HC_CACHE_STORAGE environment variable. If you are seeing this message in the Hypercane GUI, please notify your system administrator.")
+        session = CachedSession(cache_name=cache_storage, extension='')
 
     retry = Retry(
         total=10,

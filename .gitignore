@@ -135,6 +135,7 @@ release/
 source-distro/
 !test/installer
 !hypercane-gui/installer
+!hypercane.spec
 
 # directory for comparing functions
 difftest

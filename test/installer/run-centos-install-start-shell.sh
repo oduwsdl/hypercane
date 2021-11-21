@@ -9,6 +9,12 @@ RPMFILEBASE=`basename $RPMFILE`
 echo starting container
 docker run --name centos8test --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 local/c8-systemd
 
+echo installing MongoDB
+docker cp ${SCRIPT_DIR}/centos8/mongodb-org.repo centos8test:/etc/yum.repos.d/mongodb-org.repo
+docker exec -it centos8test dnf install -y mongodb-org
+docker exec -it centos8test systemctl enable mongod.service
+docker exec -it centos8test systemctl start mongod.service
+
 echo copying $RPMFILE to container /root/ directory
 docker cp $RPMFILE centos8test:/root
 

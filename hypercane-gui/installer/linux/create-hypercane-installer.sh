@@ -127,6 +127,7 @@ echo " --- ${CLI_SRC_DIR}/dist/hypercane-gui-${normalized_hypercane_version}.tar
 
 run_command "copying install script to archive directory" "cp ${CLI_SRC_DIR}/hypercane-gui/installer/linux/hypercane-install-script.sh ${CLI_SRC_DIR}/dist"
 run_command "setting install script permissions" "chmod 0755 ${CLI_SRC_DIR}/hypercane-gui/installer/linux/hypercane-install-script.sh"
+run_command "copying requirements.txt to archive directory" "cp ${CLI_SRC_DIR}/requirements.txt ${CLI_SRC_DIR}/dist"
 
 run_command "creating directory for installer" "mkdir -p ${CLI_SRC_DIR}/installer/generic-unix"
 
