@@ -46,7 +46,7 @@ bash ./installer/generic-unix/install-hypercane.sh -- --install-directory ${RPM_
 mv /etc/systemd/system/hypercane-celery.service ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-celery.service
 mv /etc/systemd/system/hypercane-django.service ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-django.service
 find ${RPM_BUILD_ROOT}/opt/hypercane/hypercane-virtualenv/bin -type f -exec sed -i "s?${RPM_BUILD_ROOT}??g" {} \;
-echo 'HC_CACHE_STORAGE=mongodb://mongodb/csHC' > ${RPM_BUILD_ROOT}/etc/hypercane.conf
+echo 'HC_CACHE_STORAGE=mongodb://127.0.0.1:27017/hypercane_cache_storage' > ${RPM_BUILD_ROOT}/etc/hypercane.conf
 sed -i "s?${RPM_BUILD_ROOT}??g" ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-django.service
 sed -i "s?${RPM_BUILD_ROOT}??g" ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-celery.service
 sed -i "s?${RPM_BUILD_ROOT}??g" ${RPM_BUILD_ROOT}/usr/bin/hc
