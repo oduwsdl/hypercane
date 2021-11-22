@@ -31,25 +31,27 @@ for entry in universal_gui_optional_args:
     argument_params = entry['argument_params']
     optional.add_argument(*flags, **argument_params)
 
-args = parser.parse_args()
+if __name__ == '__main__':
 
-vars(args)['output_filename'] = "original-page-urls.txt"
-vars(args)['logfile'] = "hypercane-status.log"
-vars(args)['errorfilename'] = "hypercane-errors.dat"
-vars(args)['cache_storage'] = get_hc_cache_storage()
-vars(args)['input_arguments'] = args.collection_id
+    args = parser.parse_args()
+
+    vars(args)['output_filename'] = "original-page-urls.txt"
+    vars(args)['logfile'] = "hypercane-status.log"
+    vars(args)['errorfilename'] = "hypercane-errors.dat"
+    vars(args)['cache_storage'] = get_hc_cache_storage()
+    vars(args)['input_arguments'] = args.collection_id
 
 
-logger = get_logger(
-    __name__,
-    calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-    args.logfile
-)
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+    hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-print("starting to identify original page URLs (i.e., original resources, URI-Rs) for {} collection ID {}".format(args.input_type, args.collection_id))
-print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
-print("using cache at location {}".format(args.cache_storage))
-hypercane.actions.identify.discover_original_resources(args)
-print("done identifying original page URLs (i.e., original resources, URI-Rs) from {} collection {}, saved list to file {}".format(args.input_type, args.collection_id, args.output_filename))
+    print("starting to identify original page URLs (i.e., original resources, URI-Rs) for {} collection ID {}".format(args.input_type, args.collection_id))
+    print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
+    print("using cache at location {}".format(args.cache_storage))
+    hypercane.actions.identify.discover_original_resources(args)
+    print("done identifying original page URLs (i.e., original resources, URI-Rs) from {} collection {}, saved list to file {}".format(args.input_type, args.collection_id, args.output_filename))

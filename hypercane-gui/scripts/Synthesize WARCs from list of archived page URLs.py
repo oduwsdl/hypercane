@@ -41,32 +41,34 @@ optional.add_argument('--no-download-embedded', dest='no_download_embedded',
     required=False, default=False, action='store_true'
 )
 
-args = parser.parse_args()
+if __name__ == '__main__':
 
-vars(args)['logfile'] = "hypercane-status.log"
-vars(args)['errorfilename'] = "hypercane-errors.dat"
-vars(args)['cache_storage'] = get_hc_cache_storage()
-vars(args)['input_arguments'] = args.collection_id
-vars(args)['output_directory'] = "warcs-output"
+    args = parser.parse_args()
 
-print("starting to synthesize WARCs from the {} web archive collection collection ID {}".format(args.input_type, args.collection_id), flush=True) 
+    vars(args)['logfile'] = "hypercane-status.log"
+    vars(args)['errorfilename'] = "hypercane-errors.dat"
+    vars(args)['cache_storage'] = get_hc_cache_storage()
+    vars(args)['input_arguments'] = args.collection_id
+    vars(args)['output_directory'] = "warcs-output"
 
-# do this or you get no logging
-logger = get_logger(
-    __name__,
-    calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
-    args.logfile
-)
+    print("starting to synthesize WARCs from the {} web archive collection collection ID {}".format(args.input_type, args.collection_id), flush=True) 
 
-# do this or you get no errorfile
-hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+    # do this or you get no logging
+    logger = get_logger(
+        __name__,
+        calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+        args.logfile
+    )
 
-hypercane.actions.synthesize.synthesize_warcs(args)
+    # do this or you get no errorfile
+    hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-print("compressing output into a single zip file", flush=True)
-outputZip = zipfile.ZipFile('warcs-output.zip', 'w')
-zipdir(args.output_directory, outputZip)
-outputZip.close()
-shutil.rmtree(args.output_directory)
+    hypercane.actions.synthesize.synthesize_warcs(args)
 
-print("done synthesizing WARCs from collection ID {}, output is stored in warcs-output.zip".format(args.collection_id), flush=True)
+    print("compressing output into a single zip file", flush=True)
+    outputZip = zipfile.ZipFile('warcs-output.zip', 'w')
+    zipdir(args.output_directory, outputZip)
+    outputZip.close()
+    shutil.rmtree(args.output_directory)
+
+    print("done synthesizing WARCs from collection ID {}, output is stored in warcs-output.zip".format(args.collection_id), flush=True)
