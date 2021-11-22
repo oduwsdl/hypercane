@@ -27,18 +27,36 @@
     </div>
     {% endif %}
 
-
     <form id="wooey-job-form" method="POST" action="{{ form.action }}" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.wooey_form }}
 
         <div class="panel panel-default argument-group-panel {% if form.parsers|length != 1 %}subparsers{% endif %}">
           <div class="panel-heading">
+            {% if 'identify' in script.script_name %}
+            <div style="display: block;">⬇️ What would you like to discover in the input?</div>
+            {% elif 'sample' in script.script_name %}
+            <div style="display: block;">⬇️ Choose how you want to sample from the input</div>
+            {% elif 'report' in script.script_name %}
+            <div style="display: block;">⬇️ What type of report would you like to generate from the input?</div>
+            {% elif 'filter' in script.script_name %}
+            <div style="display: block;">⬇️ What would you like to filter the input based on?</div>
+            {% elif 'cluster' in script.script_name %}
+            <div style="display: block;">⬇️ How do you wish to cluster the input?</div>
+            {% elif 'score' in script.script_name %}
+            <div style="display: block;">⬇️ How do you wish to score the input?</div>
+            {% elif 'order' in script.script_name %}
+            <div style="display: block;">⬇️ Based on which feature do you wish to order the input?</div>
+            {% elif 'synthesize' in script.script_name %}
+            <div style="display: block;">⬇️ Choose the output result for the input</div>
+            {% else %}
+            {% endif %}
             {% if form.parsers|length != 1 %}
               <div class="btn-group">
+                
                 <button id="selected-subparser" type="button" class="btn btn-default">
                   {% with parser_name=form.parsers.0.1 %}
-                    {% if not parser_name %}Selected Subparser{% else %}{{ parser_name|title }}{% endif %}
+                    {% if not parser_name %}Selected Subparser{% else %}WAH4: {{ parser_name|title }}{% endif %}
                   {% endwith %}
                 </button>
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
