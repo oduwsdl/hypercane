@@ -17,14 +17,13 @@ parser = argparse.ArgumentParser(
     formatter_class=RawTextHelpFormatter
 )
 
-# Wooey's install script does not know how to handle functions, so we have to repeat this
 required = parser.add_argument_group('required arguments')
 required.add_argument('--title', dest='title', help="Title for your Raintale story")
 required.add_argument('-a', dest='input_file', help="A file containing a list of archvied page URLs (i.e., mementos, captures, URI-Ms).", type=argparse.FileType('r'))
 
 optional = parser.add_argument_group('optional arguments')
-optional.add_argument('--term-count', dest='term_count', help='The number of phrases to include, ranked by frequency, in the story output.', default=5, type=int)
-optional.add_argument('--entity-count', dest='entity_count', help='The number of entities (e.g., places, people, organizations, event names) to include, ranked by frequency, in the story output.', default=5, type=int)
+optional.add_argument('--term-count', dest='term_count', help='The number of phrases to include, ranked by frequency, in the Raintale story file.', default=5, type=int)
+optional.add_argument('--entity-count', dest='entity_count', help='The number of entities (e.g., places, people, organizations, event names) to include, ranked by frequency, in the Raintale story file.', default=5, type=int)
 optional.add_argument('-v', dest='verbose', action='store_true', help="This will raise the logging level to debug for more verbose output in the log files.")
 optional.add_argument('-q', dest='quiet', action='store_true', help="This will lower the logging level to only show warnings or errors in the log files.")
 
