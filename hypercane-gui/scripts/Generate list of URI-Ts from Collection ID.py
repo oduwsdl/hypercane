@@ -12,7 +12,7 @@ from hypercane.utils import get_hc_cache_storage
 from hypercane.version import __useragent__
 
 parser = argparse.ArgumentParser(
-    description="Submit a public web archive collection's ID and Hypercane will generate a file listing all original page URLs (i.e., original resources, URI-Rs).",
+    description="Submit a public web archive collection's ID and Hypercane will generate a file of URLs for all machine readable TimeMaps (i.e., URI-Ts) for use with other tools.",
     formatter_class=RawTextHelpFormatter
 )
 
@@ -32,12 +32,14 @@ for entry in universal_gui_optional_args:
 
 args = parser.parse_args()
 
-vars(args)['output_filename'] = "original-page-urls.txt"
+vars(args)['output_filename'] = "timemap-urls.txt"
 vars(args)['logfile'] = "hypercane-status.log"
 vars(args)['errorfilename'] = "hypercane-errors.dat"
 vars(args)['cache_storage'] = get_hc_cache_storage()
 vars(args)['input_arguments'] = args.collection_id
 
+# needed by discover_timemaps, but not used
+vars(args)['faux_tms_acceptable'] = False
 
 logger = get_logger(
     __name__,
@@ -48,7 +50,7 @@ logger = get_logger(
 if args.errorfilename is not None:
     hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
-print("starting to identify original page URLs (i.e., original resources, URI-Rs) for {} collection ID {}".format(args.input_type, args.collection_id))
+print("starting to identify TimeMap page URLs (i.e., original resources, URI-Rs) for {} collection ID {}".format(args.input_type, args.collection_id))
 print("using cache at location {}".format(args.cache_storage))
-hypercane.actions.identify.discover_original_resources(args)
+hypercane.actions.identify.discover_timemaps(args)
 print("done identifying original page URLs (i.e., original resources, URI-Rs) from {} collection {}, saved list to file {}".format(args.input_type, args.collection_id, args.output_filename))

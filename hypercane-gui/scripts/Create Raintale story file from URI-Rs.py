@@ -11,6 +11,6 @@ from hypercane.version import __useragent__
 
 parser = argparse.ArgumentParser(
     prog="create Raintale story file by Collection ID.py",
-    description="Submit a file containing a set of original page URLs (i.e., original resources, URI-Rs) and Hypercane will  synthesize a rich Raintale story file.",
+    description="Submit a file containing a set of original page URLs (i.e., original resources, URI-Rs) and Hypercane will mint archived web pages, generate metadata, and synthesize a rich Raintale story file.",
     formatter_class=RawTextHelpFormatter
 )
