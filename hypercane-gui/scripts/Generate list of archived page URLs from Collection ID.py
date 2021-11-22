@@ -18,7 +18,6 @@ parser = argparse.ArgumentParser(
 
 # Wooey's install script does not know how to handle functions, so we have to repeat this
 required = parser.add_argument_group('required arguments')
-
 for entry in universal_by_cid_gui_required_args:
     flags = entry['flags']
     argument_params = entry['argument_params']

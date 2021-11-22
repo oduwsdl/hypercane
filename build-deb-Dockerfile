@@ -15,7 +15,7 @@ RUN mkdir -p hypercane_amd64/usr/bin
 RUN mkdir -p hypercane_amd64/etc/systemd/system
 RUN mkdir -p debbuild
 COPY installer/generic-unix/install-hypercane.sh .
-RUN ./install-hypercane.sh -- --install-directory /buildapp/hypercane_amd64/opt/hypercane --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path /buildapp/hypercane_amd64/usr/bin/ --mongodb-url mongodb://127.0.0.1:27017/hypercane_cache_storage
+RUN ./install-hypercane.sh -- --install-directory /buildapp/hypercane_amd64/opt/hypercane --install-all --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path /buildapp/hypercane_amd64/usr/bin/ --mongodb-url mongodb://127.0.0.1:27017/hypercane_cache_storage
 # TODO: fix this, building a DEB should not mangle a system
 RUN mv /etc/systemd/system/hypercane-celery.service /buildapp/hypercane_amd64/etc/systemd/system/
 RUN mv /etc/systemd/system/hypercane-django.service /buildapp/hypercane_amd64/etc/systemd/system/

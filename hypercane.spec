@@ -41,7 +41,7 @@ echo RPM_BUILD_ROOT is $RPM_BUILD_ROOT
 mkdir -p ${RPM_BUILD_ROOT}/opt/hypercane
 mkdir -p ${RPM_BUILD_ROOT}/etc/systemd/system
 mkdir -p ${RPM_BUILD_ROOT}/usr/bin
-bash ./installer/generic-unix/install-hypercane.sh -- --install-directory ${RPM_BUILD_ROOT}/opt/hypercane --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path ${RPM_BUILD_ROOT}/usr/bin/ --mongodb-url mongodb://127.0.0.1:27017/hypercane_cache_storage
+bash ./installer/generic-unix/install-hypercane.sh -- --install-directory ${RPM_BUILD_ROOT}/opt/hypercane --install-all --python-exe /usr/bin/python --skip-script-install --hypercane-user hypercane --cli-wrapper-path ${RPM_BUILD_ROOT}/usr/bin/ --mongodb-url mongodb://127.0.0.1:27017/hypercane_cache_storage
 # TODO: fix this, everything should stay in RPM_BUILD_ROOT
 mv /etc/systemd/system/hypercane-celery.service ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-celery.service
 mv /etc/systemd/system/hypercane-django.service ${RPM_BUILD_ROOT}/etc/systemd/system/hypercane-django.service

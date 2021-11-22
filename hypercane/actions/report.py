@@ -265,7 +265,10 @@ def report_image_data(args):
             session, discover_mementos_by_input_type
         )
 
-    if args.output_format == 'json':
+    if args.output_format == 'jsonl':
+        output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)
+    # if args.output_format == 'json':
+    else:
 
         metadata = {}
         metadata['image data'] = generate_image_data(uridata, args.cache_storage)
@@ -274,8 +277,7 @@ def report_image_data(args):
         with open(args.output_filename, 'w') as metadata_file:
             json.dump(metadata, metadata_file, indent=4)
 
-    elif args.output_format == 'jsonl':
-        output_image_data_as_jsonl(uridata, args.output_filename, args.cache_storage)
+
 
     module_logger.info("Done with collection image data run, output is at {}".format(args.output_filename))
 
