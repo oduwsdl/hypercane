@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from argparse import RawTextHelpFormatter
 
@@ -51,6 +52,7 @@ if args.errorfilename is not None:
     hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
 print("starting to identify archived page URLs (i.e., mementos, captures, URI-Ms) for {} collection ID {}".format(args.input_type, args.collection_id))
+print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
 print("using cache at location {}".format(args.cache_storage))
 hypercane.actions.identify.discover_mementos(args)
 print("done identifying archived page URLs (i.e., mementos, captures, URI-Ms) from {} collection {}, saved list to file {}".format(args.input_type, args.collection_id, args.output_filename))

@@ -20,8 +20,8 @@ python ${WOOEY_DIR}/manage.py addscript --group "advanced" "${SCRIPT_DIR}/script
 python ${WOOEY_DIR}/manage.py addscript --group "advanced" "${SCRIPT_DIR}/scripts/score.py"
 python ${WOOEY_DIR}/manage.py addscript --group "advanced" "${SCRIPT_DIR}/scripts/order.py"
 
-python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Summarize a collection and save as a Raintale story file" "${SCRIPT_DIR}/scripts/Summarize collection as Raintale story file.py"
-python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Summarize archived pages and save as a Raintale story file" "${SCRIPT_DIR}/scripts/Summarize URI-Ms as Raintale story file.py"
+python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Summarize a collection as a Raintale story file" "${SCRIPT_DIR}/scripts/Summarize collection as Raintale story file.py"
+python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Summarize archived pages as a Raintale story file" "${SCRIPT_DIR}/scripts/Summarize URI-Ms as Raintale story file.py"
 
 # python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Create a Raintale story file from original page URLs" "${SCRIPT_DIR}/scripts/Create Raintale story file from URI-Rs.py"
 python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Create a Raintale story file from archived page URLs" "${SCRIPT_DIR}/scripts/Create Raintale story file from URI-Ms.py"
@@ -30,9 +30,8 @@ python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Generate a
 python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Generate original page URLs from a collection" "${SCRIPT_DIR}/scripts/Generate list of original page URLs from Collection ID.py"
 # python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Generate TimeMap URLs from a collection" "${SCRIPT_DIR}/scripts/Generate list of URI-Ts from Collection ID.py"
 
-# python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Synthesize WARCs from archived page URLs" "${SCRIPT_DIR}/scripts/Synthesize WARCs from list of archived page URLs.py"
-
-# python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Synthesize WARCs from a collection" "${SCRIPT_DIR}/scripts/Synthesize WARCs from Collection ID.py"
+python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Synthesize WARCs from archived page URLs" "${SCRIPT_DIR}/scripts/Synthesize WARCs from list of archived page URLs.py"
+python ${WOOEY_DIR}/manage.py addscript --group "convenience" --name "Synthesize WARCs from a collection" "${SCRIPT_DIR}/scripts/Synthesize WARCs from Collection ID.py"
 
 
 

@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from argparse import RawTextHelpFormatter
 
@@ -45,10 +46,10 @@ logger = get_logger(
     args.logfile
 )
 
-if args.errorfilename is not None:
-    hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
 
 print("starting to identify original page URLs (i.e., original resources, URI-Rs) for {} collection ID {}".format(args.input_type, args.collection_id))
+print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
 print("using cache at location {}".format(args.cache_storage))
 hypercane.actions.identify.discover_original_resources(args)
 print("done identifying original page URLs (i.e., original resources, URI-Rs) from {} collection {}, saved list to file {}".format(args.input_type, args.collection_id, args.output_filename))

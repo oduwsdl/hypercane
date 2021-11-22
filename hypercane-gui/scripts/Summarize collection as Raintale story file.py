@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from argparse import RawTextHelpFormatter
 from copy import deepcopy
@@ -12,7 +13,7 @@ import hypercane.errors
 from hypercane.args import universal_by_cid_gui_required_args
 from hypercane.utils import get_hc_cache_storage
 from hypercane.args.report import default_entity_types_str
-
+from hypercane.actions import get_logger, calculate_loglevel
 from hypercane.version import __useragent__
 
 parser = argparse.ArgumentParser(
@@ -52,9 +53,22 @@ args = parser.parse_args()
 vars(args)['crawl_depth'] = 1
 vars(args)['sample_count'] = args.sample_size
 vars(args)['input_arguments'] = args.collection_id
+vars(args)['logfile'] = "summarize-collection.log"
+vars(args)['errorfilename'] = "summarize-errors.dat"
 vars(args)['cache_storage'] = get_hc_cache_storage()
 
+# do this or you get no logging
+logger = get_logger(
+    __name__,
+    calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+    args.logfile
+)
+
+# do this or you get no errorfile
+hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+
 print("starting the process of producing a collection sample and a rich story file for use with Raintale", flush=True)
+print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
 
 # 1 sample using given algorithm
 vars(args)['output_filename'] = "sample-story-mementos.tsv"

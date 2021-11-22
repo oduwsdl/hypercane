@@ -1,4 +1,5 @@
 import argparse
+import os
 
 from argparse import RawTextHelpFormatter
 
@@ -8,7 +9,7 @@ import hypercane.errors
 
 from hypercane.utils import get_hc_cache_storage
 from hypercane.args.report import default_entity_types_str
-
+from hypercane.actions import get_logger, calculate_loglevel
 from hypercane.version import __useragent__
 
 parser = argparse.ArgumentParser(
@@ -34,7 +35,18 @@ vars(args)['cache_storage'] = get_hc_cache_storage()
 vars(args)['crawl_depth'] = 1
 vars(args)['added_stopword_filename'] = None
 
+# do this or you get no logging
+logger = get_logger(
+    __name__,
+    calculate_loglevel(verbose=args.verbose, quiet=args.quiet),
+    args.logfile
+)
+
+# do this or you get no errorfile
+hypercane.errors.errorstore.type = hypercane.errors.FileErrorStore(args.errorfilename)
+
 print("starting to generate all data necessary to produce a rich story file for use with Raintale")
+print("in case of an issue, your administrator may need to know that the output of this job is stored in {}".format(os.getcwd()), flush=True)
 
 # 1 report entities
 vars(args)['entity_types'] = default_entity_types_str
