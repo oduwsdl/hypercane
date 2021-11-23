@@ -44,6 +44,7 @@ setup(
         'MementoEmbed',
         'nltk',
         'otmt',
+        'psycopg2',
         'pymongo',
         'python-Levenshtein',
         'rank_bm25',
