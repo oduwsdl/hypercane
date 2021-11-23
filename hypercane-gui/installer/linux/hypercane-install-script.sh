@@ -250,6 +250,7 @@ After=syslog.target network.target remote-fs.target nss-lookup.target
 ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/celery -A hypercane_with_wooey worker --beat -l info
 User=${HYPERCANE_USER}
 WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
+EnvironmentFile=/etc/hypercane.conf
 
 [Install]
 WantedBy=multi-user.target
