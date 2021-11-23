@@ -20,7 +20,7 @@ def zipdir(path, ziph):
             ziph.write(os.path.join(root, file))
 
 parser = argparse.ArgumentParser(
-    description="Submit a file containing a set of archived page URLs (i.e., mementos, captures, URI-Ms) and Hypercane will generate a ZIP file containing WARCs synthesized from these URLs.",
+    description="Submit a file containing a set of archived page URLs (i.e., mementos, captures, snapshots, URI-Ms) and Hypercane will generate a ZIP file containing WARCs synthesized from these URLs.",
     formatter_class=RawTextHelpFormatter
 )
 

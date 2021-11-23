@@ -14,13 +14,13 @@ from hypercane.version import __useragent__
 
 parser = argparse.ArgumentParser(
     prog="create Raintale story file from URI-Ms.py",
-    description="Submit a file containing a set of archived page URLs (i.e., mementos, captures, URI-Ms) and Hypercane will  generate metadata and synthesize a rich story file for use with Raintale.",
+    description="Submit a file containing a set of archived page URLs (i.e., mementos, captures, snapshots, URI-Ms) and Hypercane will  generate metadata and synthesize a rich story file for use with Raintale.",
     formatter_class=RawTextHelpFormatter
 )
 
 required = parser.add_argument_group('required arguments')
 required.add_argument('--title', dest='title', help="Title for your Raintale story")
-required.add_argument('-a', dest='input_file', help="A file containing a list of archvied page URLs (i.e., mementos, captures, URI-Ms).", type=argparse.FileType('r'))
+required.add_argument('-a', dest='input_file', help="A file containing a list of archvied page URLs (i.e., mementos, captures, snapshots, URI-Ms).", type=argparse.FileType('r'))
 
 optional = parser.add_argument_group('optional arguments')
 optional.add_argument('--term-count', dest='term_count', help='The number of phrases to include, ranked by frequency, in the Raintale story file.', default=5, type=int)
