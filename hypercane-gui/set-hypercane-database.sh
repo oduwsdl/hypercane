@@ -100,18 +100,30 @@ else
 fi
 
 settings_file=${WOOEY_DIR}/hypercane_with_wooey/settings/user_settings.py
+hypercane_conf=/etc/hypercane.conf
 
 echo "writing database information to ${settings_file}"
+
+MDB_line=`grep HC_CACHE_STORAGE ${settings_file}`
+
+cat >> ${raintale_conf} <<- EOF
+${MDB_line}
+DATABASE_NAME="${DBNAME}"
+DATABASE_PORT="${DBPORT}"
+DATABASE_HOST="${DBHOST}"
+DATABASE_USER="${DBUSER}"
+DATABASE_PASSWORD="${DBPASSWORD}"
+EOF
 
 cat >> ${settings_file} <<- EOF
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '${DBNAME}',
-        'USER': '${DBUSER}',
-        'PASSWORD': '${DBPASSWORD}',
-        'HOST': '${DBHOST}',
-        'PORT': '${DBPORT}'
+        'NAME': os.environ.get('DATABASE_NAME', 'hypercane'),
+        'USER': os.environ.get('DATABASE_USER', 'hypercane'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'hypercane_password'),
+        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+        'PORT': os.environ.get('DATABASE_PORT', '5432')
     }
 }
 EOF
@@ -120,6 +132,8 @@ echo "creating database schema"
 startdir=`pwd`
 echo "changing to ${WOOEY_DIR}"
 cd ${WOOEY_DIR}
+source "${hypercane_conf}"
+export DATABASE_NAME DATABASE_PORT DATABASE_HOST DATABASE_USER DATABASE_PASSWORD
 python ./manage.py migrate
 cd ${startdir}
 
