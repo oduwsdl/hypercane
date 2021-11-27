@@ -67,14 +67,14 @@ deb: generic_installer
 	-docker rm deb_hypercane
 	@echo "a DEB exists in the installer/debbuild directory"
 
-release: source build-sdist generic_installer rpm deb
+release: source build-sdist generic_installer rpm
 	-rm -rf release
 	-mkdir release
 	cp ./installer/generic-unix/install-hypercane.sh release/install-hypercane-${me_version}.sh
 	cp ./source-distro/hypercane-${me_version}.tar.gz release/
 	cp ./installer/rpmbuild/RPMS/x86_64/hypercane-${me_version}-1.el8.x86_64.rpm release/
 	cp ./installer/rpmbuild/SRPMS/hypercane-${me_version}-1.el8.src.rpm release/
-	cp ./installer/debbuild/hypercane-${me_version}.deb release/
+#	cp ./installer/debbuild/hypercane-${me_version}.deb release/
 
 check-virtualenv:
 ifndef VIRTUAL_ENV
