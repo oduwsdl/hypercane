@@ -7,7 +7,7 @@ Source0: %{name}-%{version}.tar.gz
 ExclusiveArch: x86_64
 
 BuildRequires: coreutils, sed, grep, tar, mktemp, python3-virtualenv, python38, gcc
-Requires: python38, postgresql, libjpeg-turbo, zlib, libtiff, freetype-devel, freetype, lcms2, libwebp, tcl, tk, openjpeg2, fribidi, harfbuzz, libxcb
+Requires: python38, postgresql, libjpeg-turbo, zlib, libtiff, freetype-devel, freetype, lcms2, libwebp, tcl, tk, openjpeg2, fribidi, harfbuzz, libxcb, cairo
 Requires(pre): shadow-utils, python38
 AutoReq: no
 
