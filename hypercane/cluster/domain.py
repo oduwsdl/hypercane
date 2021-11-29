@@ -45,7 +45,7 @@ def cluster_by_domain_name(urimdata, cache_storage):
 
 
             except Exception as exc:
-                module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
+                module_logger.exception("Error: {}, Failed to determine URI-R for {}, skipping...".format(repr(exc), urim))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     module_logger.info("learned {} URI-Rs from these URI-Ms".format(len(urir_to_urims)))

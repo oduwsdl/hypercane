@@ -111,7 +111,7 @@ def sample_with_systematic(args):
     session = get_web_session(cache_storage=args.cache_storage)
     output_type = 'mementos'
 
-    module_logger.info("Starting random sampling of URI-Ms.")
+    module_logger.info("Starting systematic sampling of URI-Ms.")
 
     urimdata = discover_resource_data_by_input_type(
         args.input_type, output_type, args.input_arguments, args.crawl_depth,

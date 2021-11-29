@@ -6,20 +6,29 @@ def remove_offtopic(args):
 
     from hypercane.utils import get_web_session
     from pymongo import MongoClient
+    from pymongo.errors import ConfigurationError
     from hypercane.identify import discover_resource_data_by_input_type, \
         discover_timemaps_by_input_type, download_urits_and_extract_urims, \
         discover_mementos_by_input_type, generate_faux_urits
     from hypercane.hfilter.remove_offtopic import detect_off_topic
-    from hypercane.utils import save_resource_data
+    from hypercane.utils import save_resource_data, get_hc_cache_storage
 
     processing_type = 'timemaps'
 
     module_logger.info("Starting detection of off-topic documents...")
 
-    module_logger.info("using cache storage at {}".format(args.cache_storage))
+    if args.cache_storage is None:
+        cache_storage = get_hc_cache_storage()
+        module_logger.info("retrieved cache storage URL {}".format(cache_storage))
+        dbconn = MongoClient(cache_storage)
+    else:
+        dbconn = MongoClient(args.cache_storage)
+        cache_storage = args.cache_storage
+        module_logger.info("using cache storage URL from command line {}".format(cache_storage))
 
-    session = get_web_session(cache_storage=args.cache_storage)
-    dbconn = MongoClient(args.cache_storage)
+    module_logger.info("using cache storage at {}".format(cache_storage))
+
+    session = get_web_session(cache_storage=cache_storage)
 
     useFauxTimeMaps = False
 

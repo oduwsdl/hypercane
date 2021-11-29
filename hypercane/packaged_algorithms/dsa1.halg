@@ -23,13 +23,22 @@ ADDITONAL_ARGUMENTS=$5
 echo "starting DSA1 algorithm"
 
 # identify timemaps
-TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
-TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
+# TIMEMAP_FILE=${WORKING_DIRECTORY}/timemaps.tsv
+# TIMEMAP_LOG=${WORKING_DIRECTORY}/identify-timemaps.log
 
 # prevent extra work if we already have it from previous runs
-if [ ! -e ${TIMEMAP_FILE} ]; then
-    echo "acquiring TimeMaps from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
-    hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+# if [ ! -e ${TIMEMAP_FILE} ]; then
+#     echo "acquiring TimeMaps from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
+#     hc identify timemaps -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${TIMEMAP_FILE} -l ${TIMEMAP_LOG}
+# fi
+
+MEMENTO_FILE=${WORKING_DIRECTORY}/mementos.tsv
+MEMENTO_LOG=${WORKING_DIRECTORY}/identify-mementos.log
+
+# prevent extra work if we already have it from previous runs
+if [ ! -e ${MEMENTO_FILE} ]; then
+    echo "acquiring mementos from input type ${INPUT_TYPE} with argument ${INPUT_ARGUMENT}"
+    hc identify mementos -i ${INPUT_TYPE} -a ${INPUT_ARGUMENT} -o ${MEMENTO_FILE} -l ${MEMENTO_LOG}
 fi
 
 # exclude off-topic
@@ -39,7 +48,8 @@ OFF_TOPIC_LOG=${WORKING_DIRECTORY}/exclude-off-topic.log
 # prevent extra work if we already have it from previous runs
 if [ ! -e ${ON_TOPIC_FILE} ]; then
     echo "filtering to exclude off-topic mementos from input"
-    hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+    # hc filter exclude off-topic -i timemaps -a ${TIMEMAP_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
+    hc filter exclude off-topic -i mementos -a ${MEMENTO_FILE} -o ${ON_TOPIC_FILE} -l ${OFF_TOPIC_LOG}
 fi
 
 # exclude near-duplicates

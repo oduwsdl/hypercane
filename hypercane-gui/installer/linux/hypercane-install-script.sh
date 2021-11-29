@@ -250,6 +250,7 @@ After=syslog.target network.target remote-fs.target nss-lookup.target
 ExecStart=${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/celery -A hypercane_with_wooey worker --beat -l info
 User=${HYPERCANE_USER}
 WorkingDirectory=${INSTALL_DIRECTORY}/hypercane_with_wooey
+EnvironmentFile=/etc/hypercane.conf
 
 [Install]
 WantedBy=multi-user.target
@@ -325,10 +326,13 @@ function perform_install() {
     run_command "removing existing virtualenv, if present" "rm -rf $INSTALL_DIRECTORY/hypercane-virtualenv"
     run_command "creating virtualenv for Hypercane" "virtualenv $INSTALL_DIRECTORY/hypercane-virtualenv"
 
+    run_command "installing Hypercane requirements in virtualenv" "${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/pip install -r requirements.txt"
+
     run_command "discovering Hypercane CLI and libraries archive" "ls hypercane*.tar.gz | grep -v 'gui'"
     CLI_TARBALL=`cat ${command_output_file}`
     run_command "discovering Hypercane GUI archive" "ls hypercane-gui-*.tar.gz"
     GUI_TARBALL=`cat ${command_output_file}`
+    run_command "discovering Hypercane "
 
     # in some environments --no-cache-dir avoids the enormous memory consumption of pytorch installation
     # see: https://github.com/pytorch/pytorch/issues/1022
@@ -342,9 +346,13 @@ function perform_install() {
     run_command "setting permissions on Hypercane queueing service configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-hypercane-queueing-service.sh"
     run_command "setting permissions on Hypercane caching database configuration script" "chmod 0755 ${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh"
     run_command "storing MongoDB URL in /etc/hypercane.conf" "${INSTALL_DIRECTORY}/hypercane-gui/set-caching-database.sh ${HC_CACHE_STORAGE}"
-
-    run_command "creating Hypercane WUI" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && ${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh)"
-    # TODO: set Debug=False in django_settings.py
+    
+    if [ ${SKIP_SCRIPT_INSTALL} -eq 0 ]; then
+        run_command "creating Hypercane WUI" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && ${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh --skip-script-install)"
+    else
+        run_command "creating Hypercane WUI" "(source ${INSTALL_DIRECTORY}/hypercane-virtualenv/bin/activate && ${INSTALL_DIRECTORY}/hypercane-gui/install-hypercane-wui.sh)"
+        # TODO: set Debug=False in django_settings.py
+    fi
 
     if [ $FORCE_SYSTEMD -eq 0 ]; then
         create_systemd_startup
@@ -369,6 +377,8 @@ function perform_install() {
     else
         create_systemd_startup
     fi
+
+    run_command "setting directory permissions on ${INSTALL_DIRECTORY}" "find ${INSTALL_DIRECTORY} -type d -exec chmod 0755 {} \;"
 }
 
 # install starts here
@@ -383,6 +393,7 @@ DJANGO_IP="0.0.0.0"
 HYPERCANE_USER="root"
 WRAPPER_SCRIPT_PATH="/usr/local/bin"
 FORCE_SYSTEMD=1
+SKIP_SCRIPT_INSTALL=1
 
 while test $# -gt 0; do
 
@@ -418,6 +429,9 @@ while test $# -gt 0; do
         --django_IP)
         shift
         DJANGO_IP=$1
+        ;;
+        --skip-script-install)
+        SKIP_SCRIPT_INSTALL=0
         ;;
     esac
     shift

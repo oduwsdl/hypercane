@@ -8,7 +8,7 @@ fi
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 if [ ! -e ${SCRIPT_DIR}/../../installer/install-hypercane.sh ]; then
-    ${SCRIPT_DIR}/../../hypercane-gui/installer/linux/create-installer.sh
+    ${SCRIPT_DIR}/../../hypercane-gui/installer/linux/create-hypercane-installer.sh
 fi
 
 docker build -f ${SCRIPT_DIR}/ubuntu2104-systemd-dockerfile -t ubuntu-systemd:21.04 .

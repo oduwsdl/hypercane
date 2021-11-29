@@ -20,8 +20,9 @@ def filter_by_memento_datetime(urims, cache_storage, lower_datetime, upper_datet
 
             try:
                 urim = future_to_urim[future]
-                mdt = future_to_urim.result()
-                mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
+                # mdt = future_to_urim.result()
+                mdt = future.result()[0]
+                # mdt = datetime.strptime(mdt, "%a, %d %b %Y %H:%M:%S GMT")
 
                 if mdt >= lower_datetime and mdt <= upper_datetime:
                     filtered_urims.append(urim)

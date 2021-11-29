@@ -98,6 +98,30 @@
                                 {% if 'hypercane-synthesize-output' in file.url %}
                                     <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Synthesize Output</a></li>
                                 {% endif %}
+
+                            {% elif 'Raintale story file' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'raintale-story.json' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Raintale Story File</a></li>
+                                {% endif %}
+
+                            {% elif 'Synthesize WARCs' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'warcs-output.zip' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-compressed"></span> WARCs in ZIP</a></li>
+                                {% endif %}
+
+                            {% elif 'Generate archived page URLs' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'archived-page-urls.txt' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Archived Page URLs</a></li>
+                                {% endif %}
+
+                            {% elif 'Generate original page URLs' in job_info.job.script_version.script.script_name %}
+
+                                {% if 'original-page-urls.txt' in file.url %}
+                                    <li><a href="{{ file.url }}" download><span class="glyphicon glyphicon-file"></span> Original Page URLs</a></li>
+                                {% endif %}
                             
                             {% endif %}
 
@@ -191,12 +215,16 @@
                     <button {% if not stoppable_jobs %}data-placement="bottom" data-toggle="tooltip" title="The current celery broker does not support stoppable jobs and stopping will likely not work. To resolve this, use RabbitMQ as a celery message broker."{% endif %}class="btn btn-primary btn-danger status-running-toggle status-submitted-toggle status-pending-toggle" name="celery-command" value="stop" type="submit">
                         <span class="glyphicon glyphicon-stop" aria-hidden="true"></span> {% trans "Stop" %}
                     </button>
-                    <!-- <button class="btn btn-primary btn-warning status-completed-toggle status-revoked-toggle status-failure-toggle" name="celery-command" value="rerun" type="submit">
+                    <!-- These are commented out because, even after reading Wooey's code, I don't understand the difference well enough to explain them to users. --smj -->
+                    <!--
+                    <button class="btn btn-primary btn-warning status-completed-toggle status-revoked-toggle status-failure-toggle" name="celery-command" value="rerun" type="submit">
                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> {% trans "Re-run" %}
                     </button>
+                    
                     <button class="btn btn-warning" name="celery-command" value="resubmit" type="submit">
                         <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> {% trans "Resubmit" %}
                     </button> -->
+                    
 
                     <button class="btn btn-danger" name="celery-command" value="delete" type="submit">
                         <span class="glyphicon glyphicon-trash" aria-hidden="true"></span> {% trans "Delete" %}

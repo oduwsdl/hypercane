@@ -125,12 +125,13 @@ run_command "creating Hypercane GUI tarball" "tar -C ${CLI_SRC_DIR} -c -v -z -f 
 run_command "verifying Hypercane GUI tarball" "ls ${CLI_SRC_DIR}/dist/hypercane-gui-${normalized_hypercane_version}.tar.gz" "nonewline"
 echo " --- ${CLI_SRC_DIR}/dist/hypercane-gui-${normalized_hypercane_version}.tar.gz exists"
 
-run_command "copying install script to archive directory" "cp ${CLI_SRC_DIR}/hypercane-gui/installer/linux/install-script.sh ${CLI_SRC_DIR}/dist"
-run_command "setting install script permissions" "chmod 0755 ${CLI_SRC_DIR}/hypercane-gui/installer/linux/install-script.sh"
+run_command "copying install script to archive directory" "cp ${CLI_SRC_DIR}/hypercane-gui/installer/linux/hypercane-install-script.sh ${CLI_SRC_DIR}/dist"
+run_command "setting install script permissions" "chmod 0755 ${CLI_SRC_DIR}/hypercane-gui/installer/linux/hypercane-install-script.sh"
+run_command "copying requirements.txt to archive directory" "cp ${CLI_SRC_DIR}/requirements.txt ${CLI_SRC_DIR}/dist"
 
-run_command "creating directory for installer" "mkdir ${CLI_SRC_DIR}/installer"
+run_command "creating directory for installer" "mkdir -p ${CLI_SRC_DIR}/installer/generic-unix"
 
-run_command "executing makeself" "makeself ${CLI_SRC_DIR}/dist/ ${CLI_SRC_DIR}/installer/install-hypercane.sh 'Hypercane from the Dark and Stormy Archives Project' ./install-script.sh"
+run_command "executing makeself" "makeself ${CLI_SRC_DIR}/dist/ ${CLI_SRC_DIR}/installer/generic-unix/install-hypercane.sh 'Hypercane from the Dark and Stormy Archives Project' ./hypercane-install-script.sh"
 installer_file=`cat ${command_output_file} | grep "successfully created" | sed 's/Self-extractable archive "//g' | sed 's/" successfully created.//g'`
 echo "DONE: installer available at in ${installer_file}"
 

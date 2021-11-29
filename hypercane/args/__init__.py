@@ -2,6 +2,8 @@ import os
 import sys
 import argparse
 
+from hypercane.utils import get_hc_cache_storage
+
 universal_cli_required_args = [
     {   'flags': ['-i' ],
         'argument_params': {
@@ -77,7 +79,7 @@ universal_cli_optional_args = [
             'required': False,
             'dest': 'cache_storage',
             'help': "The path to the MongoDB database to use as a cache",
-            'default': os.environ.get('HC_CACHE_STORAGE')
+            'default': get_hc_cache_storage()
         }
     },
     {

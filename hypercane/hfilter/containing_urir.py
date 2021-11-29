@@ -29,7 +29,7 @@ def filter_by_urir(urims, cache_storage, urir_pattern):
                     filtered_urims.append(urim)
 
             except Exception as exc:
-                module_logger.exception("Error: {}, Failed to determine memento-datetime for {}, skipping...".format(repr(exc), urim))
+                module_logger.exception("Error: {}, Failed to determine URI-R for {}, skipping...".format(repr(exc), urim))
                 hypercane.errors.errorstore.add(urim, traceback.format_exc())
 
     return filtered_urims

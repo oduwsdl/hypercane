@@ -8,6 +8,41 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 
 # Installing Hypercane
 
+**Hypercane requires MongoDB for caching. Install MongoDB as appropriate for your environment first. Hypercane will no longer work without a caching database.**
+
+## Installing Hypercane on Linux or Unix
+
+### CentOS 8
+
+If you would like to use the RPM installer for RHEL 8 and CentOS 8 systems:
+
+1. [Install MongoDB](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-8). MongoDB does not come with the CentOS/RHEL distributions, so you will need to add a new repository to your system.
+2. Download the RPM and save it to the Linux server (e.g., hypercane-0.20211022230926-1.el8.x86_64.rpm).
+3. Type `dnf install hypercane-0.20211022230926-1.el8.x86_64.rpm`
+4. Type `systemctl start hypercane-django.service`
+
+### Ubuntu 21.04
+
+If you would like to use the DEB installer for Ubuntu 21.04 systems:
+
+1. [Install MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). MongoDB does not come with the Ubuntu distribution, so you will need to add a new repository to your system.
+2. Download the DEB and save it to the Linux server (e.g., hypercane-0.20211022230926.deb).
+3. Type `apt-get install ./hypercane-0.20211022230926.deb`
+4. Type `systemctl start hypercane-django.service`
+
+### Using the self-extracting installer on a generic Unix/Linux system
+
+This installer only works on Unix and Linux.
+
+1. Install MongoDB on a system accessible to the server chosen for Hypercane and record the URL for this MonboDB install. Hypercane will no longer work without a caching database.
+2. Download the latest release of Hypercane
+3. Run `./install-hypercane.sh -- --mongodb-url [MONGODB_URL]` where MONGODB_URL is the URL recorded in step 1
+
+Hypercane comes with a web user interface (WUI) providing a more user-friendly method of executing Hypercane. The WUI is a web application. Starting this web application depends on your Unix/Linux system.
+
+To start the Hypercane WUI on a generic Unix system:
+`/opt/hypercane/start-hypercane-wui.sh`
+
 ## Using PIP
 
 1. Install [MongoDB](https://www.mongodb.com/download-center/community)
@@ -20,7 +55,7 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 
 This grants access to the `hc` command which provides the functionality of Hypercane.
 
-## Using Docker
+<!-- ## Using Docker
 
 The software is still volatile, so you will need to build your own docker image.
 
@@ -28,22 +63,8 @@ The software is still volatile, so you will need to build your own docker image.
 2. Change into the cloned directory
 3. Run `docker-compose run hypercane hc --help`
 
-This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed.
+This may take a while to download and build necessary docker images. When successful, `hc` CLI help will be printed. -->
 
-## Using the self-extracting installer on a Unix/Linux system
-
-This installer only works on Unix and Linux.
-
-1. Install MongoDB on a system accessible to the server chosen for Hypercane and record the URL for this MonboDB install. Hypercane will no longer work without a caching database.
-2. Download the latest release of Hypercane
-3. Run `./install-hypercane.sh -- --mongodb-url [MONGODB_URL]` where MONGODB_URL is the URL recorded in step 1
-
-### Hypercane WUI
-
-Hypercane comes with a web user interface (WUI) providing a more user-friendly method of executing Hypercane. The WUI is a web application. Starting this web application depends on your Unix/Linux system.
-
-To start the Hypercane WUI on a generic Unix system:
-`/opt/hypercane/start-hypercane-wui.sh`
 
 #### Configuring the Hypercane WUI for Postgres
 

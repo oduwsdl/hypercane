@@ -37,8 +37,21 @@
 
     <div class="row" id="script-list">
 
+        <div class="col-sm-12 col-md-12"><h4 style="border-bottom: 1px solid black;">Convenience Recipes - Combining Primitives For Common Scenarios</h4></div>
+
     {% for script in scripts %}
-        {% include 'wooey/scripts/script_panel.html' %}
+        {% if script.script_group.group_name == 'convenience' %}
+            {% include 'wooey/scripts/script_panel.html' %}
+        {% endif %}
+    {% endfor %}
+    
+    <hr>
+        <div class="col-sm-12 col-md-12"><h4 style="border-bottom: 1px solid black;">Primitives - For Detailed Work With Web Archive Collections</h4></div>
+
+    {% for script in scripts %}
+        {% if script.script_group.group_name == 'advanced' %}
+            {% include 'wooey/scripts/script_panel.html' %}
+        {% endif %}
     {% endfor %}
 
 </div>

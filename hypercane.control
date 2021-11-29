@@ -1,0 +1,7 @@
+Package: hypercane
+Version: {{ hypercane_version }}
+Depends: python3, postgresql, ffmpeg, libjpeg-turbo8, zlib1g, libtiff5, libfreetype6, liblcms2-2, libwebp6, tcl, tk, libopenjp2-7, libfribidi0, libharfbuzz0b, libxcb1
+Architecture: amd64
+Maintainer: Shawn M. Jones <jones.shawn.m@gmail.com>
+Description: Hypercane is a framework of algorithms for sampling mementos from a web archive collection.
+ Hypercane is a framework for building algorithms for sampling mementos from a web archive collection. Hypercane is the entry point of the Dark and Stormy Archives (DSA) toolkit. A user can generate samples with Hypercane and then view those samples via the Web Archive Storytelling tool Raintale, thus allowing the user to automatically summarize a web archive collection as a few small samples visualized as a social media story.

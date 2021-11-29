@@ -1,0 +1,7 @@
+/usr/sbin/userdel hypercane
+find /opt/hypercane -name __pycache__ -exec rm -rf {} \;
+find /opt/hypercane -name celerybeat-schedule -exec rm -rf {} \;
+if [ -d /opt/hypercane/hypercane_with_wooey/hypercane_with_wooey/user_uploads ]; then
+    tar -C /opt/hypercane/hypercane_with_wooey/hypercane_with_wooey -c -v -z -f /opt/hypercane/user_uploads-backup-`date '+%Y%m%d%H%M%S'`.tar.gz user_uploads
+    rm -rf /opt/hypercane/hypercane_with_wooey
+fi

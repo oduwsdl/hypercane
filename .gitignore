@@ -128,3 +128,14 @@ installer/install-hypercane.sh
 hand-testing/
 hypercane_with_wooey/
 hypercane-errors.dat
+
+# installer builds
+installer/
+release/
+source-distro/
+!test/installer
+!hypercane-gui/installer
+!hypercane.spec
+
+# directory for comparing functions
+difftest
