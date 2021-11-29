@@ -25,8 +25,9 @@ from .archivecrawl import crawl_mementos, StorageObject, crawl_live_web_resource
 from ..utils import process_input_for_cluster_and_rank, get_memento_http_metadata
 import hypercane.errors
 from hypercane.version import __useragent__
-from mementoembed.mementoresource import MementoURINotAtArchiveFailure, \
+from mementoembed.mementoresource import MementoParsingError, MementoURINotAtArchiveFailure, \
     MementoMetaRedirectParsingError, MementoResourceError
+from pymongo.errors import DocumentTooLarge
 
 module_logger = logging.getLogger('hypercane.identify')
 
@@ -755,6 +756,10 @@ def generate_faux_urit(urim, cache_storage):
         module_logger.exception("Exceeded the number of retries for [{}] , skipping original resource discovery, reporting exception...".format(urim))
     except MementoMetaRedirectParsingError:
         module_logger.exception("Could not process the redirection URL in the META tag for [{}] , skipping original resource discovery, reporting exception...".format(urim))
+    except MementoParsingError as e:
+        module_logger.exception("Could not process the memento content while trying to build a derived TimeMap for [{}], skipping original resource discovery".format(urim))
+    except DocumentTooLarge as e:
+        module_logger.exception("Cannot store the memento in the cache for [{}], skipping original resource discovery".format(urim))
 
     return faux_urit
 
