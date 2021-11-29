@@ -16,7 +16,7 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 
 If you would like to use the RPM installer for RHEL 8 and CentOS 8 systems:
 
-1. [Install MongoDB](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-8). MongoDB does not come with the CentOS/RHEL distributions, so you will need to add a new repository to your system.
+1. [Install MongoDB for CentOS 8/RHEL 8](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-8). MongoDB does not come with the CentOS/RHEL distributions, so you will need to add a new repository to your system.
 2. Download the RPM and save it to the Linux server (e.g., hypercane-0.20211022230926-1.el8.x86_64.rpm).
 3. Type `dnf install hypercane-0.20211022230926-1.el8.x86_64.rpm`
 4. Type `systemctl start hypercane-django.service`
@@ -25,7 +25,7 @@ If you would like to use the RPM installer for RHEL 8 and CentOS 8 systems:
 
 If you would like to use the DEB installer for Ubuntu 21.04 systems:
 
-1. [Install MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). MongoDB does not come with the Ubuntu distribution, so you will need to add a new repository to your system.
+1. [Install MongoDB for Ubuntu 21.04](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). MongoDB does not come with the Ubuntu distribution, so you will need to add a new repository to your system.
 2. Download the DEB and save it to the Linux server (e.g., hypercane-0.20211022230926.deb).
 3. Type `apt-get install ./hypercane-0.20211022230926.deb`
 4. Type `systemctl start hypercane-django.service`
