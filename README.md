@@ -16,19 +16,19 @@ The possibilities with Hypercane do not stop there. Users can employ Hypercane a
 
 If you would like to use the RPM installer for RHEL 8 and CentOS 8 systems:
 
-1. [Install MongoDB](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-8). MongoDB does not come with the CentOS/RHEL distributions, so you will need to add a new repository to your system.
+1. [Install MongoDB for CentOS 8/RHEL 8](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-8). MongoDB does not come with the CentOS/RHEL distributions, so you will need to add a new repository to your system.
 2. Download the RPM and save it to the Linux server (e.g., hypercane-0.20211022230926-1.el8.x86_64.rpm).
 3. Type `dnf install hypercane-0.20211022230926-1.el8.x86_64.rpm`
 4. Type `systemctl start hypercane-django.service`
 
-### Ubuntu 21.04
+<!-- ### Ubuntu 21.04
 
 If you would like to use the DEB installer for Ubuntu 21.04 systems:
 
-1. [Install MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). MongoDB does not come with the Ubuntu distribution, so you will need to add a new repository to your system.
+1. [Install MongoDB for Ubuntu 21.04](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). MongoDB does not come with the Ubuntu distribution, so you will need to add a new repository to your system.
 2. Download the DEB and save it to the Linux server (e.g., hypercane-0.20211022230926.deb).
 3. Type `apt-get install ./hypercane-0.20211022230926.deb`
-4. Type `systemctl start hypercane-django.service`
+4. Type `systemctl start hypercane-django.service` -->
 
 ### Using the self-extracting installer on a generic Unix/Linux system
 
@@ -119,15 +119,15 @@ To discover the list of commands associated with an action, use the `--help` com
 
 1. Create a virtualenv
 2. Clone this repository
-3. Type `./test/docker-testing/create-centos8-docker-images.sh` (this takes a long time)
-4. Type `docker run --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 hypercane-wui-centos:dev`
+3. Type `./test/installer/create-test-containers.sh`
+4. Type `./test/installer/run-centos-install-start-shell.sh`
 
 ## Running Hypercane with Docker Image for Ubuntu 21.04 Systemd Testing
 
 1. Create a virtualenv
 2. Clone this repository
-3. Type `./test/docker-testing/create-ubuntu2104-docker-images.sh` (this takes a long time)
-4. Type `docker run --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -d -p 8000:8000 hypercane-wui-ubuntu:dev`
+3. Type `./test/installer/create-test-containers.sh`
+4. Type `./test/installer/run-ubuntu-install-start-shell.sh`
 
 # The Future of Hypercane
 
