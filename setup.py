@@ -45,6 +45,7 @@ setup(
         'nltk',
         'otmt',
         'psycopg2',
+        'pyenchant',
         'pymongo',
         'python-Levenshtein',
         'rank_bm25',
@@ -66,6 +67,7 @@ setup(
     # ],
     scripts=[
         'bin/hc'
-    ]
+    ],
+    test_suite="test.unit"
 )
 
