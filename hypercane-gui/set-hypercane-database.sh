@@ -102,11 +102,11 @@ fi
 settings_file=${WOOEY_DIR}/hypercane_with_wooey/settings/user_settings.py
 hypercane_conf=/etc/hypercane.conf
 
-echo "writing database information to ${settings_file}"
+echo "writing database information to ${hypercane_conf}"
 
 MDB_line=`grep HC_CACHE_STORAGE ${settings_file}`
 
-cat >> ${raintale_conf} <<- EOF
+cat >> ${hypercane_conf} <<- EOF
 ${MDB_line}
 DATABASE_NAME="${DBNAME}"
 DATABASE_PORT="${DBPORT}"
